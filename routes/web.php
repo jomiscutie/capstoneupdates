@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\StudentAuthController;
 use App\Http\Controllers\Auth\CoordinatorAuthController;
+use App\Http\Controllers\Auth\UnifiedAuthController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\OjtCompletionController;
@@ -11,10 +12,9 @@ use App\Http\Controllers\DuplicateCheckController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\StudentVerificationController;
 
-// -------------------- Generic login route --------------------
-Route::get('/login', function () {
-    return redirect()->route('student.login');
-})->name('login');
+// -------------------- Unified login (one form for both roles) --------------------
+Route::get('/login', [UnifiedAuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [UnifiedAuthController::class, 'login'])->middleware('throttle:5,1');
 
 // -------------------- Coordinator Routes --------------------
 Route::prefix('coordinator')->group(function () {
@@ -69,12 +69,6 @@ Route::prefix('student')->group(function () {
 });
 
 // -------------------- Home Route --------------------
-Route::get('/', function () {
-    Auth::guard('student')->logout();
-    Auth::guard('coordinator')->logout();
-    session()->invalidate();
-    session()->regenerateToken();
-    return view('auth.select-login');
-})->name('login.selector');
+Route::get('/', [UnifiedAuthController::class, 'showLoginForm'])->name('login.selector');
 
 // -------------------- Logout Functionality -------------------

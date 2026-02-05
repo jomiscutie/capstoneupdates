@@ -62,6 +62,13 @@
             letter-spacing: -0.02em;
         }
         .header-section p { font-size: 1.05rem; color: var(--dtr-muted); }
+        .norsu-logo {
+            height: 72px;
+            width: auto;
+            display: block;
+            object-fit: contain;
+            margin: 0 auto 1rem;
+        }
         .login-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -197,6 +204,7 @@
 <body>
     <div class="login-container">
         <div class="header-section">
+            <img src="{{ asset('images/norsu-seal.png') }}" alt="NORSU" class="norsu-logo" />
             <h1>Welcome to NORSU OJT DTR</h1>
             <p>Please select your login type to continue</p>
         </div>

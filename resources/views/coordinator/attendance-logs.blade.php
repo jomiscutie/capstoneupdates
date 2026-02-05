@@ -1,209 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Logs - NORSU OJT DTR</title>
-    <link rel="stylesheet" href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.css') }}">
-    <style>
-        :root {
-            --dtr-primary: #2563eb;
-            --dtr-primary-dark: #1d4ed8;
-            --dtr-muted: #64748b;
-            --dtr-surface: #ffffff;
-            --dtr-bg: #f8fafc;
-            --dtr-border: #e2e8f0;
-            --dtr-radius: 1rem;
-            --dtr-radius-lg: 1.25rem;
-            --dtr-shadow: 0 1px 3px rgba(0,0,0,0.06);
-            --dtr-shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-            --dtr-shadow-lg: 0 10px 40px -10px rgba(37,99,235,0.25);
-            --dtr-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            --dtr-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: url('/images/negrosorientalstateuniversity_cover.jpg') center/cover fixed no-repeat;
-            font-family: var(--dtr-font);
-            min-height: 100vh;
-            position: relative;
-            color: #0f172a;
-            line-height: 1.6;
-        }
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(ellipse 120% 80% at 80% 0%, rgba(37,99,235,0.06) 0%, transparent 50%),
-                linear-gradient(165deg, rgba(255,255,255,0.94) 0%, rgba(248,250,252,0.96) 100%);
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
-            z-index: 0;
-        }
-        .container {
-            position: relative;
-            z-index: 1;
-            padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 3vw, 1.5rem);
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .dashboard-header {
-            background: linear-gradient(135deg, var(--dtr-primary) 0%, var(--dtr-primary-dark) 40%, #1e40af 100%);
-            color: #fff;
-            border-radius: 1.25rem;
-            padding: clamp(1.75rem, 4vw, 2.25rem) clamp(1.5rem, 4vw, 2rem);
-            box-shadow: 0 20px 50px -15px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
-            text-align: center;
-            margin-bottom: 1.75rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .dashboard-header::before {
-            content: '';
-            position: absolute;
-            top: -30%;
-            right: -15%;
-            width: min(280px, 50vw);
-            height: min(280px, 50vw);
-            background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 65%);
-            border-radius: 50%;
-        }
-        .dashboard-header::after {
-            content: '';
-            position: absolute;
-            bottom: -20%;
-            left: -10%;
-            width: min(180px, 35vw);
-            height: min(180px, 35vw);
-            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-        .dashboard-header h2 {
-            position: relative;
-            z-index: 1;
-            font-size: clamp(1.35rem, 3vw, 1.75rem);
-            font-weight: 700;
-            margin-bottom: 0.35rem;
-            letter-spacing: -0.02em;
-        }
-        .dashboard-header p {
-            position: relative;
-            z-index: 1;
-            opacity: 0.95;
-            font-size: 0.95rem;
-        }
-        .stats-box {
-            background: rgba(255,255,255,0.78);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: var(--dtr-radius);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
-            padding: 1.25rem 1.5rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(255,255,255,0.5);
-            transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease;
-        }
-        .stats-box:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 40px -12px rgba(37,99,235,0.2);
-        }
-        .stats-box h4 {
-            color: var(--dtr-primary);
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
-        }
-        .stats-box .fs-3 { font-variant-numeric: tabular-nums; }
-        .card {
-            border-radius: 1.25rem;
-            padding: 1.5rem 1.75rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
-            border: 1px solid rgba(255,255,255,0.5);
-            background: rgba(255,255,255,0.78);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-        .card h4 {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 1rem;
-        }
-        .table-responsive {
-            border-radius: var(--dtr-radius);
-            overflow: hidden;
-            border: 1px solid var(--dtr-border);
-        }
-        .table {
-            margin: 0;
-        }
-        .table thead {
-            background: linear-gradient(135deg, var(--dtr-primary), var(--dtr-primary-dark));
-            color: #fff;
-        }
-        .table thead th {
-            padding: 1rem 1.25rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.06em;
-            border: none;
-            vertical-align: middle;
-        }
-        .table tbody td {
-            padding: 1rem 1.25rem;
-            vertical-align: middle;
-            border-bottom: 1px solid var(--dtr-border);
-        }
-        .table tbody tr:hover { background: #f8fafc; }
-        .table tbody tr:last-child td { border-bottom: none; }
-        .form-control, .form-select {
-            border-radius: var(--dtr-radius);
-            border: 1px solid var(--dtr-border);
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--dtr-primary), var(--dtr-primary-dark));
-            border: none;
-            font-weight: 600;
-            border-radius: var(--dtr-radius);
-            padding: 0.5rem 1.25rem;
-            transition: transform var(--dtr-transition), box-shadow var(--dtr-transition);
-        }
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(37,99,235,0.35);
-        }
-        .alert-info {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-            border-left: 4px solid var(--dtr-primary);
-            border-radius: var(--dtr-radius);
-            border: 1px solid #bfdbfe;
-        }
-    </style>
-</head>
-<body>
+@extends('layouts.coordinator')
+
+@section('title', 'Attendance Logs')
+
+@push('styles')
+<style>
+    .dashboard-header.dtr-attendance-header { text-align: center; }
+    .dashboard-header.dtr-attendance-header .back-link { margin-bottom: 0.5rem; }
+    .stats-box {
+        background: rgba(255,255,255,0.78); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border-radius: var(--dtr-radius); box-shadow: 0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+        padding: 1.25rem 1.5rem; text-align: center; margin-bottom: 1.5rem;
+        border: 1px solid rgba(255,255,255,0.5);
+        transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease;
+    }
+    .stats-box:hover { transform: translateY(-4px); box-shadow: 0 16px 40px -12px rgba(37,99,235,0.2); }
+    .stats-box h4 { color: var(--dtr-primary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .stats-box .fs-3 { font-variant-numeric: tabular-nums; }
+    .dtr-attendance .card { border-radius: 1.25rem; padding: 1.5rem 1.75rem; box-shadow: 0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.78); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .dtr-attendance .card h4 { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .dtr-attendance .table-responsive {
+        border-radius: var(--dtr-radius);
+        overflow-x: auto;
+        overflow-y: hidden;
+        border: 1px solid var(--dtr-border);
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        position: relative;
+    }
+    .dtr-attendance .table-responsive .table { min-width: 800px; }
+    .dtr-attendance .table-responsive::-webkit-scrollbar { height: 10px; }
+    .dtr-attendance .table-responsive::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.04);
+        border-radius: 0 0 10px 10px;
+    }
+    .dtr-attendance .table-responsive::-webkit-scrollbar-thumb {
+        background: linear-gradient(90deg, var(--dtr-primary), var(--dtr-primary-dark));
+        border-radius: 10px;
+    }
+    .dtr-attendance .table-responsive::-webkit-scrollbar-thumb:hover { background: var(--dtr-primary-dark); }
+    @supports (scrollbar-color: auto) {
+        .dtr-attendance .table-responsive { scrollbar-color: var(--dtr-primary) rgba(0,0,0,0.06); scrollbar-width: thin; }
+    }
+    .dtr-attendance .table thead { background: linear-gradient(135deg, var(--dtr-primary), var(--dtr-primary-dark)); color: #fff; }
+    .dtr-attendance .table thead th { padding: 1rem 1.25rem; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.06em; border: none; vertical-align: middle; }
+    .dtr-attendance .table tbody td { padding: 1rem 1.25rem; vertical-align: middle; border-bottom: 1px solid var(--dtr-border); }
+    .dtr-attendance .table tbody tr:hover { background: #f8fafc; }
+    .dtr-attendance .table tbody tr:last-child td { border-bottom: none; }
+    .dtr-attendance .form-control, .dtr-attendance .form-select { border-radius: var(--dtr-radius); border: 1px solid var(--dtr-border); }
+    .dtr-attendance .btn-primary { background: linear-gradient(135deg, var(--dtr-primary), var(--dtr-primary-dark)); border: none; font-weight: 600; border-radius: var(--dtr-radius); padding: 0.5rem 1.25rem; transition: transform var(--dtr-transition), box-shadow var(--dtr-transition); }
+    .dtr-attendance .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.35); }
+</style>
+@endpush
+
+@section('content')
 @php
     $coordinator = auth()->guard('coordinator')->user();
     $major = $coordinator->major ?? null;
 @endphp
-<div class="container mt-5">
-
-    <div class="dashboard-header">
-        <h2>Coordinator Dashboard</h2>
-        <p>Attendance Management &mdash; {{ now()->format('F Y') }}</p>
+<div class="dtr-attendance">
+    <div class="dashboard-header dtr-attendance-header">
+        <div>
+            <a href="{{ route('coordinator.dashboard') }}" class="back-link d-inline-block">
+                <i class="bi bi-arrow-left"></i> Dashboard
+            </a>
+            <h2>Attendance Logs</h2>
+            <p>Attendance Management &mdash; {{ now()->format('F Y') }}</p>
+        </div>
         @if($major)
-            <div style="margin-top: 1rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border-radius: 6px; display: inline-block;">
-                <i class="bi bi-mortarboard me-1"></i>
-                <strong>Program:</strong> {{ $major }}
+            <div class="program-badge-inline">
+                <i class="bi bi-mortarboard me-1"></i><strong>Program:</strong> {{ $major }}
             </div>
         @endif
     </div>
 
-    {{-- Stats Section --}}
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="stats-box">
@@ -232,15 +101,13 @@
         </div>
     </div>
 
-    {{-- Month Filter --}}
     <div class="card mb-4">
         <form method="GET" class="row g-3 align-items-center">
             <div class="col-auto">
                 <label for="monthSelect" class="col-form-label">Select Month:</label>
             </div>
             <div class="col-auto">
-                <input type="month" id="monthSelect" name="month" class="form-control"
-                       value="{{ request('month', now()->format('Y-m')) }}">
+                <input type="month" id="monthSelect" name="month" class="form-control" value="{{ request('month', now()->format('Y-m')) }}">
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary">Filter</button>
@@ -255,11 +122,8 @@
     </div>
     @endif
 
-    {{-- Attendance Table --}}
     <div class="card">
-        <h4 class="mb-3">Attendance Logs
-            @if($major)<small class="text-muted">({{ $major }})</small>@endif
-        </h4>
+        <h4 class="mb-3">Attendance Logs @if($major)<small class="text-muted">({{ $major }})</small>@endif</h4>
         @if(($logs ?? collect())->count() > 0)
             <div class="table-responsive">
                 <table class="table table-bordered mt-2">
@@ -349,6 +213,4 @@
         @endif
     </div>
 </div>
-</body>
-</html>
-
+@endsection
