@@ -2,27 +2,31 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\TimeInRequest;
+use App\Http\Requests\TimeOutRequest;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
-    public function timeIn(Request $request)
+    public function timeIn(TimeInRequest $request)
     {
         date_default_timezone_set('Asia/Manila');
-
-        $request->validate([
-            'face_encoding' => 'required|string',
-        ]);
-
-        $studentId = Auth::guard('student')->id();
-        $student = \App\Models\Student::find($studentId);
+        try {
+            $studentId = Auth::guard('student')->id();
+            $student = \App\Models\Student::find($studentId);
         $today = Carbon::today('Asia/Manila')->toDateString();
 
+        // Only verified students can time in
+        if (!$student || !$student->isVerified()) {
+            return back()->with('error', 'Your account must be verified by your coordinator before you can record attendance. Please contact your OJT coordinator.');
+        }
+
         // Check if student has face encoding registered
-        if (!$student || !$student->face_encoding) {
+        if (!$student->face_encoding) {
             return back()->with('error', 'Face recognition not registered. Please register your face first.');
         }
 
@@ -50,8 +54,19 @@ class AttendanceController extends Controller
             return back()->with('error', "Face verification failed. Match confidence: " . round($confidence) . "%. Please ensure you are in a well-lit area, look directly at the camera, and use your registered face.");
         }
 
-        // Get current time
+        // Use client-recorded time when syncing from offline (recorded_at in Asia/Manila), else server time
         $currentTime = Carbon::now('Asia/Manila');
+        if ($request->filled('recorded_at')) {
+            try {
+                $recorded = Carbon::parse($request->recorded_at)->timezone('Asia/Manila');
+                $todayRecorded = $recorded->toDateString();
+                if ($todayRecorded === $today) {
+                    $currentTime = $recorded;
+                }
+            } catch (\Exception $e) {
+                // Ignore invalid recorded_at, use server time
+            }
+        }
         $timeInString = $currentTime->toTimeString();
         
         // CRITICAL: Determine if it's morning (before 12:00 PM) or afternoon (12:00 PM onwards)
@@ -128,9 +143,10 @@ class AttendanceController extends Controller
             $attendance->afternoon_is_late = $isLate;
             $attendance->afternoon_late_minutes = $lateMinutes;
             
+            $suffix = $this->confidenceSuffix($request);
             $message = $isLate 
-                ? "Afternoon Time In recorded successfully. ⚠️ You are {$lateMinutes} minute(s) late."
-                : 'Afternoon Time In recorded successfully with face verification. ✓';
+                ? "Afternoon Time In recorded successfully. ⚠️ You are {$lateMinutes} minute(s) late." . $suffix
+                : 'Afternoon Time In recorded successfully with face verification. ✓' . $suffix;
         } else {
             // MORNING TIME-IN: Before 12:00 PM (00:00:00 to 11:59:59)
             // Examples: 6:00 AM, 7:00 AM, 8:00 AM, 9:00 AM, 10:00 AM, 11:00 AM, etc.
@@ -172,30 +188,36 @@ class AttendanceController extends Controller
             $attendance->is_late = $isLate;
             $attendance->late_minutes = $lateMinutes;
             
+            $suffix = $this->confidenceSuffix($request);
             $message = $isLate 
-                ? "Morning Time In recorded successfully. ⚠️ You are {$lateMinutes} minute(s) late."
-                : 'Morning Time In recorded successfully with face verification. ✓';
+                ? "Morning Time In recorded successfully. ⚠️ You are {$lateMinutes} minute(s) late." . $suffix
+                : 'Morning Time In recorded successfully with face verification. ✓' . $suffix;
         }
         
         $attendance->save();
 
-        return back()->with($isLate ? 'warning' : 'success', $message);
+            return back()->with($isLate ? 'warning' : 'success', $message);
+        } catch (\Throwable $e) {
+            Log::error('Time-in failed', ['student_id' => Auth::guard('student')->id(), 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return back()->with('error', 'Unable to record time-in. Please try again. If the problem persists, contact your coordinator.');
+        }
     }
 
-    public function timeOut(Request $request)
+    public function timeOut(TimeOutRequest $request)
     {
         date_default_timezone_set('Asia/Manila');
-
-        $request->validate([
-            'face_encoding' => 'required|string',
-        ]);
-
-        $studentId = Auth::guard('student')->id();
+        try {
+            $studentId = Auth::guard('student')->id();
         $student = \App\Models\Student::find($studentId);
         $today = Carbon::today('Asia/Manila')->toDateString();
 
+        // Only verified students can time out
+        if (!$student || !$student->isVerified()) {
+            return back()->with('error', 'Your account must be verified by your coordinator before you can record attendance. Please contact your OJT coordinator.');
+        }
+
         // Check if student has face encoding registered
-        if (!$student || !$student->face_encoding) {
+        if (!$student->face_encoding) {
             return back()->with('error', 'Face recognition not registered. Please register your face first.');
         }
 
@@ -237,6 +259,16 @@ class AttendanceController extends Controller
         }
 
         $currentTime = Carbon::now('Asia/Manila');
+        if ($request->filled('recorded_at')) {
+            try {
+                $recorded = Carbon::parse($request->recorded_at)->timezone('Asia/Manila');
+                if ($recorded->toDateString() === $today) {
+                    $currentTime = $recorded;
+                }
+            } catch (\Exception $e) {
+                // Ignore invalid recorded_at
+            }
+        }
         $attendance->time_out = $currentTime->toTimeString();
 
         // Calculate total hours rendered (morning + afternoon)
@@ -279,7 +311,27 @@ class AttendanceController extends Controller
 
         $attendance->save();
 
-        return back()->with('success', 'Time Out recorded successfully with face verification.');
+        $suffix = $this->confidenceSuffix($request);
+            return back()->with('success', 'Time Out recorded successfully with face verification.' . $suffix);
+        } catch (\Throwable $e) {
+            Log::error('Time-out failed', ['student_id' => Auth::guard('student')->id(), 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return back()->with('error', 'Unable to record time-out. Please try again. If the problem persists, contact your coordinator.');
+        }
+    }
+
+    /**
+     * Optional suffix for success message: " — 94% match" when verification_confidence is sent.
+     */
+    private function confidenceSuffix(Request $request): string
+    {
+        if (! $request->filled('verification_confidence')) {
+            return '';
+        }
+        $pct = (int) round((float) $request->verification_confidence);
+        if ($pct < 0 || $pct > 100) {
+            return '';
+        }
+        return " — {$pct}% match";
     }
 
     /**
@@ -366,37 +418,24 @@ class AttendanceController extends Controller
         $month = $request->input('month', now()->format('Y-m'));
         [$year, $monthNum] = explode('-', $month);
 
-        // Filter students by coordinator's course/program
-        $studentsQuery = \App\Models\Student::query();
-        
-        if (!empty($coordinator->major)) {
-            // Coordinator's major field stores the course/program, match with student's course
-            $studentsQuery->where('course', $coordinator->major);
-        } else {
-            // If coordinator has no course set, return empty result
-            $studentsQuery->whereRaw('1 = 0');
-        }
+        $studentIds = \App\Models\Student::forCoordinator($coordinator)->verified()->pluck('id');
 
-        $students = $studentsQuery->pluck('id');
-
-        // Get attendance logs only for students in the coordinator's program
         $logs = \App\Models\Attendance::with('student')
-            ->whereIn('student_id', $students)
+            ->whereIn('student_id', $studentIds)
             ->whereYear('date', $year)
             ->whereMonth('date', $monthNum)
             ->orderBy('date', 'desc')
             ->get();
 
-        // Stats for dashboard header - only for coordinator's program
-        $totalStudents = $studentsQuery->count();
-        $presentToday = \App\Models\Attendance::whereIn('student_id', $students)
+        $totalStudents = $studentIds->count();
+        $presentToday = \App\Models\Attendance::whereIn('student_id', $studentIds)
             ->where('date', now()->format('Y-m-d'))
             ->distinct('student_id')
             ->count('student_id');
         $absentToday = $totalStudents - $presentToday;
 
         // Count late arrivals for the selected month (both morning and afternoon)
-        $lateArrivalsMonth = \App\Models\Attendance::whereIn('student_id', $students)
+        $lateArrivalsMonth = \App\Models\Attendance::whereIn('student_id', $studentIds)
             ->whereYear('date', $year)
             ->whereMonth('date', $monthNum)
             ->where(function($query) {

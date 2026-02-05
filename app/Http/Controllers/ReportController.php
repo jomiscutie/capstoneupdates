@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\GenerateReportRequest;
 use App\Models\Attendance;
 use App\Models\Student;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -14,34 +15,24 @@ class ReportController extends Controller
     /**
      * Generate monthly attendance report for a specific student
      */
-    public function generateMonthlyReport(Request $request)
+    public function generateMonthlyReport(GenerateReportRequest $request)
     {
         $coordinator = Auth::guard('coordinator')->user();
-        
-        // Validate request
-        $request->validate([
-            'student_id' => 'required|exists:students,id',
-            'month' => 'required|date_format:Y-m',
-        ]);
-
         $studentId = $request->input('student_id');
         $month = $request->input('month');
-        
-        // Parse month
+
         $date = Carbon::createFromFormat('Y-m', $month);
         $year = $date->year;
         $monthNum = $date->month;
-        
-        // Get student
+
         $student = Student::findOrFail($studentId);
-        
-        // Verify student belongs to coordinator's program
         if ($coordinator->major && $student->course !== $coordinator->major) {
             return back()->with('error', 'You do not have permission to view this student\'s report.');
         }
-        
-        // Get attendance records for the month
-        $attendances = Attendance::where('student_id', $studentId)
+
+        try {
+            // Get attendance records for the month
+            $attendances = Attendance::where('student_id', $studentId)
             ->whereYear('date', $year)
             ->whereMonth('date', $monthNum)
             ->orderBy('date', 'asc')
@@ -102,8 +93,12 @@ class ReportController extends Controller
         $pdf->setPaper('A4', 'portrait');
         
         $filename = 'Attendance_Report_' . $student->student_no . '_' . $month . '.pdf';
-        
-        return $pdf->download($filename);
+
+            return $pdf->download($filename);
+        } catch (\Throwable $e) {
+            Log::error('Report generation failed', ['coordinator_id' => $coordinator->id ?? null, 'student_id' => $studentId, 'month' => $month, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return back()->with('error', 'Unable to generate the report. Please try again. If the problem persists, contact support.');
+        }
     }
     
     /**
@@ -112,9 +107,7 @@ class ReportController extends Controller
     public function showReportForm()
     {
         $coordinator = Auth::guard('coordinator')->user();
-        
-        // Get students from coordinator's program
-        $students = Student::where('course', $coordinator->major)->get();
+        $students = Student::forCoordinator($coordinator)->verified()->get();
         
         return view('coordinator.generate-report', compact('students'));
     }

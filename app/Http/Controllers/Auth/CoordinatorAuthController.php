@@ -97,20 +97,8 @@ class CoordinatorAuthController extends Controller
     public function dashboard()
     {
         $coordinator = Auth::guard('coordinator')->user();
-
-        // Filter students by coordinator's course/program only
-        // Only show students from the same program (course) as the coordinator
-        $studentsQuery = \App\Models\Student::query();
-
-        if (!empty($coordinator->major)) {
-            // Coordinator's major field stores the course/program
-            $studentsQuery->where('course', $coordinator->major);
-        } else {
-            // If coordinator has no course set, return empty result
-            $studentsQuery->whereRaw('1 = 0'); // This ensures no students are returned
-        }
-
-        $students = $studentsQuery->get();
+        $students = \App\Models\Student::forCoordinator($coordinator)->verified()->get();
+        $pendingVerificationCount = \App\Models\Student::forCoordinator($coordinator)->pendingVerification()->count();
 
         $totalStudents = $students->count();
 
@@ -131,6 +119,6 @@ class CoordinatorAuthController extends Controller
             ->distinct('student_id')
             ->count('student_id');
 
-        return view('coordinator.dashboard', compact('totalStudents', 'studentsTimedIn', 'studentsNotTimedIn', 'students', 'lateArrivalsToday'));
+        return view('coordinator.dashboard', compact('totalStudents', 'studentsTimedIn', 'studentsNotTimedIn', 'students', 'lateArrivalsToday', 'pendingVerificationCount'));
     }
 }
