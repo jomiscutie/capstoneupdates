@@ -39,6 +39,8 @@ class CoordinatorAuthController extends Controller
             }
             
             $request->session()->regenerate();
+            $coordinator->current_session_id = $request->session()->getId();
+            $coordinator->save();
 
             // Redirect to dashboard with welcome message
             return redirect()->route('coordinator.dashboard')
@@ -76,6 +78,9 @@ class CoordinatorAuthController extends Controller
         ]);
 
         Auth::guard('coordinator')->login($coordinator);
+        $request->session()->regenerate();
+        $coordinator->current_session_id = $request->session()->getId();
+        $coordinator->save();
 
         return redirect()->route('coordinator.dashboard')
                          ->with('success', 'Registered and logged in successfully.');
@@ -84,11 +89,15 @@ class CoordinatorAuthController extends Controller
     // Logout
    public function logout(Request $request)
 {
+    $coordinator = Auth::guard('coordinator')->user();
+    if ($coordinator) {
+        $coordinator->current_session_id = null;
+        $coordinator->save();
+    }
     Auth::guard('coordinator')->logout();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
 
-    // Redirect to login selector (instead of coordinator login)
     return redirect('/')
            ->with('success', 'You have logged out successfully.');
 }
@@ -102,16 +111,26 @@ class CoordinatorAuthController extends Controller
 
         $totalStudents = $students->count();
 
-        $studentsTimedIn = \App\Models\Attendance::whereIn('student_id', $students->pluck('id'))
-            ->where('date', now()->format('Y-m-d'))
-            ->distinct('student_id')
-            ->count('student_id');
+        $studentIds = $students->pluck('id');
+        $today = now()->format('Y-m-d');
 
+        $studentIdsPresentToday = \App\Models\Attendance::whereIn('student_id', $studentIds)
+            ->where('date', $today)
+            ->distinct()
+            ->pluck('student_id');
+
+        $studentsTimedIn = $studentIdsPresentToday->count();
         $studentsNotTimedIn = $totalStudents - $studentsTimedIn;
 
+        $absentTodayStudents = \App\Models\Student::forCoordinator($coordinator)
+            ->verified()
+            ->whereNotIn('id', $studentIdsPresentToday)
+            ->orderBy('name')
+            ->get();
+
         // Count late arrivals today (both morning and afternoon)
-        $lateArrivalsToday = \App\Models\Attendance::whereIn('student_id', $students->pluck('id'))
-            ->where('date', now()->format('Y-m-d'))
+        $lateArrivalsToday = \App\Models\Attendance::whereIn('student_id', $studentIds)
+            ->where('date', $today)
             ->where(function($query) {
                 $query->where('is_late', true)
                       ->orWhere('afternoon_is_late', true);
@@ -119,6 +138,29 @@ class CoordinatorAuthController extends Controller
             ->distinct('student_id')
             ->count('student_id');
 
-        return view('coordinator.dashboard', compact('totalStudents', 'studentsTimedIn', 'studentsNotTimedIn', 'students', 'lateArrivalsToday', 'pendingVerificationCount'));
+        return view('coordinator.dashboard', compact('totalStudents', 'studentsTimedIn', 'studentsNotTimedIn', 'students', 'lateArrivalsToday', 'pendingVerificationCount', 'absentTodayStudents'));
+    }
+
+    /**
+     * Full-page list of students not yet timed in today (absent today).
+     */
+    public function absentToday()
+    {
+        $coordinator = Auth::guard('coordinator')->user();
+        $studentIds = \App\Models\Student::forCoordinator($coordinator)->verified()->pluck('id');
+        $today = now()->format('Y-m-d');
+
+        $studentIdsPresentToday = \App\Models\Attendance::whereIn('student_id', $studentIds)
+            ->where('date', $today)
+            ->distinct()
+            ->pluck('student_id');
+
+        $absentTodayStudents = \App\Models\Student::forCoordinator($coordinator)
+            ->verified()
+            ->whereNotIn('id', $studentIdsPresentToday)
+            ->orderBy('name')
+            ->get();
+
+        return view('coordinator.absent-today', compact('absentTodayStudents'));
     }
 }

@@ -4,229 +4,203 @@
 
 @push('styles')
 <style>
-    .header-card {
-        background: linear-gradient(135deg, var(--dtr-primary) 0%, var(--dtr-primary-dark) 40%, #1e40af 100%);
-        color: #fff;
-        padding: clamp(2rem, 5vw, 2.75rem) clamp(1.5rem, 4vw, 2rem);
-        border-radius: var(--dtr-radius-xl);
-        box-shadow: var(--dtr-shadow-lg), inset 0 1px 0 rgba(255,255,255,0.15);
-        margin-bottom: clamp(1.5rem, 4vw, 2rem);
-        position: relative;
-        overflow: hidden;
-    }
-    .header-card::before {
-        content: '';
-        position: absolute;
-        top: -30%; right: -15%;
-        width: min(320px, 60vw); height: min(320px, 60vw);
-        background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 65%);
-        border-radius: 50%;
-    }
-    .header-card::after {
-        content: '';
-        position: absolute;
-        bottom: -20%; left: -10%;
-        width: min(200px, 40vw); height: min(200px, 40vw);
-        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .header-content { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; }
-    .header-info h1 { font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 700; margin-bottom: 0.35rem; letter-spacing: -0.02em; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    .header-info p { font-size: 0.95rem; opacity: 0.95; margin: 0.2rem 0; }
-    .program-badge {
-        display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem;
-        padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-        border-radius: 999px; font-size: 0.875rem; font-weight: 600; border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    .btn-logout {
-        padding: 0.625rem 1.5rem; font-size: 0.9rem; border-radius: var(--dtr-radius);
-        border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.15); color: #fff;
-        transition: transform var(--dtr-transition), background var(--dtr-transition), border-color var(--dtr-transition);
-        font-weight: 600; cursor: pointer;
-    }
-    .btn-logout:hover { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.5); transform: translateY(-3px); color: #fff; }
+    .page-title { font-size: 1.5rem; font-weight: 600; color: var(--dtr-text); margin-bottom: 0.35rem; }
+    .page-sub { font-size: 0.9rem; color: var(--dtr-muted); margin-bottom: 1.5rem; }
+    .program-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; background: #f0f4ff; color: var(--dtr-primary); border-radius: 6px; font-size: 0.8rem; font-weight: 500; margin-top: 0.5rem; }
     .info-alert {
-        background: rgba(239,246,255,0.85); backdrop-filter: blur(12px);
-        border-left: 4px solid var(--dtr-primary); border-radius: var(--dtr-radius);
-        padding: 1.25rem 1.5rem; margin-bottom: 2rem;
-        box-shadow: 0 2px 12px rgba(37,99,235,0.08); border: 1px solid rgba(191,219,254,0.6);
+        background: #f0f7ff;
+        border-left: 4px solid var(--dtr-primary);
+        border-radius: var(--dtr-radius);
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
     }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
     .stat-card {
-        background: var(--dtr-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-        padding: 1.75rem; border-radius: var(--dtr-radius-xl);
-        box-shadow: var(--dtr-shadow-md), inset 0 1px 0 rgba(255,255,255,0.8);
-        transition: transform var(--dtr-transition), box-shadow var(--dtr-transition);
-        position: relative; overflow: hidden; border: 1px solid var(--dtr-glass-border);
+        background: var(--dtr-card-bg);
+        padding: 1.25rem;
+        border-radius: var(--dtr-radius);
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
-    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; transition: width var(--dtr-transition); }
-    .stat-card:hover { transform: translateY(-6px); box-shadow: 0 24px 48px -16px rgba(37,99,235,0.2), 0 12px 28px -8px rgba(0,0,0,0.1); }
-    .stat-card:hover::before { width: 100%; opacity: 0.08; }
-    .stat-card.primary::before { background: var(--dtr-primary); }
-    .stat-card.success::before { background: var(--dtr-success); }
-    .stat-card.danger::before { background: var(--dtr-danger); }
-    .stat-card.warning::before { background: var(--dtr-warning); }
-    .stat-card.warning .stat-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    .stat-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .stat-icon {
-        width: 48px; height: 48px; border-radius: var(--dtr-radius);
-        display: flex; align-items: center; justify-content: center; font-size: 1.35rem; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .stat-card.primary .stat-icon { background: linear-gradient(135deg, var(--dtr-primary), var(--dtr-primary-dark)); }
-    .stat-card.success .stat-icon { background: linear-gradient(135deg, var(--dtr-success), #047857); }
-    .stat-card.danger .stat-icon { background: linear-gradient(135deg, var(--dtr-danger), #b91c1c); }
-    .stat-card .number { font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 700; color: #0f172a; margin-bottom: 0.25rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
-    .stat-card .label { font-size: 0.8rem; color: var(--dtr-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
-    .stat-card .sub-label { font-size: 0.7rem; color: #94a3b8; margin-top: 0.2rem; }
+    .stat-card .label { font-size: 0.75rem; color: var(--dtr-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 0.25rem; }
+    .stat-card .sub-label { font-size: 0.7rem; color: #94a3b8; margin-bottom: 0.5rem; }
+    .stat-card .number { font-size: 1.75rem; font-weight: 700; color: var(--dtr-text); font-variant-numeric: tabular-nums; }
+    .stat-card .stat-icon { font-size: 1.25rem; color: var(--dtr-primary); margin-bottom: 0.5rem; }
+    .stat-card.primary .stat-icon { color: var(--dtr-primary); }
+    .stat-card.success .stat-icon { color: #059669; }
+    .stat-card.danger .stat-icon { color: #dc2626; }
+    .stat-card.warning .stat-icon { color: #d97706; }
+    .actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
     .action-card {
-        background: var(--dtr-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-        padding: 2rem; border-radius: var(--dtr-radius-xl);
-        box-shadow: var(--dtr-shadow-md), inset 0 1px 0 rgba(255,255,255,0.8);
-        text-align: center; border: 1px solid var(--dtr-glass-border);
-        transition: transform var(--dtr-transition), box-shadow var(--dtr-transition);
+        background: var(--dtr-card-bg);
+        padding: 1.25rem;
+        border-radius: var(--dtr-radius);
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
-    .action-card:hover { transform: translateY(-4px); box-shadow: 0 24px 48px -16px rgba(37,99,235,0.2); }
-    .btn-primary-custom {
-        padding: 1rem 2rem; font-size: 1rem; border-radius: var(--dtr-radius);
-        background: linear-gradient(135deg, var(--dtr-primary), var(--dtr-primary-dark));
-        color: #fff; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem;
-        transition: transform var(--dtr-transition), box-shadow var(--dtr-transition);
-        font-weight: 600; box-shadow: 0 4px 16px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.2); cursor: pointer;
+    .action-card:hover { border-color: rgba(37,99,235,0.2); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .action-card h3 { font-size: 1rem; font-weight: 600; color: var(--dtr-text); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .action-card p { font-size: 0.85rem; color: var(--dtr-muted); margin-bottom: 1rem; line-height: 1.45; }
+    .action-card .btn-minimal {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--dtr-primary);
+        color: #fff;
+        border: none;
+        border-radius: var(--dtr-radius);
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background 0.15s ease;
     }
-    .btn-primary-custom:hover { transform: translateY(-3px); box-shadow: 0 12px 28px -4px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.2); color: #fff; }
-    .btn-primary-custom i { font-size: 1.15rem; }
-    @media (max-width: 768px) {
-        .header-content { flex-direction: column; align-items: flex-start; }
-        .header-info h1 { font-size: 1.5rem; }
-        .stats-grid { grid-template-columns: 1fr; }
+    .action-card .btn-minimal:hover { background: var(--dtr-primary-dark); color: #fff; }
+    .action-card .btn-warning { background: #d97706; }
+    .action-card .btn-warning:hover { background: #b45309; color: #fff; }
+    .action-card .btn-success { background: #059669; }
+    .action-card .btn-success:hover { background: #047857; color: #fff; }
+    .action-card .btn-danger { background: #dc2626; }
+    .action-card .btn-danger:hover { background: #b91c1c; color: #fff; }
+    .absent-section {
+        background: var(--dtr-card-bg);
+        border-radius: var(--dtr-radius);
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
     }
+    .absent-section h3 { font-size: 1rem; font-weight: 600; color: var(--dtr-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .absent-section h3 .count { background: #dc2626; color: #fff; font-size: 0.8rem; padding: 0.2rem 0.5rem; border-radius: 6px; }
+    .absent-table { width: 100%; font-size: 0.9rem; }
+    .absent-table th { text-align: left; padding: 0.5rem 0.75rem; color: var(--dtr-muted); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; border-bottom: 1px solid rgba(0,0,0,0.06); }
+    .absent-table td { padding: 0.6rem 0.75rem; border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .absent-table tbody tr:last-child td { border-bottom: none; }
+    .absent-table .empty-msg { color: var(--dtr-muted); padding: 1rem 0.75rem; }
+    .absent-section .view-all { font-size: 0.85rem; font-weight: 500; margin-top: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; }
 </style>
 @endpush
 
 @section('content')
-    <div class="header-card">
-        <div class="header-content">
-            <div class="header-info">
-                <h1><i class="bi bi-speedometer2 me-2"></i>Coordinator Dashboard</h1>
-                <p>Welcome back, <strong>{{ auth()->guard('coordinator')->user()->name }}</strong></p>
-                @if(auth()->guard('coordinator')->user()->major)
-                    <div class="program-badge">
-                        <i class="bi bi-mortarboard"></i>
-                        <span>Managing: <strong>{{ auth()->guard('coordinator')->user()->major }}</strong></span>
-                    </div>
-                @endif
-            </div>
-            <form action="{{ route('coordinator.logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="btn-logout">
-                    <i class="bi bi-box-arrow-right me-1"></i>Logout
-                </button>
-            </form>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-sub">Welcome back, {{ auth()->guard('coordinator')->user()->name }}</p>
+    @if(auth()->guard('coordinator')->user()->major)
+        <div class="program-badge">
+            <i class="bi bi-mortarboard"></i>
+            <span>{{ auth()->guard('coordinator')->user()->major }}</span>
         </div>
-    </div>
+    @endif
 
     @if(auth()->guard('coordinator')->user()->major)
     <div class="info-alert">
-        <div class="d-flex align-items-center">
-            <i class="bi bi-info-circle-fill me-3" style="font-size: 1.5rem; color: #0d6efd;"></i>
-            <div>
-                <strong>Program Filter Active:</strong> You are viewing data exclusively for
-                <strong>{{ auth()->guard('coordinator')->user()->major }}</strong> students.
-                Students from other programs are not visible in your dashboard.
-            </div>
-        </div>
+        <strong>Program filter:</strong> Data shown is for <strong>{{ auth()->guard('coordinator')->user()->major }}</strong> only.
     </div>
     @endif
 
     <div class="stats-grid">
         <div class="stat-card primary">
-            <div class="stat-card-header">
-                <div>
-                    <div class="label">Total Students</div>
-                    <div class="sub-label">{{ auth()->guard('coordinator')->user()->major ?? 'All Programs' }}</div>
-                </div>
-                <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
-            </div>
+            <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+            <div class="label">Total Students</div>
+            <div class="sub-label">{{ auth()->guard('coordinator')->user()->major ?? 'All Programs' }}</div>
             <div class="number">{{ $totalStudents }}</div>
         </div>
         <div class="stat-card success">
-            <div class="stat-card-header">
-                <div>
-                    <div class="label">Present Today</div>
-                    <div class="sub-label">Timed In</div>
-                </div>
-                <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
-            </div>
+            <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="label">Present Today</div>
+            <div class="sub-label">Timed in</div>
             <div class="number">{{ $studentsTimedIn }}</div>
         </div>
         <div class="stat-card danger">
-            <div class="stat-card-header">
-                <div>
-                    <div class="label">Absent Today</div>
-                    <div class="sub-label">Not Timed In</div>
-                </div>
-                <div class="stat-icon"><i class="bi bi-x-circle-fill"></i></div>
-            </div>
+            <div class="stat-icon"><i class="bi bi-x-circle-fill"></i></div>
+            <div class="label">Absent Today</div>
+            <div class="sub-label">Not timed in</div>
             <div class="number">{{ $studentsNotTimedIn }}</div>
         </div>
         <div class="stat-card warning">
-            <div class="stat-card-header">
-                <div>
-                    <div class="label">Late Arrivals</div>
-                    <div class="sub-label">Today</div>
-                </div>
-                <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
-            </div>
+            <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+            <div class="label">Late Arrivals</div>
+            <div class="sub-label">Today</div>
             <div class="number">{{ $lateArrivalsToday ?? 0 }}</div>
         </div>
     </div>
 
-    <div class="row g-3">
-        <div class="col-md-4">
-            <div class="action-card" style="border-left: 4px solid var(--dtr-warning);">
-                <h3 class="mb-3" style="color: #212529; font-weight: 600;"><i class="bi bi-person-check me-2"></i>Verify Students</h3>
-                <p class="text-muted mb-4">Students who register under your program must be verified by you before they can log in. Confirm they belong to your class or reject if not.</p>
-                <a href="{{ route('coordinator.pending.verification') }}" class="btn-primary-custom" style="background: linear-gradient(135deg, #d97706, #b45309); box-shadow: 0 4px 15px rgba(217, 119, 6, 0.35);">
-                    <i class="bi bi-person-check"></i>
-                    {{ ($pendingVerificationCount ?? 0) > 0 ? 'Pending Verification (' . $pendingVerificationCount . ')' : 'Verify Students' }}
+    <div class="absent-section">
+        <h3>
+            <i class="bi bi-person-x"></i>
+            Not yet timed in today
+            @if(($absentTodayStudents ?? collect())->isNotEmpty())
+                <span class="count">{{ $absentTodayStudents->count() }}</span>
+            @endif
+        </h3>
+        @if(($absentTodayStudents ?? collect())->isEmpty())
+            <p class="empty-msg mb-0"><i class="bi bi-check-circle text-success me-2"></i>All students have timed in today.</p>
+        @else
+            <table class="absent-table">
+                <thead>
+                    <tr>
+                        <th>Student No</th>
+                        <th>Name</th>
+                        <th>Course</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(($absentTodayStudents ?? collect())->take(10) as $s)
+                        <tr>
+                            <td>{{ $s->student_no }}</td>
+                            <td>{{ $s->name }}</td>
+                            <td>{{ $s->course ?? '-' }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            @if($absentTodayStudents->count() > 10)
+                <a href="{{ route('coordinator.absent.today') }}" class="view-all">
+                    View all {{ $absentTodayStudents->count() }} students <i class="bi bi-arrow-right"></i>
                 </a>
-            </div>
+            @elseif($absentTodayStudents->count() > 0)
+                <a href="{{ route('coordinator.absent.today') }}" class="view-all">View full list <i class="bi bi-arrow-right"></i></a>
+            @endif
+        @endif
+    </div>
+
+    <div class="actions-grid">
+        <div class="action-card">
+            <h3><i class="bi bi-person-check"></i> Verify Students</h3>
+            <p>Verify students who registered under your program before they can log in.</p>
+            <a href="{{ route('coordinator.pending.verification') }}" class="btn-minimal btn-warning">
+                <i class="bi bi-person-check"></i>
+                {{ ($pendingVerificationCount ?? 0) > 0 ? 'Pending (' . $pendingVerificationCount . ')' : 'Verify Students' }}
+            </a>
         </div>
-        <div class="col-md-4">
-            <div class="action-card">
-                <h3 class="mb-3" style="color: #212529; font-weight: 600;"><i class="bi bi-clock-history me-2"></i>Attendance Management</h3>
-                <p class="text-muted mb-4">View detailed attendance logs for your program</p>
-                <a href="{{ route('coordinator.attendance.logs') }}" class="btn-primary-custom">
-                    <i class="bi bi-list-ul"></i> View Attendance Logs
-                </a>
-            </div>
+        <div class="action-card">
+            <h3><i class="bi bi-clock-history"></i> Attendance Logs</h3>
+            <p>View detailed attendance logs for your program.</p>
+            <a href="{{ route('coordinator.attendance.logs') }}" class="btn-minimal">
+                <i class="bi bi-list-ul"></i> View Logs
+            </a>
         </div>
-        <div class="col-md-4">
-            <div class="action-card">
-                <h3 class="mb-3" style="color: #212529; font-weight: 600;"><i class="bi bi-patch-check me-2"></i>OJT Completion</h3>
-                <p class="text-muted mb-4">Confirm completion, set student passwords (e.g. if they forgot), and download certificates</p>
-                <a href="{{ route('coordinator.ojt.completion') }}" class="btn-primary-custom" style="background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 4px 15px rgba(5, 150, 105, 0.35);">
-                    <i class="bi bi-patch-check"></i> OJT Completion
-                </a>
-            </div>
+        <div class="action-card">
+            <h3><i class="bi bi-patch-check"></i> OJT Completion</h3>
+            <p>Confirm completion, set passwords, and download certificates.</p>
+            <a href="{{ route('coordinator.ojt.completion') }}" class="btn-minimal btn-success">
+                <i class="bi bi-patch-check"></i> OJT Completion
+            </a>
         </div>
-        <div class="col-md-4">
-            <div class="action-card">
-                <h3 class="mb-3" style="color: #212529; font-weight: 600;"><i class="bi bi-file-earmark-pdf me-2"></i>Generate Reports</h3>
-                <p class="text-muted mb-4">Create and download monthly attendance reports as PDF</p>
-                <a href="{{ route('coordinator.generate.report') }}" class="btn-primary-custom" style="background: linear-gradient(135deg, #dc3545, #bb2d3b); box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);">
-                    <i class="bi bi-download"></i> Generate Monthly Report
-                </a>
-            </div>
+        <div class="action-card">
+            <h3><i class="bi bi-file-earmark-pdf"></i> Generate Report</h3>
+            <p>Create and download monthly attendance reports as PDF.</p>
+            <a href="{{ route('coordinator.generate.report') }}" class="btn-minimal btn-danger">
+                <i class="bi bi-download"></i> Generate Report
+            </a>
         </div>
-        <div class="col-md-4">
-            <div class="action-card">
-                <h3 class="mb-3" style="color: #212529; font-weight: 600;"><i class="bi bi-person-x me-2"></i>Duplicate Check</h3>
-                <p class="text-muted mb-4">Review duplicate student numbers or names in your program</p>
-                <a href="{{ route('coordinator.duplicate.check') }}" class="btn-primary-custom" style="background: linear-gradient(135deg, #d97706, #b45309); box-shadow: 0 4px 15px rgba(217, 119, 6, 0.35);">
-                    <i class="bi bi-person-x"></i> Check Duplicates
-                </a>
-            </div>
+        <div class="action-card">
+            <h3><i class="bi bi-person-x"></i> Duplicate Check</h3>
+            <p>Review duplicate student numbers or names.</p>
+            <a href="{{ route('coordinator.duplicate.check') }}" class="btn-minimal btn-warning">
+                <i class="bi bi-person-x"></i> Check Duplicates
+            </a>
         </div>
     </div>
 @endsection

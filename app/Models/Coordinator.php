@@ -20,6 +20,7 @@ class Coordinator extends Authenticatable
         'major',
         'password',
         'role',
+        'current_session_id',
     ];
     protected $hidden = [
         'password',

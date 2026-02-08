@@ -32,6 +32,7 @@ class Student extends Authenticatable
         'required_ojt_hours',
         'ojt_completion_confirmed_at',
         'ojt_confirmed_by',
+        'current_session_id',
     ];
 
     protected $casts = [

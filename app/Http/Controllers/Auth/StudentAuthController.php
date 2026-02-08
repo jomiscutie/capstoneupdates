@@ -48,6 +48,8 @@ class StudentAuthController extends Controller
             }
 
             $request->session()->regenerate();
+            $student->current_session_id = $request->session()->getId();
+            $student->save();
             return redirect()->route('student.dashboard')->with('success', 'Welcome student!');
         }
 
@@ -100,12 +102,20 @@ class StudentAuthController extends Controller
         ]);
 
         Auth::guard('student')->login($student);
+        $request->session()->regenerate();
+        $student->current_session_id = $request->session()->getId();
+        $student->save();
 
         return redirect()->route('student.dashboard')->with('success', 'Registered successfully!');
     }
 
     public function logout(Request $request)
     {
+        $student = Auth::guard('student')->user();
+        if ($student) {
+            $student->current_session_id = null;
+            $student->save();
+        }
         Auth::guard('student')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

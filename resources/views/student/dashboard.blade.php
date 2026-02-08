@@ -5,28 +5,32 @@
 @push('styles')
 <style>
     .alert-warning.late-alert { border-radius: 12px; border-left: 4px solid #ffc107; }
+    /* Face verification: modal must sit above Bootstrap backdrop (backdrop is 1050) */
+    #faceVerificationModal.modal { z-index: 1060 !important; }
+    #faceVerificationModal .modal-dialog { z-index: 1061; }
+    #faceVerificationModal .modal-content { position: relative; overflow: hidden; }
+    #faceVerificationModal .modal-body { position: relative; z-index: 0; }
+    #faceVerificationModal .position-relative.d-inline-block {
+        overflow: hidden;
+        max-height: 50vh;
+        position: relative;
+        z-index: 0;
+    }
+    #faceVerificationModal #faceCanvas,
+    #faceVerificationModal #faceVideo {
+        pointer-events: none !important;
+    }
 </style>
 @endpush
 
 @section('content')
     @if(auth()->guard('student')->check())
-        <!-- Header Card -->
-        <div class="header-card">
-            <div class="header-content">
-                <h2><i class="bi bi-person-badge me-2"></i>Student Dashboard</h2>
-                <p style="font-size: 1.1rem; opacity: 0.95;">Welcome back, <strong>{{ auth()->guard('student')->user()->name }}</strong></p>
-                <div class="header-info">
-                    <div class="header-info-item">
-                        <i class="bi bi-card-text"></i>
-                        <span><strong>ID:</strong> {{ auth()->guard('student')->user()->student_no }}</span>
-                    </div>
-                    <div class="header-info-item">
-                        <i class="bi bi-mortarboard"></i>
-                        <span><strong>Program:</strong> {{ auth()->guard('student')->user()->course }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub">Welcome back, {{ auth()->guard('student')->user()->name }}</p>
+        <p class="text-muted small mb-3">
+            <i class="bi bi-card-text me-1"></i>{{ auth()->guard('student')->user()->student_no }}
+            <span class="ms-2"><i class="bi bi-mortarboard me-1"></i>{{ auth()->guard('student')->user()->course }}</span>
+        </p>
 
         <!-- Time & Actions Card -->
         <div class="card-section">
@@ -63,20 +67,11 @@
 
             <div class="action-buttons">
                 <button type="button" class="btn btn-action btn-timein" onclick="openFaceVerification('timein')">
-                    <i class="bi bi-check-circle"></i>Time In
+                    <i class="bi bi-check-circle"></i> Time In
                 </button>
                 <button type="button" class="btn btn-action btn-timeout" onclick="openFaceVerification('timeout')">
-                    <i class="bi bi-x-circle"></i>Time Out
+                    <i class="bi bi-x-circle"></i> Time Out
                 </button>
-                <a href="{{ route('student.password.change') }}" class="btn btn-action" style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: #fff; border: none;">
-                    <i class="bi bi-key"></i>Change password
-                </a>
-                <form action="{{ route('student.logout') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-action btn-logout">
-                        <i class="bi bi-box-arrow-right"></i>Logout
-                    </button>
-                </form>
             </div>
         </div>
 
@@ -313,37 +308,68 @@
         </div>
     @endif
 
-    <!-- Face Verification Modal -->
+    <!-- Face Verification Modal: buttons in header so they are never covered by video/canvas -->
     <div class="modal fade" id="faceVerificationModal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="faceVerificationModalLabel" aria-describedby="faceVerificationModalDesc" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="faceVerificationModalLabel">Face Verification Required</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close modal" onclick="stopFaceVerification()"></button>
+                <div class="modal-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <h5 class="modal-title mb-0" id="faceVerificationModalLabel">Face Verification Required</h5>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" onclick="stopFaceVerification()" aria-label="Cancel">Cancel</button>
+                        <button type="button" class="btn btn-primary btn-sm" id="verifyFaceBtn" onclick="verifyAndSubmit()" disabled aria-label="Verify and submit">Verify & Submit</button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="stopFaceVerification()"></button>
+                    </div>
                 </div>
                 <div class="modal-body text-center">
-                    <p id="faceVerificationModalDesc" class="mb-3">Please look directly at the camera and ensure good lighting. When your face is detected and verified, use the Verify & Submit button or press Escape to cancel.</p>
-                    <div class="position-relative d-inline-block">
-                        <video id="faceVideo" autoplay playsinline style="width: 100%; max-width: 640px; border-radius: 10px;"></video>
-                        <canvas id="faceCanvas" style="position: absolute; top: 0; left: 0; width: 100%; max-width: 640px;"></canvas>
+                    <div id="faceVerificationBlock">
+                        <p id="faceVerificationModalDesc" class="mb-3">Please look at the camera. When your face is detected, click &quot;Verify & Submit&quot; above (or press Escape to cancel).</p>
+                        <div class="position-relative d-inline-block" style="max-height: 50vh;">
+                            <video id="faceVideo" autoplay playsinline style="width: 100%; max-width: 640px; max-height: 50vh; border-radius: 10px; display: block;"></video>
+                            <canvas id="faceCanvas" style="position: absolute; top: 0; left: 0; width: 100%; max-width: 640px; pointer-events: none;"></canvas>
+                        </div>
+                        <div id="verificationStatus" class="mt-3">
+                            <p class="text-muted">Initializing camera...</p>
+                        </div>
+                        <div id="livenessStatus" class="mt-2">
+                            <small class="text-info">Blink detection: <span id="blinkCount">0</span> blinks detected</small>
+                        </div>
+                        <form id="faceVerificationForm" method="POST" style="display: none;">
+                            @csrf
+                            <input type="hidden" name="face_encoding" id="faceEncodingInput">
+                            <input type="hidden" name="action_type" id="actionTypeInput">
+                            <input type="hidden" name="recorded_at" id="recordedAtInput">
+                            <input type="hidden" name="verification_confidence" id="verificationConfidenceInput">
+                        </form>
                     </div>
-                    <div id="verificationStatus" class="mt-3">
-                        <p class="text-muted">Initializing camera...</p>
+                    <div class="my-3"><hr class="my-3"></div>
+                    <p class="text-muted small mb-2">Camera not working or unavailable?</p>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="togglePasswordFallbackBtn" onclick="togglePasswordFallback()">
+                        <i class="bi bi-key me-1"></i>Verify with password instead
+                    </button>
+                    <div id="passwordFallbackBlock" class="mt-3 text-start" style="display: none;">
+                        <form id="passwordVerificationForm" method="POST" action="">
+                            @csrf
+                            <input type="hidden" name="verification_method" value="password">
+                            <input type="hidden" name="recorded_at" id="passwordRecordedAt">
+                            <div class="mb-2">
+                                <label for="verification_reason" class="form-label small">Reason (optional)</label>
+                                <select name="verification_reason" id="verification_reason" class="form-select form-select-sm">
+                                    <option value="">Select reason</option>
+                                    <option value="Camera not working">Camera not working</option>
+                                    <option value="Device or browser issue">Device or browser issue</option>
+                                    <option value="Face recognition failed">Face recognition failed</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label for="passwordVerificationPassword" class="form-label small">Your password</label>
+                                <input type="password" name="password" id="passwordVerificationPassword" class="form-control form-control-sm" placeholder="Enter your account password" required autocomplete="current-password">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm w-100" id="passwordSubmitBtn">
+                                <i class="bi bi-key me-1"></i><span id="passwordSubmitLabel">Time In</span> with password
+                            </button>
+                        </form>
                     </div>
-                    <div id="livenessStatus" class="mt-2">
-                        <small class="text-info">Blink detection: <span id="blinkCount">0</span> blinks detected</small>
-                    </div>
-                    <form id="faceVerificationForm" method="POST" style="display: none;">
-                        @csrf
-                        <input type="hidden" name="face_encoding" id="faceEncodingInput">
-                        <input type="hidden" name="action_type" id="actionTypeInput">
-                        <input type="hidden" name="recorded_at" id="recordedAtInput">
-                        <input type="hidden" name="verification_confidence" id="verificationConfidenceInput">
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="stopFaceVerification()" aria-label="Cancel and close">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="verifyFaceBtn" onclick="verifyAndSubmit()" disabled aria-label="Verify face and submit time in or time out">Verify & Submit</button>
                 </div>
             </div>
         </div>
@@ -352,7 +378,7 @@
 
 @push('scripts')
 <script>window.FACE_API_MODEL_BASE = "{{ asset('vendor/face-api/model') }}";</script>
-<script type="application/json" id="student-json">{{ json_encode(auth()->guard('student')->user()) }}</script>
+<script type="application/json" id="student-json">@json(auth()->guard('student')->user())</script>
 <script src="{{ asset('vendor/face-api/face-api.min.js') }}"></script>
 <script src="{{ asset('js/face-recognition.js') }}"></script>
 <script src="{{ asset('js/offline-queue.js') }}"></script>
@@ -388,8 +414,10 @@ async function openFaceVerification(action) {
     document.getElementById('actionTypeInput').value = action;
     document.getElementById('verificationStatus').innerHTML = '<p class="text-muted">Loading face recognition models...</p>';
     document.getElementById('verifyFaceBtn').disabled = true;
+    resetPasswordFallbackVisibility();
 
     const modalEl = document.getElementById('faceVerificationModal');
+    document.body.appendChild(modalEl);
     const modal = new bootstrap.Modal(modalEl);
     modalEl.addEventListener('shown.bs.modal', function onShown() {
         modalEl.removeEventListener('shown.bs.modal', onShown);
@@ -398,6 +426,7 @@ async function openFaceVerification(action) {
     }, { once: true });
     modalEl.addEventListener('hidden.bs.modal', function onHidden() {
         modalEl.removeEventListener('hidden.bs.modal', onHidden);
+        resetPasswordFallbackVisibility();
         if (faceModalTriggerButton && typeof faceModalTriggerButton.focus === 'function') {
             faceModalTriggerButton.focus();
         }
@@ -407,7 +436,7 @@ async function openFaceVerification(action) {
 
     const modelsLoaded = await faceRecognition.loadModels();
     if (!modelsLoaded) {
-        document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Failed to load face recognition models. Please refresh the page.</p>';
+        document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Failed to load face recognition models.</p><p class="text-muted small mt-2">You can use <strong>Verify with password instead</strong> below to record your attendance.</p>';
         return;
     }
 
@@ -415,7 +444,7 @@ async function openFaceVerification(action) {
     const canvas = document.getElementById('faceCanvas');
     const cameraReady = await faceRecognition.initializeCamera(video, canvas);
     if (!cameraReady) {
-        document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Camera access denied. Please allow camera permissions.</p>';
+        document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Camera unavailable or access denied.</p><p class="text-muted small mt-2">Use <strong>Verify with password instead</strong> below to record your attendance.</p>';
         return;
     }
 
@@ -436,24 +465,25 @@ async function openFaceVerification(action) {
             const isLive = faceRecognition.checkLiveness(detection);
 
             if (isLive) {
-                document.getElementById('verificationStatus').innerHTML = '<p class="text-success"><i class="bi bi-check-circle me-2"></i>Face verified! Ready to submit.</p>';
+                document.getElementById('verificationStatus').innerHTML = '<p class="text-success"><i class="bi bi-check-circle me-2"></i>Face detected! Click &quot;Verify & Submit&quot; below.</p>';
                 var btn = document.getElementById('verifyFaceBtn');
                 btn.disabled = false;
                 clearInterval(verificationInterval);
-                btn.focus();
+                verificationInterval = null;
+                try { btn.focus(); } catch (e) {}
             } else if (blinkCount > 0) {
-                document.getElementById('verificationStatus').innerHTML = '<p class="text-info"><i class="bi bi-eye me-2"></i>Face detected! Please blink once or hold still.</p>';
+                document.getElementById('verificationStatus').innerHTML = '<p class="text-info"><i class="bi bi-eye me-2"></i>Face detected! Hold still — button will enable shortly.</p>';
             } else {
-                document.getElementById('verificationStatus').innerHTML = '<p class="text-success"><i class="bi bi-check-circle me-2"></i>Face detected! Please blink once or hold still for 2 seconds.</p>';
+                document.getElementById('verificationStatus').innerHTML = '<p class="text-info"><i class="bi bi-person me-2"></i>Face detected. Keep looking at the camera — Verify & Submit will enable in a moment.</p>';
             }
-            if (elapsed > maxWaitTime && !isLive) {
-                document.getElementById('verificationStatus').innerHTML = '<p class="text-warning"><i class="bi bi-exclamation-triangle me-2"></i>Liveness check required. Please blink twice or hold still for 2 seconds.</p>';
+            if (elapsed > maxWaitTime && document.getElementById('verifyFaceBtn').disabled) {
+                document.getElementById('verificationStatus').innerHTML = '<p class="text-warning"><i class="bi bi-exclamation-triangle me-2"></i>Face not detected clearly. Position your face in the frame and wait a few seconds.</p>';
             }
         } else {
             document.getElementById('verificationStatus').innerHTML = '<p class="text-warning"><i class="bi bi-exclamation-triangle me-2"></i>No face detected. Please position yourself in front of the camera.</p>';
             document.getElementById('blinkCount').textContent = '0';
         }
-    }, 300);
+    }, 400);
 }
 
 async function verifyAndSubmit() {
@@ -462,7 +492,15 @@ async function verifyAndSubmit() {
 
     try {
         var studentEl = document.getElementById('student-json');
-        const student = studentEl ? JSON.parse(studentEl.textContent) : null;
+        let student = null;
+        try {
+            student = studentEl ? JSON.parse(studentEl.textContent) : null;
+        } catch (e) {
+            console.error('Student JSON parse error:', e);
+            document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Could not read account data. Please refresh the page.</p>';
+            document.getElementById('verifyFaceBtn').disabled = false;
+            return;
+        }
         if (!student || !student.face_encoding) {
             alert('Face not registered. Please contact administrator.');
             stopFaceVerification();
@@ -470,8 +508,13 @@ async function verifyAndSubmit() {
         }
 
         const verification = await faceRecognition.verifyFace(student.face_encoding);
+        if (!verification || typeof verification.verified === 'undefined') {
+            document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Verification failed. Please try again.</p>';
+            document.getElementById('verifyFaceBtn').disabled = false;
+            return;
+        }
 
-        if (verification.verified) {
+        if (verification.verified && verification.encoding) {
             const encoding = verification.encoding;
             const recordedAt = new Date().toISOString();
             const form = document.getElementById('faceVerificationForm');
@@ -503,15 +546,22 @@ async function verifyAndSubmit() {
 
             document.getElementById('faceEncodingInput').value = encoding;
             document.getElementById('recordedAtInput').value = recordedAt;
-            document.getElementById('verificationConfidenceInput').value = verification.confidence;
+            document.getElementById('verificationConfidenceInput').value = (verification.confidence != null) ? verification.confidence : 0;
             form.action = currentAction === 'timein' ? timeInUrl : timeOutUrl;
             form.submit();
-        } else {
+            return;
+        }
+
+        if (!verification.verified) {
+            const dist = verification.distance != null ? verification.distance.toFixed(2) : '?';
+            const conf = verification.confidence != null ? verification.confidence : 0;
+            const ratio = verification.matchRatio != null ? (verification.matchRatio * 100).toFixed(0) : '0';
+            const att = verification.attempts != null ? verification.attempts : 0;
             let errorMsg = '<p class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i><strong>Face Verification Failed</strong></p>';
-            errorMsg += '<p class="text-muted small">Distance: ' + verification.distance.toFixed(2) + ' (threshold: 0.4)</p>';
-            errorMsg += '<p class="text-muted small">Confidence: ' + verification.confidence + '%</p>';
-            errorMsg += '<p class="text-muted small">Matches: ' + (verification.matchRatio * 100).toFixed(0) + '% (' + verification.attempts + ' attempts)</p>';
-            errorMsg += '<p class="text-warning mt-2"><small>Please ensure:<br>• You are using your own registered face<br>• Good lighting conditions<br>• Looking directly at the camera<br>• No other faces in the frame</small></p>';
+            errorMsg += '<p class="text-muted small">Distance: ' + dist + ' (threshold: 0.6)</p>';
+            errorMsg += '<p class="text-muted small">Confidence: ' + conf + '%</p>';
+            errorMsg += '<p class="text-muted small">Matches: ' + ratio + '% (' + att + ' attempts)</p>';
+            errorMsg += '<p class="text-warning mt-2"><small>Try: better lighting, look straight at the camera, or move slightly closer.</small></p>';
             document.getElementById('verificationStatus').innerHTML = errorMsg;
             document.getElementById('verifyFaceBtn').disabled = false;
             faceRecognition.resetLiveness();
@@ -519,7 +569,7 @@ async function verifyAndSubmit() {
         }
     } catch (error) {
         console.error('Verification error:', error);
-        document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Error during verification. Please try again.</p>';
+        document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Error during verification. Please try again.</p><p class="text-muted small">' + (error.message || '') + '</p>';
         document.getElementById('verifyFaceBtn').disabled = false;
     }
 }
@@ -531,6 +581,35 @@ function stopFaceVerification() {
     }
     faceRecognition.stopCamera();
     faceRecognition.resetLiveness();
+}
+
+function togglePasswordFallback() {
+    var faceBlock = document.getElementById('faceVerificationBlock');
+    var passwordBlock = document.getElementById('passwordFallbackBlock');
+    var btn = document.getElementById('togglePasswordFallbackBtn');
+    if (passwordBlock.style.display === 'none') {
+        faceBlock.style.display = 'none';
+        passwordBlock.style.display = 'block';
+        btn.innerHTML = '<i class="bi bi-camera me-1"></i>Back to face verification';
+        document.getElementById('passwordRecordedAt').value = new Date().toISOString();
+        document.getElementById('passwordVerificationForm').action = currentAction === 'timein' ? '{{ route("student.timein") }}' : '{{ route("student.timeout") }}';
+        document.getElementById('passwordSubmitLabel').textContent = currentAction === 'timein' ? 'Time In' : 'Time Out';
+        document.getElementById('passwordVerificationPassword').value = '';
+        document.getElementById('passwordVerificationPassword').focus();
+    } else {
+        faceBlock.style.display = 'block';
+        passwordBlock.style.display = 'none';
+        btn.innerHTML = '<i class="bi bi-key me-1"></i>Verify with password instead';
+    }
+}
+
+function resetPasswordFallbackVisibility() {
+    var faceBlock = document.getElementById('faceVerificationBlock');
+    var passwordBlock = document.getElementById('passwordFallbackBlock');
+    var btn = document.getElementById('togglePasswordFallbackBtn');
+    faceBlock.style.display = 'block';
+    passwordBlock.style.display = 'none';
+    btn.innerHTML = '<i class="bi bi-key me-1"></i>Verify with password instead';
 }
 
 function showOfflineRecordedMessage(confidence) {

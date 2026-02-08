@@ -7,6 +7,7 @@ use App\Http\Requests\TimeOutRequest;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -25,33 +26,29 @@ class AttendanceController extends Controller
             return back()->with('error', 'Your account must be verified by your coordinator before you can record attendance. Please contact your OJT coordinator.');
         }
 
-        // Check if student has face encoding registered
-        if (!$student->face_encoding) {
-            return back()->with('error', 'Face recognition not registered. Please register your face first.');
-        }
-
-        // Verify face encoding
-        $storedEncoding = json_decode($student->face_encoding, true);
-        $providedEncoding = json_decode($request->face_encoding, true);
-
-        if (!$storedEncoding || !$providedEncoding) {
-            return back()->with('error', 'Invalid face data. Please try again.');
-        }
-
-        // Calculate face similarity (Euclidean distance)
-        $similarity = $this->calculateFaceSimilarity($storedEncoding, $providedEncoding);
-        
-        // Stricter threshold: 0.4 (lower = stricter, prevents unauthorized access)
-        $threshold = 0.4;
-        
-        // Additional validation: Check if similarity is suspiciously high
-        if ($similarity > 0.8) {
-            return back()->with('error', 'Face verification failed. The detected face does not match your registered face. Please ensure you are using your own account.');
-        }
-        
-        if ($similarity > $threshold) {
-            $confidence = max(0, min(100, (1 - ($similarity / $threshold)) * 100));
-            return back()->with('error', "Face verification failed. Match confidence: " . round($confidence) . "%. Please ensure you are in a well-lit area, look directly at the camera, and use your registered face.");
+        // Alternative: password verification when camera is unavailable
+        if ($request->input('verification_method') === 'password') {
+            if (!$request->filled('password')) {
+                return back()->with('error', 'Please enter your password to verify your identity.');
+            }
+            if (!Hash::check($request->password, $student->password)) {
+                return back()->with('error', 'Incorrect password. Please try again.');
+            }
+            // Password valid; skip face verification
+        } elseif ($request->filled('face_encoding') && $student->face_encoding) {
+            $storedEncoding = json_decode($student->face_encoding, true);
+            $providedEncoding = json_decode($request->face_encoding, true);
+            if ($storedEncoding && $providedEncoding) {
+                $similarity = $this->calculateFaceSimilarity($storedEncoding, $providedEncoding);
+                $threshold = 0.6;
+                if ($similarity > 0.8) {
+                    return back()->with('error', 'Face verification failed. The detected face does not match your registered face. Please ensure you are using your own account.');
+                }
+                if ($similarity > $threshold) {
+                    $confidence = max(0, min(100, (1 - ($similarity / $threshold)) * 100));
+                    return back()->with('error', "Face verification failed. Match confidence: " . round($confidence) . "%. Try better lighting or look straight at the camera.");
+                }
+            }
         }
 
         // Use client-recorded time when syncing from offline (recorded_at in Asia/Manila), else server time
@@ -143,10 +140,10 @@ class AttendanceController extends Controller
             $attendance->afternoon_is_late = $isLate;
             $attendance->afternoon_late_minutes = $lateMinutes;
             
-            $suffix = $this->confidenceSuffix($request);
+            $verificationNote = $request->input('verification_method') === 'password' ? ' (password verification)' : (' with face verification. ✓' . $this->confidenceSuffix($request));
             $message = $isLate 
-                ? "Afternoon Time In recorded successfully. ⚠️ You are {$lateMinutes} minute(s) late." . $suffix
-                : 'Afternoon Time In recorded successfully with face verification. ✓' . $suffix;
+                ? "Afternoon Time In recorded successfully. ⚠️ You are {$lateMinutes} minute(s) late." . ($request->input('verification_method') === 'password' ? ' (password verification)' : $this->confidenceSuffix($request))
+                : 'Afternoon Time In recorded successfully' . $verificationNote;
         } else {
             // MORNING TIME-IN: Before 12:00 PM (00:00:00 to 11:59:59)
             // Examples: 6:00 AM, 7:00 AM, 8:00 AM, 9:00 AM, 10:00 AM, 11:00 AM, etc.
@@ -188,10 +185,10 @@ class AttendanceController extends Controller
             $attendance->is_late = $isLate;
             $attendance->late_minutes = $lateMinutes;
             
-            $suffix = $this->confidenceSuffix($request);
+            $verificationNote = $request->input('verification_method') === 'password' ? ' (password verification)' : (' with face verification. ✓' . $this->confidenceSuffix($request));
             $message = $isLate 
-                ? "Morning Time In recorded successfully. ⚠️ You are {$lateMinutes} minute(s) late." . $suffix
-                : 'Morning Time In recorded successfully with face verification. ✓' . $suffix;
+                ? "Morning Time In recorded successfully. ⚠️ You are {$lateMinutes} minute(s) late." . ($request->input('verification_method') === 'password' ? ' (password verification)' : $this->confidenceSuffix($request))
+                : 'Morning Time In recorded successfully' . $verificationNote;
         }
         
         $attendance->save();
@@ -216,33 +213,29 @@ class AttendanceController extends Controller
             return back()->with('error', 'Your account must be verified by your coordinator before you can record attendance. Please contact your OJT coordinator.');
         }
 
-        // Check if student has face encoding registered
-        if (!$student->face_encoding) {
-            return back()->with('error', 'Face recognition not registered. Please register your face first.');
-        }
-
-        // Verify face encoding
-        $storedEncoding = json_decode($student->face_encoding, true);
-        $providedEncoding = json_decode($request->face_encoding, true);
-
-        if (!$storedEncoding || !$providedEncoding) {
-            return back()->with('error', 'Invalid face data. Please try again.');
-        }
-
-        // Calculate face similarity (Euclidean distance)
-        $similarity = $this->calculateFaceSimilarity($storedEncoding, $providedEncoding);
-        
-        // Stricter threshold: 0.4 (lower = stricter, prevents unauthorized access)
-        $threshold = 0.4;
-        
-        // Additional validation: Check if similarity is suspiciously high
-        if ($similarity > 0.8) {
-            return back()->with('error', 'Face verification failed. The detected face does not match your registered face. Please ensure you are using your own account.');
-        }
-        
-        if ($similarity > $threshold) {
-            $confidence = max(0, min(100, (1 - ($similarity / $threshold)) * 100));
-            return back()->with('error', "Face verification failed. Match confidence: " . round($confidence) . "%. Please ensure you are in a well-lit area, look directly at the camera, and use your registered face.");
+        // Alternative: password verification when camera is unavailable
+        if ($request->input('verification_method') === 'password') {
+            if (!$request->filled('password')) {
+                return back()->with('error', 'Please enter your password to verify your identity.');
+            }
+            if (!Hash::check($request->password, $student->password)) {
+                return back()->with('error', 'Incorrect password. Please try again.');
+            }
+            // Password valid; skip face verification
+        } elseif ($request->filled('face_encoding') && $student->face_encoding) {
+            $storedEncoding = json_decode($student->face_encoding, true);
+            $providedEncoding = json_decode($request->face_encoding, true);
+            if ($storedEncoding && $providedEncoding) {
+                $similarity = $this->calculateFaceSimilarity($storedEncoding, $providedEncoding);
+                $threshold = 0.6;
+                if ($similarity > 0.8) {
+                    return back()->with('error', 'Face verification failed. The detected face does not match your registered face. Please ensure you are using your own account.');
+                }
+                if ($similarity > $threshold) {
+                    $confidence = max(0, min(100, (1 - ($similarity / $threshold)) * 100));
+                    return back()->with('error', "Face verification failed. Match confidence: " . round($confidence) . "%. Try better lighting or look straight at the camera.");
+                }
+            }
         }
 
         $attendance = Attendance::where('student_id', $studentId)
@@ -311,8 +304,8 @@ class AttendanceController extends Controller
 
         $attendance->save();
 
-        $suffix = $this->confidenceSuffix($request);
-            return back()->with('success', 'Time Out recorded successfully with face verification.' . $suffix);
+        $verificationNote = $request->input('verification_method') === 'password' ? ' (password verification)' : (' with face verification.' . $this->confidenceSuffix($request));
+            return back()->with('success', 'Time Out recorded successfully' . $verificationNote);
         } catch (\Throwable $e) {
             Log::error('Time-out failed', ['student_id' => Auth::guard('student')->id(), 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return back()->with('error', 'Unable to record time-out. Please try again. If the problem persists, contact your coordinator.');

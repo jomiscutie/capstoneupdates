@@ -189,16 +189,34 @@
                                 </td>
                                 <td>
                                     @php
-                                        $totalMinutes = 0;
-                                        if ($log->time_in && $log->lunch_break_out) {
-                                            $totalMinutes += \Carbon\Carbon::parse($log->lunch_break_out)->diffInMinutes(\Carbon\Carbon::parse($log->time_in));
-                                        }
-                                        if ($log->afternoon_time_in && $log->time_out) {
-                                            $totalMinutes += \Carbon\Carbon::parse($log->time_out)->diffInMinutes(\Carbon\Carbon::parse($log->afternoon_time_in));
+                                        $hoursDisplay = $log->hours_rendered ?? null;
+                                        if (empty($hoursDisplay)) {
+                                            $totalMinutes = 0;
+                                            $dateStr = \Carbon\Carbon::parse($log->date)->format('Y-m-d');
+                                            $toDatetime = function($time) use ($dateStr) {
+                                                if (empty($time)) return null;
+                                                $t = (string) $time;
+                                                return str_contains($t, ' ') ? $t : $dateStr . ' ' . $t;
+                                            };
+                                            try {
+                                                if ($log->time_in && $log->lunch_break_out) {
+                                                    $start = \Carbon\Carbon::parse($toDatetime($log->time_in));
+                                                    $end = \Carbon\Carbon::parse($toDatetime($log->lunch_break_out));
+                                                    if ($end->gt($start)) $totalMinutes += $start->diffInMinutes($end);
+                                                }
+                                                if ($log->afternoon_time_in && $log->time_out) {
+                                                    $start = \Carbon\Carbon::parse($toDatetime($log->afternoon_time_in));
+                                                    $end = \Carbon\Carbon::parse($toDatetime($log->time_out));
+                                                    if ($end->gt($start)) $totalMinutes += $start->diffInMinutes($end);
+                                                }
+                                            } catch (\Throwable $e) {
+                                                $totalMinutes = 0;
+                                            }
+                                            $hoursDisplay = $totalMinutes > 0 ? (floor($totalMinutes / 60) . ' hr ' . ($totalMinutes % 60) . ' min') : null;
                                         }
                                     @endphp
-                                    @if($totalMinutes > 0)
-                                        {{ floor($totalMinutes / 60) }} hr {{ $totalMinutes % 60 }} min
+                                    @if($hoursDisplay)
+                                        {{ $hoursDisplay }}
                                     @else
                                         -
                                     @endif

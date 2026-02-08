@@ -25,8 +25,9 @@ Route::prefix('coordinator')->group(function () {
         Route::post('register', [CoordinatorAuthController::class, 'register'])->name('coordinator.register.submit')->middleware('throttle:5,1');
     });
 
-    Route::middleware('auth:coordinator')->group(function () {
+    Route::middleware(['auth:coordinator', 'single.session'])->group(function () {
         Route::get('dashboard', [CoordinatorAuthController::class, 'dashboard'])->name('coordinator.dashboard');
+        Route::get('absent-today', [CoordinatorAuthController::class, 'absentToday'])->name('coordinator.absent.today');
         Route::get('pending-verification', [StudentVerificationController::class, 'index'])->name('coordinator.pending.verification');
         Route::post('pending-verification/verify/{student}', [StudentVerificationController::class, 'verify'])->name('coordinator.pending.verification.verify');
         Route::post('pending-verification/reject/{student}', [StudentVerificationController::class, 'reject'])->name('coordinator.pending.verification.reject');
@@ -55,7 +56,7 @@ Route::prefix('student')->group(function () {
         Route::post('register', [StudentAuthController::class, 'register'])->name('student.register.submit')->middleware('throttle:5,1');
     });
 
-    Route::middleware('auth:student')->group(function () {
+    Route::middleware(['auth:student', 'single.session'])->group(function () {
         Route::get('dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
 
         Route::post('time-in', [AttendanceController::class, 'timeIn'])->name('student.timein');

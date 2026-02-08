@@ -23,11 +23,11 @@ class FaceRecognition {
         try {
             const MODEL_URL = (typeof window !== 'undefined' && window.FACE_API_MODEL_BASE) ? window.FACE_API_MODEL_BASE : '/vendor/face-api/model';
 
+            // Load only models needed for detection + descriptor (skip faceExpressionNet to reduce lag)
             await Promise.all([
                 faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
                 faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-                faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
             ]);
 
             this.modelsLoaded = true;
@@ -45,10 +45,11 @@ class FaceRecognition {
         this.ctx = canvasElement.getContext('2d');
 
         try {
+            // Lower resolution = much faster processing and less lag (320x240 is enough for face detection)
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    width: 640,
-                    height: 480,
+                    width: { ideal: 320, max: 480 },
+                    height: { ideal: 240, max: 360 },
                     facingMode: 'user'
                 }
             });
@@ -66,11 +67,12 @@ class FaceRecognition {
         }
 
         try {
+            // inputSize 128 = faster, less lag (224/416 = slower). Skip expressions to speed up.
+            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
             const detection = await faceapi
-                .detectSingleFace(this.video, new faceapi.TinyFaceDetectorOptions())
+                .detectSingleFace(this.video, options)
                 .withFaceLandmarks()
-                .withFaceDescriptor()
-                .withFaceExpressions();
+                .withFaceDescriptor();
 
             if (detection) {
                 // Draw face detection box
@@ -216,68 +218,40 @@ class FaceRecognition {
     }
 
     async verifyFace(storedEncoding) {
-        // Enhanced verification: Multiple attempts for better accuracy
-        const stored = JSON.parse(storedEncoding);
-        const attempts = 5; // Number of verification attempts
-        const distances = [];
-        const encodings = [];
+        try {
+            let stored = storedEncoding;
+            if (typeof stored === 'string') {
+                try { stored = JSON.parse(stored); } catch (e) { stored = JSON.parse(stored.replace(/^"|"$/g, '')); }
+            }
+            if (!Array.isArray(stored) || stored.length !== 128) {
+                return { verified: false, message: 'Invalid stored face data', confidence: 0, distance: 1, matchRatio: 0, attempts: 0, encoding: null };
+            }
 
-        // Capture multiple face samples
-        for (let i = 0; i < attempts; i++) {
             const detection = await this.detectFace();
-            if (detection && detection.descriptor) {
-                const current = Array.from(detection.descriptor);
-                const distance = this.calculateDistance(stored, current);
-                distances.push(distance);
-                encodings.push(current);
+            if (!detection || !detection.descriptor) {
+                return { verified: false, message: 'No face detected', confidence: 0, distance: 1, matchRatio: 0, attempts: 0, encoding: null };
             }
-            // Small delay between attempts
-            if (i < attempts - 1) {
-                await new Promise(resolve => setTimeout(resolve, 200));
-            }
+
+            const current = Array.from(detection.descriptor);
+            const distance = this.calculateDistance(stored, current);
+            const threshold = 0.6;
+            const confidence = Math.max(0, Math.min(100, (1 - (distance / threshold)) * 100));
+            const verified = distance < threshold;
+
+            return {
+                verified: verified,
+                distance: distance,
+                minDistance: distance,
+                confidence: Math.round(confidence),
+                matchRatio: verified ? 1 : 0,
+                attempts: 1,
+                encoding: JSON.stringify(current),
+                message: verified ? 'Face verified' : 'Face verification failed'
+            };
+        } catch (err) {
+            console.error('verifyFace error:', err);
+            return { verified: false, message: err.message || 'Verification error', confidence: 0, distance: 1, matchRatio: 0, attempts: 0, encoding: null };
         }
-
-        if (distances.length === 0) {
-            return { verified: false, message: 'No face detected', confidence: 0 };
-        }
-
-        // Calculate average distance (more reliable than single measurement)
-        const avgDistance = distances.reduce((a, b) => a + b, 0) / distances.length;
-        
-        // Calculate min distance (best match)
-        const minDistance = Math.min(...distances);
-        
-        // Stricter threshold: 0.4 (lower = stricter, prevents false matches)
-        const threshold = 0.4;
-        
-        // Confidence score: 0-100 (lower distance = higher confidence)
-        const confidence = Math.max(0, Math.min(100, (1 - (avgDistance / threshold)) * 100));
-        
-        // Require at least 3 successful matches out of 5 attempts
-        const successfulMatches = distances.filter(d => d < threshold).length;
-        const matchRatio = successfulMatches / distances.length;
-        
-        // Verification passes if:
-        // 1. Average distance is below threshold
-        // 2. At least 60% of attempts match (3 out of 5)
-        // 3. Minimum distance is reasonable
-        const verified = avgDistance < threshold && matchRatio >= 0.6 && minDistance < threshold * 1.2;
-        
-        // Average the encodings for final submission
-        const avgEncoding = this.averageDescriptors(encodings);
-
-        return {
-            verified: verified,
-            distance: avgDistance,
-            minDistance: minDistance,
-            confidence: Math.round(confidence),
-            matchRatio: matchRatio,
-            attempts: distances.length,
-            encoding: JSON.stringify(avgEncoding),
-            message: verified 
-                ? `Face verified with ${Math.round(confidence)}% confidence` 
-                : `Face verification failed. Distance: ${avgDistance.toFixed(2)} (threshold: ${threshold})`
-        };
     }
 
     calculateDistance(encoding1, encoding2) {
@@ -310,28 +284,21 @@ class FaceRecognition {
     }
 
     checkLiveness(detection = null) {
-        // Enhanced liveness check: Stricter requirements to prevent spoofing
-        // 1. Require at least 2 blinks (more reliable than 1)
-        // 2. Face must be stable for 2+ seconds (prevents photo spoofing)
-        // 3. Face must be detected multiple times (prevents static images)
-        
-        const hasBlink = this.blinkCount >= 2; // Increased from 1 to 2
+        const hasBlink = this.blinkCount >= 1;
         const isStable = detection ? this.checkFaceStability(detection) : false;
-        
-        // If face is detected multiple times, increment counter
+
         if (detection) {
             this.faceDetectedCount++;
         }
-        
-        // Face detected at least 10 times (about 3 seconds) for better reliability
-        const hasMultipleDetections = this.faceDetectedCount >= 10; // Increased from 5
-        
-        // Require BOTH blink AND stability for highest security
-        // OR multiple detections as fallback
+
+        // Allow button when: face seen enough times (so user can always click after ~2 sec)
+        const hasEnoughDetections = this.faceDetectedCount >= 5;
         const strictLiveness = hasBlink && isStable;
-        const fallbackLiveness = hasMultipleDetections && (hasBlink || isStable);
-        
-        return strictLiveness || fallbackLiveness;
+        const fallbackLiveness = hasEnoughDetections && (hasBlink || isStable);
+        // Let user click after face detected 5+ times even without blink/stable (verify step still runs)
+        const canProceed = hasEnoughDetections;
+
+        return strictLiveness || fallbackLiveness || canProceed;
     }
 }
 

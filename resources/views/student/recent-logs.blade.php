@@ -3,14 +3,11 @@
 @section('title', 'Recent Attendance Logs')
 
 @section('content')
-    <div class="header-card">
-        <div class="header-content">
-            <a href="{{ route('student.dashboard') }}" class="text-white text-decoration-none d-inline-flex align-items-center gap-2 mb-2">
-                <i class="bi bi-arrow-left"></i> Back to Dashboard
-            </a>
-            <h2 class="mb-0"><i class="bi bi-list-ul me-2"></i>Recent Attendance Logs</h2>
-        </div>
-    </div>
+    <a href="{{ route('student.dashboard') }}" class="back-link d-inline-block mb-2">
+        <i class="bi bi-arrow-left"></i> Dashboard
+    </a>
+    <h1 class="page-title">Recent Attendance Logs</h1>
+    <p class="page-sub mb-3">Your attendance history</p>
 
     <div class="card-section">
         @if($logs->isEmpty())
