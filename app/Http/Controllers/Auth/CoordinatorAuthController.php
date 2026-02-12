@@ -20,24 +20,15 @@ class CoordinatorAuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'course' => 'required',
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
         $credentials = $request->only('email', 'password');
-        $selectedCourse = $request->input('course');
 
         if (Auth::guard('coordinator')->attempt($credentials)) {
             $coordinator = Auth::guard('coordinator')->user();
-            
-            // Verify that the coordinator's course matches the selected program
-            // Note: coordinators store program in 'major' field, but we match it with student's 'course'
-            if ($coordinator->major !== $selectedCourse) {
-                Auth::guard('coordinator')->logout();
-                return back()->withErrors(['course' => 'The selected program does not match your account.'])->withInput();
-            }
-            
+
             $request->session()->regenerate();
             $coordinator->current_session_id = $request->session()->getId();
             $coordinator->save();

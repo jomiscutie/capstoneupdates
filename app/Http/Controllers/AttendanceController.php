@@ -9,6 +9,7 @@ use App\Models\Attendance;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class AttendanceController extends Controller
@@ -93,7 +94,9 @@ class AttendanceController extends Controller
             // Examples: 12:00 PM, 1:00 PM, 2:00 PM, 3:00 PM, etc. ALL go here
             
             if ($attendance->afternoon_time_in) {
-                return back()->with('error', 'You have already timed in for the afternoon session today.');
+                $recorded = \Carbon\Carbon::parse($attendance->afternoon_time_in)->format('g:i A');
+                return back()->with('error', 'You have already recorded your afternoon time-in today. Duplicate time-in is not allowed for security. Recorded at: ' . $recorded . '.')
+                    ->with('error_type', 'already_time_in');
             }
             
             // CRITICAL SAFEGUARD: Check if any existing morning time-in is actually afternoon time
@@ -149,13 +152,15 @@ class AttendanceController extends Controller
             // Examples: 6:00 AM, 7:00 AM, 8:00 AM, 9:00 AM, 10:00 AM, 11:00 AM, etc.
             
             if ($attendance->time_in) {
-                return back()->with('error', 'You have already timed in for the morning session today.');
+                $recorded = \Carbon\Carbon::parse($attendance->time_in)->format('g:i A');
+                return back()->with('error', 'You have already recorded your morning time-in today. Duplicate time-in is not allowed for security. Recorded at: ' . $recorded . '.')
+                    ->with('error_type', 'already_time_in');
             }
             
             // CRITICAL SAFEGUARD: Prevent morning time-in if it's 12:00 PM or later
             // This ensures 2 PM CANNOT be saved to morning time_in
             if ($currentTime->gte($noon)) {
-                return back()->with('error', 'It is already past 12:00 PM. Please use afternoon time-in instead.');
+                return back()->with('error', 'It is already past 12:00 PM. Please use afternoon time-in instead. Morning time-in is only allowed before 12:00 PM.');
             }
             
             // Additional validation: Check hour value
@@ -189,6 +194,15 @@ class AttendanceController extends Controller
             $message = $isLate 
                 ? "Morning Time In recorded successfully. ⚠️ You are {$lateMinutes} minute(s) late." . ($request->input('verification_method') === 'password' ? ' (password verification)' : $this->confidenceSuffix($request))
                 : 'Morning Time In recorded successfully' . $verificationNote;
+        }
+
+        if ($request->hasFile('verification_snapshot')) {
+            $path = $request->file('verification_snapshot')->store('verification_snapshots', 'public');
+            if ($isAfternoon) {
+                $attendance->afternoon_verification_snapshot = $path;
+            } else {
+                $attendance->verification_snapshot = $path;
+            }
         }
         
         $attendance->save();
@@ -244,11 +258,14 @@ class AttendanceController extends Controller
 
         // Check if student has at least one time-in (morning or afternoon)
         if (!$attendance || (!$attendance->time_in && !$attendance->afternoon_time_in)) {
-            return back()->with('error', 'You must time in (morning or afternoon) before timing out.');
+            return back()->with('error', 'You must record a time-in (morning or afternoon) before you can time out. No time-in on file for today.')
+                ->with('error_type', 'no_time_in');
         }
 
         if ($attendance->time_out) {
-            return back()->with('error', 'You have already timed out today.');
+            $recorded = \Carbon\Carbon::parse($attendance->time_out)->format('g:i A');
+            return back()->with('error', 'You have already recorded your time-out today. Duplicate time-out is not allowed for security. Recorded at: ' . $recorded . '.')
+                ->with('error_type', 'already_time_out');
         }
 
         $currentTime = Carbon::now('Asia/Manila');
@@ -301,6 +318,11 @@ class AttendanceController extends Controller
         $hours = floor($totalMinutes / 60);
         $minutes = $totalMinutes % 60;
         $attendance->hours_rendered = "{$hours} hr {$minutes} min";
+
+        if ($request->hasFile('verification_snapshot')) {
+            $path = $request->file('verification_snapshot')->store('verification_snapshots', 'public');
+            $attendance->timeout_verification_snapshot = $path;
+        }
 
         $attendance->save();
 
@@ -390,53 +412,255 @@ class AttendanceController extends Controller
         return response()->json(['valid' => true, 'message' => 'Face encoding is valid']);
     }
 
-    public function recentLogs()
+    /**
+     * Serve verification snapshot image. Authorized: student (own only) or coordinator (their program).
+     */
+    public function viewVerificationSnapshot(Request $request, Attendance $attendance, string $type)
     {
-        $studentId = Auth::guard('student')->id();
+        $column = match ($type) {
+            'morning' => 'verification_snapshot',
+            'afternoon' => 'afternoon_verification_snapshot',
+            'timeout' => 'timeout_verification_snapshot',
+            default => null,
+        };
+        if (!$column || !$attendance->{$column}) {
+            abort(404);
+        }
+        $path = $attendance->{$column};
 
-        // Get last 7 days of attendance, latest first
-        $logs = Attendance::where('student_id', $studentId)
-            ->orderBy('date', 'desc')
-            ->limit(7)
-            ->get();
+        if (Auth::guard('student')->check()) {
+            if ($attendance->student_id !== Auth::guard('student')->id()) {
+                abort(403);
+            }
+        } elseif (Auth::guard('coordinator')->check()) {
+            $coordinator = Auth::guard('coordinator')->user();
+            $allowed = \App\Models\Student::forCoordinator($coordinator)->where('id', $attendance->student_id)->exists();
+            if (!$allowed) {
+                abort(403);
+            }
+        } else {
+            abort(401);
+        }
 
-        return view('student.recent-logs', compact('logs'));
+        $fullPath = Storage::disk('public')->path($path);
+        if (!is_file($fullPath)) {
+            abort(404);
+        }
+        return response()->file($fullPath, [
+            'Content-Type' => 'image/jpeg',
+            'Content-Disposition' => 'inline; filename="verification-' . $type . '.jpg"',
+        ]);
+    }
+
+    public function recentLogs(Request $request)
+    {
+        $student = Auth::guard('student')->user();
+        $studentId = $student->id;
+
+        $filter = $request->input('filter', 'month');
+        $selectedMonth = $request->input('month', now()->format('Y-m'));
+        $weekInput = $request->input('week');
+        if ($filter === 'week' && empty($weekInput)) {
+            $now = \Carbon\Carbon::now();
+            $weekInput = $now->format('o') . '-W' . str_pad((string) $now->isoWeek(), 2, '0', STR_PAD_LEFT);
+        }
+
+        $logs = collect();
+        $weekLabel = '';
+
+        if ($filter === 'week' && $weekInput && preg_match('/^(\d{4})-W(\d{2})$/', $weekInput, $m)) {
+            $year = (int) $m[1];
+            $weekNum = (int) $m[2];
+            $start = \Carbon\Carbon::now()->setISODate($year, $weekNum)->startOfWeek();
+            $end = $start->copy()->endOfWeek();
+            $weekStart = $start->format('Y-m-d');
+            $weekEnd = $end->format('Y-m-d');
+            $weekLabel = $start->format('M j') . ' – ' . $end->format('M j, Y');
+
+            $logs = Attendance::where('student_id', $studentId)
+                ->whereBetween('date', [$weekStart, $weekEnd])
+                ->orderBy('date', 'desc')
+                ->get();
+        } else {
+            $filter = 'month';
+            $parts = explode('-', $selectedMonth);
+            $year = $parts[0] ?? now()->format('Y');
+            $month = $parts[1] ?? now()->format('m');
+
+            $logs = Attendance::where('student_id', $studentId)
+                ->whereYear('date', $year)
+                ->whereMonth('date', $month)
+                ->orderBy('date', 'desc')
+                ->get();
+        }
+
+        $rendered = (float) ($student->total_rendered_hours ?? 0);
+        $required = (float) ($student->required_ojt_hours ?? 120);
+        $progressPct = $required > 0 ? min(100, round(100 * $rendered / $required, 1)) : 0;
+        $remaining = max(0, $required - $rendered);
+
+        return view('student.recent-logs', compact(
+            'logs', 'rendered', 'required', 'progressPct', 'remaining',
+            'filter', 'selectedMonth', 'weekInput', 'weekLabel'
+        ));
     }
 
     public function coordinatorLogs(Request $request)
     {
         $coordinator = Auth::guard('coordinator')->user();
-
-        // Month filter
+        $search = $request->filled('q') ? trim($request->q) : '';
+        $filter = $request->input('filter', 'month');
         $month = $request->input('month', now()->format('Y-m'));
-        [$year, $monthNum] = explode('-', $month);
+        $weekInput = $request->input('week'); // e.g. 2025-W04 from input type="week"
+        if ($filter === 'week' && empty($weekInput)) {
+            $now = \Carbon\Carbon::now();
+            $weekInput = $now->format('o') . '-W' . str_pad((string) $now->isoWeek(), 2, '0', STR_PAD_LEFT);
+        }
 
-        $studentIds = \App\Models\Student::forCoordinator($coordinator)->verified()->pluck('id');
+        $studentQuery = \App\Models\Student::forCoordinator($coordinator)->verified();
+        $viewStudent = null;
+        $studentIdParam = $request->input('student_id');
+        if ($studentIdParam && is_numeric($studentIdParam)) {
+            $viewStudent = $studentQuery->clone()->where('id', (int) $studentIdParam)->first();
+            if ($viewStudent) {
+                $studentQuery->where('id', $viewStudent->id);
+            }
+        }
+        if ($search !== '' && !$viewStudent) {
+            $term = '%' . str_replace(['%', '_'], ['\%', '\_'], $search) . '%';
+            $studentQuery->where(function ($q) use ($term) {
+                $q->where('name', 'like', $term)
+                  ->orWhere('student_no', 'like', $term);
+            });
+        }
+        $studentIds = $studentQuery->pluck('id');
+        $totalStudents = \App\Models\Student::forCoordinator($coordinator)->verified()->count();
 
-        $logs = \App\Models\Attendance::with('student')
-            ->whereIn('student_id', $studentIds)
-            ->whereYear('date', $year)
-            ->whereMonth('date', $monthNum)
-            ->orderBy('date', 'desc')
-            ->get();
+        $logs = collect();
+        $lateCount = 0;
+        $weekStart = null;
+        $weekEnd = null;
+        $weekLabel = '';
 
-        $totalStudents = $studentIds->count();
+        if ($filter === 'week' && $weekInput && preg_match('/^(\d{4})-W(\d{2})$/', $weekInput, $m)) {
+            $year = (int) $m[1];
+            $weekNum = (int) $m[2];
+            $start = \Carbon\Carbon::now()->setISODate($year, $weekNum)->startOfWeek();
+            $end = $start->copy()->endOfWeek();
+            $weekStart = $start->format('Y-m-d');
+            $weekEnd = $end->format('Y-m-d');
+            $weekLabel = $start->format('M j') . ' – ' . $end->format('M j, Y');
+
+            $logs = \App\Models\Attendance::with('student')
+                ->whereIn('student_id', $studentIds)
+                ->whereBetween('date', [$weekStart, $weekEnd])
+                ->orderBy('date', 'desc')
+                ->get();
+
+            $lateCount = \App\Models\Attendance::whereIn('student_id', $studentIds)
+                ->whereBetween('date', [$weekStart, $weekEnd])
+                ->where(function ($q) {
+                    $q->where('is_late', true)->orWhere('afternoon_is_late', true);
+                })
+                ->count();
+        } else {
+            $filter = 'month';
+            [$year, $monthNum] = explode('-', $month);
+            $logs = \App\Models\Attendance::with('student')
+                ->whereIn('student_id', $studentIds)
+                ->whereYear('date', $year)
+                ->whereMonth('date', $monthNum)
+                ->orderBy('date', 'desc')
+                ->get();
+
+            $lateCount = \App\Models\Attendance::whereIn('student_id', $studentIds)
+                ->whereYear('date', $year)
+                ->whereMonth('date', $monthNum)
+                ->where(function ($q) {
+                    $q->where('is_late', true)->orWhere('afternoon_is_late', true);
+                })
+                ->count();
+        }
+
         $presentToday = \App\Models\Attendance::whereIn('student_id', $studentIds)
             ->where('date', now()->format('Y-m-d'))
             ->distinct('student_id')
             ->count('student_id');
         $absentToday = $totalStudents - $presentToday;
 
-        // Count late arrivals for the selected month (both morning and afternoon)
-        $lateArrivalsMonth = \App\Models\Attendance::whereIn('student_id', $studentIds)
-            ->whereYear('date', $year)
-            ->whereMonth('date', $monthNum)
-            ->where(function($query) {
-                $query->where('is_late', true)
-                      ->orWhere('afternoon_is_late', true);
-            })
-            ->count();
+        // Unique students with logs in this period (for the button list when not viewing one student)
+        $studentsWithLogs = $logs->pluck('student')->unique('id')->filter()->sortBy('name')->values();
 
-        return view('coordinator.attendance-logs', compact('logs', 'totalStudents', 'presentToday', 'absentToday', 'month', 'lateArrivalsMonth'));
+        return view('coordinator.attendance-logs', compact(
+            'logs', 'totalStudents', 'presentToday', 'absentToday', 'month', 'search',
+            'filter', 'weekInput', 'weekStart', 'weekEnd', 'weekLabel', 'lateCount', 'viewStudent', 'studentsWithLogs'
+        ));
+    }
+
+    public function attendanceAnalytics(\Illuminate\Http\Request $request)
+    {
+        $coordinator = Auth::guard('coordinator')->user();
+        $studentIds = \App\Models\Student::forCoordinator($coordinator)->verified()->pluck('id');
+        $totalStudents = $studentIds->count();
+
+        $monthlyAnalytics = [];
+        for ($i = 0; $i < 12; $i++) {
+            $d = now()->subMonths($i);
+            $presentDays = \App\Models\Attendance::whereIn('student_id', $studentIds)
+                ->whereYear('date', $d->year)
+                ->whereMonth('date', $d->month)
+                ->count();
+            $uniquePresent = \App\Models\Attendance::whereIn('student_id', $studentIds)
+                ->whereYear('date', $d->year)
+                ->whereMonth('date', $d->month)
+                ->distinct('student_id')
+                ->count('student_id');
+            $absentStudents = max(0, $totalStudents - $uniquePresent);
+            $monthlyAnalytics[] = [
+                'label' => $d->format('M Y'),
+                'key' => $d->format('Y-m'),
+                'present_days' => $presentDays,
+                'unique_present' => $uniquePresent,
+                'absent_students' => $absentStudents,
+            ];
+        }
+
+        // Compare 2 or 3 months: ?compare[]=2025-01&compare[]=2025-02
+        $compareInput = $request->input('compare', []);
+        $compareInput = is_array($compareInput) ? $compareInput : [$compareInput];
+        $compareInput = array_values(array_filter(array_unique($compareInput)));
+        $comparisonMonths = [];
+        $compareValues = []; // for repopulating the form
+
+        if (count($compareInput) >= 2 && count($compareInput) <= 3) {
+            foreach ($compareInput as $ym) {
+                if (!preg_match('/^\d{4}-\d{2}$/', $ym)) {
+                    continue;
+                }
+                [$y, $m] = explode('-', $ym);
+                $presentDays = \App\Models\Attendance::whereIn('student_id', $studentIds)
+                    ->whereYear('date', $y)
+                    ->whereMonth('date', (int) $m)
+                    ->count();
+                $uniquePresent = \App\Models\Attendance::whereIn('student_id', $studentIds)
+                    ->whereYear('date', $y)
+                    ->whereMonth('date', (int) $m)
+                    ->distinct('student_id')
+                    ->count('student_id');
+                $absentStudents = max(0, $totalStudents - $uniquePresent);
+                $d = \Carbon\Carbon::createFromDate((int) $y, (int) $m, 1);
+                $comparisonMonths[] = [
+                    'label' => $d->format('M Y'),
+                    'key' => $ym,
+                    'present_days' => $presentDays,
+                    'unique_present' => $uniquePresent,
+                    'absent_students' => $absentStudents,
+                    'rate' => $totalStudents > 0 ? round(100 * $uniquePresent / $totalStudents) : 0,
+                ];
+                $compareValues[] = $ym;
+            }
+        }
+
+        return view('coordinator.attendance-analytics', compact('monthlyAnalytics', 'totalStudents', 'comparisonMonths', 'compareValues'));
     }
 }

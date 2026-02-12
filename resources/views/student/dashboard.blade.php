@@ -5,6 +5,18 @@
 @push('styles')
 <style>
     .alert-warning.late-alert { border-radius: 12px; border-left: 4px solid #ffc107; }
+    .alert-attendance-error { border-left: 4px solid #dc2626; font-size: 0.9375rem; }
+    .attendance-status-notice { display: flex; flex-direction: column; gap: 0.5rem; }
+    .notice-item.notice-recorded {
+        display: flex; align-items: center;
+        padding: 0.65rem 1rem;
+        background: #fef3c7;
+        border: 1px solid #fcd34d;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        color: #92400e;
+    }
+    .notice-item.notice-recorded i { color: #d97706; flex-shrink: 0; }
     /* Face verification: modal must sit above Bootstrap backdrop (backdrop is 1050) */
     #faceVerificationModal.modal { z-index: 1060 !important; }
     #faceVerificationModal .modal-dialog { z-index: 1061; }
@@ -19,6 +31,13 @@
     #faceVerificationModal #faceCanvas,
     #faceVerificationModal #faceVideo {
         pointer-events: none !important;
+    }
+    /* Un-mirror front camera so preview and ID are not inverted */
+    #faceVerificationModal #faceVideo {
+        transform: scaleX(-1);
+    }
+    #faceVerificationModal #faceCanvas {
+        transform: scaleX(-1);
     }
 </style>
 @endpush
@@ -40,14 +59,46 @@
             </div>
 
             @if(session('success'))
-                <div class="alert alert-success">
+                <div class="alert alert-success alert-dismissible fade show">
                     <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            @if(session('warning'))
+                <div class="alert alert-warning alert-dismissible fade show">
+                    <i class="bi bi-exclamation-triangle me-2"></i>{{ session('warning') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
             @if(session('error'))
-                <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
+                <div class="alert alert-danger alert-dismissible fade show {{ session('error_type') ? 'alert-attendance-error' : '' }}">
+                    <i class="bi bi-shield-exclamation me-2"></i>
+                    <strong>Verification:</strong> {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
+            @endif
+
+            @if(isset($attendance) && $attendance)
+            <div class="attendance-status-notice mb-3">
+                @if($attendance->time_in)
+                    <div class="notice-item notice-recorded">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <span>Morning time-in already recorded today at <strong>{{ $attendance->time_in_12 }}</strong>. Duplicate not allowed.</span>
+                    </div>
+                @endif
+                @if($attendance->afternoon_time_in)
+                    <div class="notice-item notice-recorded">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <span>Afternoon time-in already recorded today at <strong>{{ $attendance->afternoon_time_in_12 }}</strong>. Duplicate not allowed.</span>
+                    </div>
+                @endif
+                @if($attendance->time_out)
+                    <div class="notice-item notice-recorded">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <span>Time-out already recorded today at <strong>{{ $attendance->time_out_12 }}</strong>. Duplicate not allowed.</span>
+                    </div>
+                @endif
+            </div>
             @endif
 
             <div class="time-display">
@@ -87,11 +138,11 @@
                     <i class="bi bi-exclamation-triangle me-2"></i>
                     <strong>Late Arrival:</strong>
                     @if($attendance->is_late && $attendance->afternoon_is_late)
-                        Morning: {{ $attendance->late_minutes }}m late | Afternoon: {{ $attendance->afternoon_late_minutes }}m late
+                        Morning: {{ $attendance->late_display }} late | Afternoon: {{ $attendance->afternoon_late_display }} late
                     @elseif($attendance->is_late)
-                        Morning: {{ $attendance->late_minutes }} minute(s) late
+                        Morning: {{ $attendance->late_display }} late
                     @elseif($attendance->afternoon_is_late)
-                        Afternoon: {{ $attendance->afternoon_late_minutes }} minute(s) late
+                        Afternoon: {{ $attendance->afternoon_late_display }} late
                     @endif
                 </div>
                 @endif
@@ -101,9 +152,9 @@
                         <div class="value">
                             @if($attendance->time_in)
                                 @if($attendance->is_late)
-                                    <span class="badge bg-warning text-dark me-1">{{ $attendance->time_in }}</span>
+                                    <span class="badge bg-warning text-dark me-1">{{ $attendance->time_in_12 }}</span>
                                 @else
-                                    <span class="badge bg-success">{{ $attendance->time_in }}</span>
+                                    <span class="badge bg-success">{{ $attendance->time_in_12 }}</span>
                                 @endif
                             @else
                                 <span class="text-muted">-</span>
@@ -115,9 +166,9 @@
                         <div class="value">
                             @if($attendance->afternoon_time_in)
                                 @if($attendance->afternoon_is_late)
-                                    <span class="badge bg-warning text-dark me-1">{{ $attendance->afternoon_time_in }}</span>
+                                    <span class="badge bg-warning text-dark me-1">{{ $attendance->afternoon_time_in_12 }}</span>
                                 @else
-                                    <span class="badge bg-success">{{ $attendance->afternoon_time_in }}</span>
+                                    <span class="badge bg-success">{{ $attendance->afternoon_time_in_12 }}</span>
                                 @endif
                             @else
                                 <span class="text-muted">-</span>
@@ -126,7 +177,7 @@
                     </div>
                     <div class="summary-item">
                         <div class="label">Time Out</div>
-                        <div class="value">{{ $attendance->time_out ?? '-' }}</div>
+                        <div class="value">{{ $attendance->time_out_12 ?? '-' }}</div>
                     </div>
                     <div class="summary-item">
                         <div class="label">Hours Rendered</div>
@@ -162,145 +213,6 @@
             @endif
         </div>
 
-        <!-- Attendance Logs -->
-        <div class="card-section">
-            <div class="card-header">
-                <i class="bi bi-list-ul"></i>
-                <h4>Attendance History</h4>
-            </div>
-
-            <div class="month-filter">
-                <label for="monthSelect" class="mb-0" style="font-weight: 600; color: #495057;">
-                    <i class="bi bi-calendar3 me-2"></i>Select Month:
-                </label>
-                <form method="GET" class="d-flex gap-2 flex-grow-1" style="max-width: 300px;">
-                    <input type="month" id="monthSelect" name="month" class="form-control"
-                           value="{{ $selectedMonth }}">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </form>
-            </div>
-
-            @if($logs->count() > 0)
-                <div class="table-container">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Morning Time In</th>
-                                <th>Afternoon Time In</th>
-                                <th>Status</th>
-                                <th>Time Out</th>
-                                <th>Hours Rendered</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($logs as $log)
-                                <tr>
-                                    <td>
-                                        <i class="bi bi-calendar3 me-2"></i>
-                                        {{ \Carbon\Carbon::parse($log->date)->format('F d, Y') }}
-                                    </td>
-                                    <td>
-                                        @if($log->time_in)
-                                            @if($log->is_late)
-                                                <span class="badge bg-warning text-dark">
-                                                    <i class="bi bi-clock me-1"></i>{{ $log->time_in }}
-                                                </span>
-                                            @else
-                                                <span class="badge bg-success">
-                                                    <i class="bi bi-clock me-1"></i>{{ $log->time_in }}
-                                                </span>
-                                            @endif
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($log->afternoon_time_in)
-                                            @if($log->afternoon_is_late)
-                                                <span class="badge bg-warning text-dark">
-                                                    <i class="bi bi-clock me-1"></i>{{ $log->afternoon_time_in }}
-                                                </span>
-                                            @else
-                                                <span class="badge bg-success">
-                                                    <i class="bi bi-clock me-1"></i>{{ $log->afternoon_time_in }}
-                                                </span>
-                                            @endif
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @php
-                                            $statuses = [];
-                                            if ($log->time_in) {
-                                                if ($log->is_late) {
-                                                    $statuses[] = '<span class="badge bg-warning text-dark"><i class="bi bi-clock-history me-1"></i>Morning Late (' . $log->late_minutes . 'm)</span>';
-                                                } else {
-                                                    $statuses[] = '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Morning On Time</span>';
-                                                }
-                                            }
-                                            if ($log->afternoon_time_in) {
-                                                if ($log->afternoon_is_late) {
-                                                    $statuses[] = '<span class="badge bg-warning text-dark"><i class="bi bi-clock-history me-1"></i>Afternoon Late (' . $log->afternoon_late_minutes . 'm)</span>';
-                                                } else {
-                                                    $statuses[] = '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Afternoon On Time</span>';
-                                                }
-                                            }
-                                        @endphp
-                                        @if(count($statuses) > 0)
-                                            {!! implode('<br>', $statuses) !!}
-                                        @else
-                                            <span class="badge bg-secondary">No Time In</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($log->time_out)
-                                            <span class="badge bg-danger">
-                                                <i class="bi bi-clock me-1"></i>{{ $log->time_out }}
-                                            </span>
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @php
-                                            $totalMinutes = 0;
-                                            if ($log->time_in && $log->time_out) {
-                                                $in = \Carbon\Carbon::parse($log->time_in);
-                                                $out = \Carbon\Carbon::parse($log->time_out);
-                                                $totalMinutes += abs($out->diffInMinutes($in));
-                                            }
-                                            if ($log->afternoon_time_in && $log->time_out) {
-                                                $in = \Carbon\Carbon::parse($log->afternoon_time_in);
-                                                $out = \Carbon\Carbon::parse($log->time_out);
-                                                $totalMinutes += abs($out->diffInMinutes($in));
-                                            }
-                                            $h = floor($totalMinutes / 60);
-                                            $m = $totalMinutes % 60;
-                                        @endphp
-                                        @if($totalMinutes > 0)
-                                            <span class="badge bg-info" style="font-size: 0.9rem;">
-                                                {{ $h }}h {{ $m }}m
-                                            </span>
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div class="text-center py-5">
-                    <i class="bi bi-inbox" style="font-size: 3rem; color: #adb5bd;"></i>
-                    <p class="text-muted mt-3 mb-0">No attendance logs found for this month</p>
-                </div>
-            @endif
-        </div>
     @else
         <div class="card text-center mt-5 p-5">
             <h2>Welcome, Guest</h2>
@@ -317,12 +229,11 @@
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" onclick="stopFaceVerification()" aria-label="Cancel">Cancel</button>
                         <button type="button" class="btn btn-primary btn-sm" id="verifyFaceBtn" onclick="verifyAndSubmit()" disabled aria-label="Verify and submit">Verify & Submit</button>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="stopFaceVerification()"></button>
                     </div>
                 </div>
                 <div class="modal-body text-center">
                     <div id="faceVerificationBlock">
-                        <p id="faceVerificationModalDesc" class="mb-3">Please look at the camera. When your face is detected, click &quot;Verify & Submit&quot; above (or press Escape to cancel).</p>
+                        <p id="faceVerificationModalDesc" class="mb-3"><strong>Show your ID to the camera</strong> while verifying. Look at the camera with your ID visible in frame. When your face is detected, click &quot;Verify & Submit&quot; above. A timestamped photo will be saved as proof of attendance.</p>
                         <div class="position-relative d-inline-block" style="max-height: 50vh;">
                             <video id="faceVideo" autoplay playsinline style="width: 100%; max-width: 640px; max-height: 50vh; border-radius: 10px; display: block;"></video>
                             <canvas id="faceCanvas" style="position: absolute; top: 0; left: 0; width: 100%; max-width: 640px; pointer-events: none;"></canvas>
@@ -333,7 +244,7 @@
                         <div id="livenessStatus" class="mt-2">
                             <small class="text-info">Blink detection: <span id="blinkCount">0</span> blinks detected</small>
                         </div>
-                        <form id="faceVerificationForm" method="POST" style="display: none;">
+                        <form id="faceVerificationForm" method="POST" enctype="multipart/form-data" style="display: none;">
                             @csrf
                             <input type="hidden" name="face_encoding" id="faceEncodingInput">
                             <input type="hidden" name="action_type" id="actionTypeInput">
@@ -347,7 +258,8 @@
                         <i class="bi bi-key me-1"></i>Verify with password instead
                     </button>
                     <div id="passwordFallbackBlock" class="mt-3 text-start" style="display: none;">
-                        <form id="passwordVerificationForm" method="POST" action="">
+                        <p class="text-muted small mb-2">If the camera is still on, show your ID to the camera before submitting — a timestamped snapshot will be saved as proof.</p>
+                        <form id="passwordVerificationForm" method="POST" action="" enctype="multipart/form-data">
                             @csrf
                             <input type="hidden" name="verification_method" value="password">
                             <input type="hidden" name="recorded_at" id="passwordRecordedAt">
@@ -363,7 +275,10 @@
                             </div>
                             <div class="mb-2">
                                 <label for="passwordVerificationPassword" class="form-label small">Your password</label>
-                                <input type="password" name="password" id="passwordVerificationPassword" class="form-control form-control-sm" placeholder="Enter your account password" required autocomplete="current-password">
+                                <div class="password-toggle-wrap position-relative">
+                                    <input type="password" name="password" id="passwordVerificationPassword" class="form-control form-control-sm" placeholder="Enter your account password" required autocomplete="current-password" style="padding-right: 2.25rem;">
+                                    <button type="button" class="password-toggle-btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent text-secondary p-1 rounded" style="right: 0.25rem; width: 1.75rem; height: 1.75rem;" data-password-toggle aria-label="Show password" title="Show password"><i class="bi bi-eye"></i></button>
+                                </div>
                             </div>
                             <button type="submit" class="btn btn-primary btn-sm w-100" id="passwordSubmitBtn">
                                 <i class="bi bi-key me-1"></i><span id="passwordSubmitLabel">Time In</span> with password
@@ -377,6 +292,29 @@
 @endsection
 
 @push('scripts')
+<script>
+document.body.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-password-toggle]');
+    if (!btn) return;
+    var wrap = btn.closest('.password-toggle-wrap');
+    var input = wrap && wrap.querySelector('input');
+    var icon = btn.querySelector('i');
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+        btn.setAttribute('aria-label', 'Hide password');
+        btn.setAttribute('title', 'Hide password');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+        btn.setAttribute('aria-label', 'Show password');
+        btn.setAttribute('title', 'Show password');
+    }
+});
+</script>
 <script>window.FACE_API_MODEL_BASE = "{{ asset('vendor/face-api/model') }}";</script>
 <script type="application/json" id="student-json">@json(auth()->guard('student')->user())</script>
 <script src="{{ asset('vendor/face-api/face-api.min.js') }}"></script>
@@ -486,6 +424,37 @@ async function openFaceVerification(action) {
     }, 400);
 }
 
+function captureVerificationSnapshot() {
+    return new Promise(function(resolve, reject) {
+        var video = document.getElementById('faceVideo');
+        if (!video || video.readyState < 2) {
+            reject(new Error('Video not ready'));
+            return;
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        var ctx = canvas.getContext('2d');
+        /* Draw video un-mirrored (same as preview) so saved snapshot is not inverted */
+        ctx.save();
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+        var now = new Date();
+        var timestampStr = now.toLocaleString('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) + ' Asia/Manila';
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(0, canvas.height - 28, canvas.width, 28);
+        ctx.fillStyle = '#fff';
+        ctx.font = '14px monospace';
+        ctx.fillText(timestampStr, 8, canvas.height - 10);
+        canvas.toBlob(function(blob) {
+            if (blob) resolve(blob);
+            else reject(new Error('Failed to create image'));
+        }, 'image/jpeg', 0.92);
+    });
+}
+
 async function verifyAndSubmit() {
     document.getElementById('verifyFaceBtn').disabled = true;
     document.getElementById('verificationStatus').innerHTML = '<p class="text-info">Verifying face...</p>';
@@ -548,7 +517,41 @@ async function verifyAndSubmit() {
             document.getElementById('recordedAtInput').value = recordedAt;
             document.getElementById('verificationConfidenceInput').value = (verification.confidence != null) ? verification.confidence : 0;
             form.action = currentAction === 'timein' ? timeInUrl : timeOutUrl;
-            form.submit();
+
+            captureVerificationSnapshot().then(function(blob) {
+                var formData = new FormData();
+                formData.append('_token', form.querySelector('input[name="_token"]').value);
+                formData.append('face_encoding', encoding);
+                formData.append('recorded_at', recordedAt);
+                formData.append('verification_confidence', (verification.confidence != null) ? verification.confidence : 0);
+                formData.append('verification_snapshot', blob, 'verification-' + currentAction + '.jpg');
+                form.action = currentAction === 'timein' ? timeInUrl : timeOutUrl;
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' }
+                }).then(function(res) {
+                    if (res.redirected) {
+                        window.location.href = res.url;
+                    } else {
+                        window.location.reload();
+                    }
+                }).catch(function(err) {
+                    console.error('Submit error', err);
+                    document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Failed to submit. Please try again.</p>';
+                    document.getElementById('verifyFaceBtn').disabled = false;
+                });
+            }).catch(function(err) {
+                console.error('Snapshot error', err);
+                var formData = new FormData(form);
+                form.action = currentAction === 'timein' ? timeInUrl : timeOutUrl;
+                fetch(form.action, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' } }).then(function(res) {
+                    if (res.redirected) window.location.href = res.url;
+                    else window.location.reload();
+                }).catch(function() {
+                    form.submit();
+                });
+            });
             return;
         }
 
@@ -611,6 +614,32 @@ function resetPasswordFallbackVisibility() {
     passwordBlock.style.display = 'none';
     btn.innerHTML = '<i class="bi bi-key me-1"></i>Verify with password instead';
 }
+
+(function() {
+    var pwForm = document.getElementById('passwordVerificationForm');
+    if (pwForm) {
+        pwForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var form = this;
+            var submitBtn = document.getElementById('passwordSubmitBtn');
+            if (submitBtn) submitBtn.disabled = true;
+            captureVerificationSnapshot().then(function(blob) {
+                var formData = new FormData(form);
+                formData.append('verification_snapshot', blob, 'verification-' + currentAction + '.jpg');
+                return fetch(form.action, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' } });
+            }).catch(function() {
+                return fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' } });
+            }).then(function(res) {
+                if (res.redirected) window.location.href = res.url;
+                else window.location.reload();
+            }).catch(function(err) {
+                console.error('Submit error', err);
+                if (submitBtn) submitBtn.disabled = false;
+                form.submit();
+            });
+        });
+    }
+})();
 
 function showOfflineRecordedMessage(confidence) {
     var matchText = (confidence != null && confidence !== '') ? ' — ' + confidence + '% match' : '';

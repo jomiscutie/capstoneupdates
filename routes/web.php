@@ -8,9 +8,10 @@ use App\Http\Controllers\Auth\UnifiedAuthController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\OjtCompletionController;
-use App\Http\Controllers\DuplicateCheckController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\StudentVerificationController;
+use App\Http\Controllers\StudentSettingsController;
+use App\Http\Controllers\CoordinatorSettingsController;
 
 // -------------------- Unified login (one form for both roles) --------------------
 Route::get('/login', [UnifiedAuthController::class, 'showLoginForm'])->name('login');
@@ -32,6 +33,8 @@ Route::prefix('coordinator')->group(function () {
         Route::post('pending-verification/verify/{student}', [StudentVerificationController::class, 'verify'])->name('coordinator.pending.verification.verify');
         Route::post('pending-verification/reject/{student}', [StudentVerificationController::class, 'reject'])->name('coordinator.pending.verification.reject');
         Route::get('attendance-logs', [AttendanceController::class, 'coordinatorLogs'])->name('coordinator.attendance.logs');
+        Route::get('attendance/{attendance}/verification-snapshot/{type}', [AttendanceController::class, 'viewVerificationSnapshot'])->where('type', 'morning|afternoon|timeout')->name('coordinator.attendance.verification_snapshot');
+        Route::get('attendance-analytics', [AttendanceController::class, 'attendanceAnalytics'])->name('coordinator.attendance.analytics');
         Route::get('generate-report', [ReportController::class, 'showReportForm'])->name('coordinator.generate.report');
         Route::post('generate-report', [ReportController::class, 'generateMonthlyReport'])->name('coordinator.generate.report.submit');
         Route::get('ojt-completion', [OjtCompletionController::class, 'index'])->name('coordinator.ojt.completion');
@@ -39,7 +42,8 @@ Route::prefix('coordinator')->group(function () {
         Route::post('ojt-completion/required-hours/{student}', [OjtCompletionController::class, 'updateRequiredHours'])->name('coordinator.ojt.completion.required-hours');
         Route::get('ojt-completion/certificate/{student}', [OjtCompletionController::class, 'downloadCertificate'])->name('coordinator.ojt.completion.certificate');
         Route::post('student/{student}/set-password', [OjtCompletionController::class, 'setStudentPassword'])->name('coordinator.student.set-password');
-        Route::get('duplicate-check', [DuplicateCheckController::class, 'index'])->name('coordinator.duplicate.check');
+        Route::get('settings', [CoordinatorSettingsController::class, 'index'])->name('coordinator.settings');
+        Route::post('settings/password', [CoordinatorSettingsController::class, 'updatePassword'])->name('coordinator.settings.password')->middleware('throttle:5,1');
         Route::post('logout', [CoordinatorAuthController::class, 'logout'])->name('coordinator.logout');
     });
 });
@@ -63,7 +67,9 @@ Route::prefix('student')->group(function () {
         Route::post('time-out', [AttendanceController::class, 'timeOut'])->name('student.timeout');
         Route::post('verify-face', [AttendanceController::class, 'verifyFaceEncoding'])->name('student.verify.face');
         Route::get('recent-logs', [AttendanceController::class, 'recentLogs'])->name('student.recentlogs');
-        Route::get('password/change', [StudentAuthController::class, 'showChangePasswordForm'])->name('student.password.change');
+        Route::get('attendance/{attendance}/verification-snapshot/{type}', [AttendanceController::class, 'viewVerificationSnapshot'])->where('type', 'morning|afternoon|timeout')->name('student.attendance.verification_snapshot');
+        Route::get('settings', [StudentSettingsController::class, 'index'])->name('student.settings');
+        Route::get('password/change', fn () => redirect()->route('student.settings'))->name('student.password.change');
         Route::post('password/change', [StudentAuthController::class, 'changePassword'])->name('student.password.change.submit')->middleware('throttle:5,1');
         Route::post('logout', [StudentAuthController::class, 'logout'])->name('student.logout');
     });

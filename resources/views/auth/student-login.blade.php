@@ -17,7 +17,7 @@
       --dtr-radius-lg: 1.25rem;
       --dtr-shadow-md: 0 4px 12px rgba(0,0,0,0.08);
       --dtr-shadow-lg: 0 10px 40px -10px rgba(79,70,229,0.25);
-      --dtr-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --dtr-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --dtr-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -222,6 +222,26 @@
       .login-card { padding: 2rem 1.5rem; }
       .login-header h1 { font-size: 1.5rem; }
     }
+    .input-wrapper.has-password-toggle .form-control { padding-right: 2.75rem; }
+    .password-toggle-btn {
+      position: absolute;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      border: none;
+      background: none;
+      color: #94a3b8;
+      cursor: pointer;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .password-toggle-btn:hover { color: var(--dtr-primary); background: rgba(79,70,229,0.08); }
   </style>
 </head>
 <body>
@@ -262,25 +282,6 @@
         @csrf
         <div class="form-group">
           <label class="form-label">
-            <i class="bi bi-book"></i>Program/Course
-          </label>
-          <div class="input-wrapper">
-            <i class="bi bi-mortarboard input-icon"></i>
-            <select name="course" class="form-select" required>
-              <option value="">Select Program</option>
-              <option value="GEOLOGY" {{ old('course') == 'GEOLOGY' ? 'selected' : '' }}>GEOLOGY</option>
-              <option value="PSYCHOLOGY" {{ old('course') == 'PSYCHOLOGY' ? 'selected' : '' }}>PSYCHOLOGY</option>
-              <option value="INFORMATION TECHNOLOGY" {{ old('course') == 'INFORMATION TECHNOLOGY' ? 'selected' : '' }}>INFORMATION TECHNOLOGY</option>
-              <option value="COMPUTER SCIENCE" {{ old('course') == 'COMPUTER SCIENCE' ? 'selected' : '' }}>COMPUTER SCIENCE</option>
-              <option value="HISTORY" {{ old('course') == 'HISTORY' ? 'selected' : '' }}>HISTORY</option>
-              <option value="MATHEMATICS" {{ old('course') == 'MATHEMATICS' ? 'selected' : '' }}>MATHEMATICS</option>
-            </select>
-          </div>
-          <small class="form-text">Please select your program before logging in</small>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
             <i class="bi bi-person"></i>Student Number
           </label>
           <div class="input-wrapper">
@@ -293,9 +294,10 @@
           <label class="form-label">
             <i class="bi bi-lock"></i>Password
           </label>
-          <div class="input-wrapper">
+          <div class="input-wrapper has-password-toggle">
             <i class="bi bi-key input-icon"></i>
             <input type="password" name="password" class="form-control" placeholder="Enter your password" required />
+            <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password" title="Show password"><i class="bi bi-eye"></i></button>
           </div>
           <div class="text-end mt-1">
             <a href="{{ route('student.password.request') }}" class="small text-decoration-none" style="color: var(--dtr-primary);">Forgot password?</a>
@@ -322,5 +324,28 @@
       </div>
     </div>
   </div>
+  <script>
+  document.body.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-password-toggle]');
+    if (!btn) return;
+    var wrap = btn.closest('.input-wrapper');
+    var input = wrap && wrap.querySelector('input');
+    var icon = btn.querySelector('i');
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.classList.remove('bi-eye');
+      icon.classList.add('bi-eye-slash');
+      btn.setAttribute('aria-label', 'Hide password');
+      btn.setAttribute('title', 'Hide password');
+    } else {
+      input.type = 'password';
+      icon.classList.remove('bi-eye-slash');
+      icon.classList.add('bi-eye');
+      btn.setAttribute('aria-label', 'Show password');
+      btn.setAttribute('title', 'Show password');
+    }
+  });
+  </script>
 </body>
 </html>

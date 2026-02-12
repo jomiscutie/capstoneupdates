@@ -71,7 +71,20 @@ class ReportController extends Controller
         $totalHours = floor($totalMinutes / 60);
         $remainingMinutes = $totalMinutes % 60;
         
-        // Prepare data for PDF
+        // NORSU seal: try base64 for PDF; skip on any failure so report still generates
+        $logoDataUri = null;
+        try {
+            $logoPath = public_path('images/norsu-seal.png');
+            if (is_file($logoPath) && is_readable($logoPath)) {
+                $contents = file_get_contents($logoPath);
+                if ($contents !== false && strlen($contents) > 0 && strlen($contents) < 500000) {
+                    $logoDataUri = 'data:image/png;base64,' . base64_encode($contents);
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Report logo skipped', ['error' => $e->getMessage()]);
+        }
+        
         $data = [
             'student' => $student,
             'month' => $date->format('F Y'),
@@ -86,17 +99,38 @@ class ReportController extends Controller
             'totalMinutes' => $remainingMinutes,
             'coordinator' => $coordinator,
             'generatedAt' => Carbon::now('Asia/Manila')->format('F d, Y h:i A'),
+            'logoDataUri' => $logoDataUri,
         ];
         
-        // Generate PDF
-        $pdf = Pdf::loadView('reports.monthly-attendance', $data);
-        $pdf->setPaper('A4', 'portrait');
-        
-        $filename = 'Attendance_Report_' . $student->student_no . '_' . $month . '.pdf';
-
+        try {
+            $pdf = Pdf::loadView('reports.monthly-attendance', $data);
+            $pdf->setPaper('A4', 'portrait');
+            $filename = 'Attendance_Report_' . $student->student_no . '_' . $month . '.pdf';
             return $pdf->download($filename);
         } catch (\Throwable $e) {
-            Log::error('Report generation failed', ['coordinator_id' => $coordinator->id ?? null, 'student_id' => $studentId, 'month' => $month, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            Log::error('Report generation failed', [
+                'coordinator_id' => $coordinator->id ?? null,
+                'student_id' => $studentId,
+                'month' => $month,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            // If we had a logo, retry without it (DomPDF can fail on large base64 images)
+            if ($logoDataUri !== null) {
+                try {
+                    $data['logoDataUri'] = null;
+                    $pdf = Pdf::loadView('reports.monthly-attendance', $data);
+                    $pdf->setPaper('A4', 'portrait');
+                    $filename = 'Attendance_Report_' . $student->student_no . '_' . $month . '.pdf';
+                    return $pdf->download($filename);
+                } catch (\Throwable $e2) {
+                    Log::error('Report retry without logo failed', ['error' => $e2->getMessage()]);
+                }
+            }
+            return back()->with('error', 'Unable to generate the report. Please try again. If the problem persists, contact support.');
+        }
+        } catch (\Throwable $e) {
+            Log::error('Report generation failed', ['coordinator_id' => $coordinator->id ?? null, 'student_id' => $studentId ?? null, 'month' => $month ?? null, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return back()->with('error', 'Unable to generate the report. Please try again. If the problem persists, contact support.');
         }
     }

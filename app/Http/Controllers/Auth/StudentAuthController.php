@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\FaceEncodingService;
 use Illuminate\Http\Request;
 use App\Models\Student;
 use Illuminate\Support\Facades\Auth;
@@ -20,18 +21,15 @@ class StudentAuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'course' => 'required',
             'student_no' => 'required',
             'password' => 'required',
         ]);
 
         $credentials = $request->only('student_no', 'password');
-        $selectedCourse = $request->input('course');
 
         if (Auth::guard('student')->attempt($credentials)) {
             $student = Auth::guard('student')->user();
 
-            // Must be verified by a coordinator before using the system
             if ($student->isPendingVerification()) {
                 Auth::guard('student')->logout();
                 return back()->withErrors(['student_no' => 'Your account is pending verification by your coordinator. Please contact your OJT coordinator to verify that you belong to their class before you can log in.'])->withInput();
@@ -39,12 +37,6 @@ class StudentAuthController extends Controller
             if ($student->isRejected()) {
                 Auth::guard('student')->logout();
                 return back()->withErrors(['student_no' => 'Your registration was not approved by your coordinator. Please contact your OJT coordinator if you believe this is an error.'])->withInput();
-            }
-
-            // Verify that the student's course matches the selected program
-            if ($student->course !== $selectedCourse) {
-                Auth::guard('student')->logout();
-                return back()->withErrors(['course' => 'The selected program does not match your account.'])->withInput();
             }
 
             $request->session()->regenerate();
@@ -56,7 +48,7 @@ class StudentAuthController extends Controller
         // Helpful message when student number exists (so they don't try to register again)
         $studentExists = Student::where('student_no', $request->student_no)->exists();
         $message = $studentExists
-            ? 'This student number is already registered. Please check your password and course selection, or use "Forgot password" if needed.'
+            ? 'Invalid password for this student number. Please try again or use "Forgot password" if needed.'
             : 'Invalid credentials. Please check your student number or register for an account.';
 
         return back()->withErrors(['student_no' => $message])->withInput();
@@ -88,9 +80,20 @@ class StudentAuthController extends Controller
             'student_no.unique' => 'This student number is already registered. Please log in instead.',
         ]);
 
-        // Explicit duplicate check with clear message (reinforces unique rule)
         if (Student::where('student_no', $studentNo)->exists()) {
             return back()->withErrors(['student_no' => 'This student number is already registered. Please log in instead.'])->withInput();
+        }
+
+        // Reject if this face is already registered to another account (same face, different name/ID)
+        $newEncoding = json_decode($request->face_encoding, true);
+        if (is_array($newEncoding) && count($newEncoding) === FaceEncodingService::ENCODING_LENGTH) {
+            $existingWithFace = Student::whereNotNull('face_encoding')->get();
+            foreach ($existingWithFace as $existing) {
+                $stored = json_decode($existing->face_encoding, true);
+                if (is_array($stored) && FaceEncodingService::isSamePerson($newEncoding, $stored)) {
+                    return back()->withErrors(['face_encoding' => 'This face is already registered to another account. One person cannot register with multiple names or student numbers.'])->withInput();
+                }
+            }
         }
 
         $student = Student::create([
@@ -154,6 +157,6 @@ class StudentAuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return redirect()->route('student.dashboard')->with('success', 'Your password has been updated. You can continue using the dashboard.');
+        return redirect()->route('student.settings')->with('success', 'Your password has been updated.');
     }
 }

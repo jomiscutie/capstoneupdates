@@ -19,7 +19,7 @@
             --dtr-radius-lg: 1.25rem;
             --dtr-radius-xl: 1.5rem;
             --dtr-shadow-md: 0 4px 20px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
-            --dtr-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --dtr-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             --dtr-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
             --dtr-transition: 0.35s var(--dtr-ease-out);
         }
