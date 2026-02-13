@@ -299,7 +299,7 @@
             <input type="password" name="password" class="form-control" placeholder="Enter your password" required />
             <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password" title="Show password"><i class="bi bi-eye"></i></button>
           </div>
-          <div class="text-end mt-1">
+          <div class="text-center mt-1">
             <a href="{{ route('student.password.request') }}" class="small text-decoration-none" style="color: var(--dtr-primary);">Forgot password?</a>
           </div>
         </div>

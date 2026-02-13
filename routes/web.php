@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\StudentAuthController;
 use App\Http\Controllers\Auth\CoordinatorAuthController;
 use App\Http\Controllers\Auth\UnifiedAuthController;
@@ -44,6 +43,7 @@ Route::prefix('coordinator')->group(function () {
         Route::post('student/{student}/set-password', [OjtCompletionController::class, 'setStudentPassword'])->name('coordinator.student.set-password');
         Route::get('settings', [CoordinatorSettingsController::class, 'index'])->name('coordinator.settings');
         Route::post('settings/password', [CoordinatorSettingsController::class, 'updatePassword'])->name('coordinator.settings.password')->middleware('throttle:5,1');
+        Route::post('settings/students/{student}/remove', [CoordinatorSettingsController::class, 'removeStudent'])->name('coordinator.settings.student.remove');
         Route::post('logout', [CoordinatorAuthController::class, 'logout'])->name('coordinator.logout');
     });
 });
@@ -77,5 +77,3 @@ Route::prefix('student')->group(function () {
 
 // -------------------- Home Route --------------------
 Route::get('/', [UnifiedAuthController::class, 'showLoginForm'])->name('login.selector');
-
-// -------------------- Logout Functionality -------------------

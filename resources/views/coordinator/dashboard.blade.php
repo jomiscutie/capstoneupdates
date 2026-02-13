@@ -24,15 +24,6 @@
     .action-card h3 { font-size: 1rem; font-weight: 600; color: var(--dtr-text); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
     .action-card p { font-size: 0.85rem; color: var(--dtr-muted); margin-bottom: 1rem; line-height: 1.45; }
     .action-card .btn-minimal { min-height: 40px; }
-    .absent-section { background: var(--dtr-card-bg); border-radius: 10px; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 1px 2px rgba(0,0,0,0.04); padding: 1.2rem; margin-bottom: 1.5rem; }
-    .absent-section h3 { font-size: 1rem; font-weight: 600; color: var(--dtr-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-    .absent-section h3 .count { background: #dc2626; color: #fff; font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 6px; }
-    .absent-table { width: 100%; font-size: 0.9rem; }
-    .absent-table th { text-align: left; padding: 0.5rem 0.75rem; color: var(--dtr-muted); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; border-bottom: 1px solid #eee; }
-    .absent-table td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #f5f5f5; }
-    .absent-table tbody tr:last-child td { border-bottom: none; }
-    .absent-table .empty-msg { color: var(--dtr-muted); padding: 1rem 0.75rem; }
-    .absent-section .view-all { font-size: 0.85rem; font-weight: 500; margin-top: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; }
 </style>
 @endpush
 
@@ -77,45 +68,6 @@
             <div class="sub-label">Today</div>
             <div class="number">{{ $lateArrivalsToday ?? 0 }}</div>
         </div>
-    </div>
-
-    <div class="absent-section">
-        <h3>
-            <i class="bi bi-person-x"></i>
-            Not yet timed in today
-            @if(($absentTodayStudents ?? collect())->isNotEmpty())
-                <span class="count">{{ $absentTodayStudents->count() }}</span>
-            @endif
-        </h3>
-        @if(($absentTodayStudents ?? collect())->isEmpty())
-            <p class="empty-msg mb-0"><i class="bi bi-check-circle text-success me-2"></i>All students have timed in today.</p>
-        @else
-            <table class="absent-table">
-                <thead>
-                    <tr>
-                        <th>Student No</th>
-                        <th>Name</th>
-                        <th>Course</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach(($absentTodayStudents ?? collect())->take(10) as $s)
-                        <tr>
-                            <td>{{ $s->student_no }}</td>
-                            <td>{{ $s->name }}</td>
-                            <td>{{ $s->course ?? '-' }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            @if($absentTodayStudents->count() > 10)
-                <a href="{{ route('coordinator.absent.today') }}" class="view-all">
-                    View all {{ $absentTodayStudents->count() }} students <i class="bi bi-arrow-right"></i>
-                </a>
-            @elseif($absentTodayStudents->count() > 0)
-                <a href="{{ route('coordinator.absent.today') }}" class="view-all">View full list <i class="bi bi-arrow-right"></i></a>
-            @endif
-        @endif
     </div>
 
     <div class="actions-grid">

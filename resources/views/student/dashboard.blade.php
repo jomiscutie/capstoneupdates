@@ -323,13 +323,30 @@ document.body.addEventListener('click', function (e) {
 <script>
 function updateClock() {
     const now = new Date();
-    const options = { timeZone: 'Asia/Manila', hour12: false };
     const clockEl = document.getElementById('clock');
     const dayEl = document.getElementById('day');
     const monthYearEl = document.getElementById('month-year');
-    if (clockEl) clockEl.innerText = now.toLocaleTimeString('en-US', options);
-    if (dayEl) dayEl.innerText = now.toLocaleDateString('en-US', options);
-    if (monthYearEl) monthYearEl.innerText = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'Asia/Manila' });
+    if (clockEl) {
+        clockEl.innerText = now.toLocaleTimeString('en-US', {
+            timeZone: 'Asia/Manila',
+            hour12: true,
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit',
+        });
+    }
+    if (dayEl) {
+        dayEl.innerText = now.toLocaleDateString('en-US', {
+            timeZone: 'Asia/Manila',
+        });
+    }
+    if (monthYearEl) {
+        monthYearEl.innerText = now.toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric',
+            timeZone: 'Asia/Manila',
+        });
+    }
 }
 if (document.getElementById('clock')) {
     setInterval(updateClock, 1000);

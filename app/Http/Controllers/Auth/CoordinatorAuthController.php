@@ -113,12 +113,6 @@ class CoordinatorAuthController extends Controller
         $studentsTimedIn = $studentIdsPresentToday->count();
         $studentsNotTimedIn = $totalStudents - $studentsTimedIn;
 
-        $absentTodayStudents = \App\Models\Student::forCoordinator($coordinator)
-            ->verified()
-            ->whereNotIn('id', $studentIdsPresentToday)
-            ->orderBy('name')
-            ->get();
-
         // Count late arrivals today (both morning and afternoon)
         $lateArrivalsToday = \App\Models\Attendance::whereIn('student_id', $studentIds)
             ->where('date', $today)
@@ -129,7 +123,7 @@ class CoordinatorAuthController extends Controller
             ->distinct('student_id')
             ->count('student_id');
 
-        return view('coordinator.dashboard', compact('totalStudents', 'studentsTimedIn', 'studentsNotTimedIn', 'students', 'lateArrivalsToday', 'pendingVerificationCount', 'absentTodayStudents'));
+        return view('coordinator.dashboard', compact('totalStudents', 'studentsTimedIn', 'studentsNotTimedIn', 'students', 'lateArrivalsToday', 'pendingVerificationCount'));
     }
 
     /**

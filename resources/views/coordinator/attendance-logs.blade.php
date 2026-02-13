@@ -81,35 +81,35 @@
     .dtr-attendance .table tbody tr:last-child td { border-bottom: none; }
     .dtr-attendance .table tbody tr:hover { background: #f8fafc; }
     .dtr-attendance .alert { border-radius: 10px; border: 1px solid var(--attendance-border); }
-    .dtr-attendance .search-wrap { margin-bottom: 1.25rem; }
-    .dtr-attendance .search-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; max-width: 520px; }
-    .dtr-attendance .search-inner { position: relative; flex: 1; min-width: 220px; }
+    .dtr-attendance .search-wrap { margin-bottom: 1rem; }
+    .dtr-attendance .search-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; max-width: 320px; }
+    .dtr-attendance .search-inner { position: relative; flex: 1; min-width: 160px; }
     .dtr-attendance .search-input {
-        width: 100%; padding: 0.625rem 2.75rem 0.625rem 2.5rem;
-        font-size: 0.9375rem; border: 1px solid var(--attendance-border); border-radius: 10px;
+        width: 100%; padding: 0.45rem 2rem 0.45rem 2.25rem;
+        font-size: 0.875rem; border: 1px solid #1a1a1a; border-radius: 8px;
         background: var(--attendance-surface); color: var(--attendance-text);
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .dtr-attendance .search-input::placeholder { color: #94a3b8; }
     .dtr-attendance .search-input:focus {
         outline: none; border-color: var(--dtr-primary);
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
     }
     .dtr-attendance .search-icon {
-        position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
-        color: #94a3b8; font-size: 1rem; pointer-events: none;
+        position: absolute; left: 0.65rem; top: 50%; transform: translateY(-50%);
+        color: #94a3b8; font-size: 0.9rem; pointer-events: none;
     }
     .dtr-attendance .search-clear {
-        position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%);
-        width: 28px; height: 28px; border: none; border-radius: 8px;
+        position: absolute; right: 0.35rem; top: 50%; transform: translateY(-50%);
+        width: 24px; height: 24px; border: none; border-radius: 6px;
         background: transparent; color: #64748b;
         display: inline-flex; align-items: center; justify-content: center;
         cursor: pointer; transition: background 0.2s, color 0.2s; text-decoration: none; font-size: 0.8125rem;
     }
     .dtr-attendance .search-clear:hover { background: #f1f5f9; color: var(--attendance-text); }
     .dtr-attendance .btn-search {
-        padding: 0.625rem 1.125rem; font-size: 0.875rem; font-weight: 600;
-        border-radius: 10px; white-space: nowrap; flex-shrink: 0;
+        padding: 0.45rem 0.9rem; font-size: 0.8125rem; font-weight: 600;
+        border-radius: 8px; white-space: nowrap; flex-shrink: 0;
         letter-spacing: 0.02em;
     }
     .dtr-attendance .search-hint { font-size: 0.8125rem; color: var(--attendance-muted); margin-top: 0.5rem; }
@@ -132,7 +132,7 @@
     .dtr-attendance .card-body form.row { align-items: center; }
     .dtr-attendance .card-body form .btn-primary.btn-sm { min-height: 31px; display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.75rem; font-weight: 600; font-size: 0.875rem; border-radius: 10px; letter-spacing: 0.02em; }
     .dtr-attendance .search-row { align-items: center; }
-    .dtr-attendance .search-input { min-height: 42px; }
+    .dtr-attendance .search-input { min-height: 34px; }
     .dtr-attendance .btn-search { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; }
     .dtr-attendance .view-student-bar {
         display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem;
