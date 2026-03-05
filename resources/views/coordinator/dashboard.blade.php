@@ -4,14 +4,15 @@
 
 @push('styles')
 <style>
-    .page-title { font-size: 1.5rem; font-weight: 600; color: var(--dtr-text); margin-bottom: 0.35rem; }
-    .page-sub { font-size: 0.9rem; color: var(--dtr-muted); margin-bottom: 1.5rem; }
-    .program-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; background: #f0f4ff; color: var(--dtr-primary); border-radius: 6px; font-size: 0.8rem; font-weight: 500; margin-top: 0.5rem; }
-    .info-alert { background: #f8fafc; border-left: 3px solid var(--dtr-primary); border-radius: 6px; padding: 0.9rem 1.1rem; margin-bottom: 1.5rem; font-size: 0.9rem; }
+    .page-title { font-size: 1.5rem; font-weight: 600; color: var(--dtr-text); margin-bottom: 0.35rem; text-align: center; }
+    .page-sub { font-size: 0.9rem; color: var(--dtr-muted); margin: 0 auto 1.5rem; text-align: center; max-width: 720px; }
+    .program-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; background: var(--dtr-surface-soft); color: var(--dtr-primary); border-radius: 6px; font-size: 0.8rem; font-weight: 500; margin-top: 0.5rem; }
+    .program-badge-wrap { text-align: center; margin-bottom: 0.5rem; }
+    .info-alert { background: var(--dtr-surface-soft); border-left: 3px solid var(--dtr-primary); border-radius: 6px; padding: 0.9rem 1.1rem; margin-bottom: 1.5rem; font-size: 0.9rem; text-align: center; }
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .stat-card { background: var(--dtr-card-bg); padding: 1.2rem; border-radius: 10px; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    .stat-card { background: var(--dtr-card-bg); padding: 1.2rem; border-radius: 10px; border: 1px solid var(--dtr-border-soft); box-shadow: var(--dtr-shadow-soft); }
     .stat-card .label { font-size: 0.75rem; color: var(--dtr-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-bottom: 0.25rem; }
-    .stat-card .sub-label { font-size: 0.7rem; color: #94a3b8; margin-bottom: 0.5rem; }
+    .stat-card .sub-label { font-size: 0.7rem; color: var(--dtr-muted); margin-bottom: 0.5rem; }
     .stat-card .number { font-size: 1.65rem; font-weight: 700; color: var(--dtr-text); font-variant-numeric: tabular-nums; }
     .stat-card .stat-icon { font-size: 1.2rem; margin-bottom: 0.5rem; }
     .stat-card.primary .stat-icon { color: var(--dtr-primary); }
@@ -19,7 +20,7 @@
     .stat-card.danger .stat-icon { color: #dc2626; }
     .stat-card.warning .stat-icon { color: #d97706; }
     .actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
-    .action-card { background: var(--dtr-card-bg); padding: 1.2rem; border-radius: 10px; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: border-color 0.15s ease; }
+    .action-card { background: var(--dtr-card-bg); padding: 1.2rem; border-radius: 10px; border: 1px solid var(--dtr-border-soft); box-shadow: var(--dtr-shadow-soft); transition: border-color 0.15s ease; }
     .action-card:hover { border-color: rgba(37,99,235,0.15); }
     .action-card h3 { font-size: 1rem; font-weight: 600; color: var(--dtr-text); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
     .action-card p { font-size: 0.85rem; color: var(--dtr-muted); margin-bottom: 1rem; line-height: 1.45; }
@@ -31,9 +32,11 @@
     <h1 class="page-title">Dashboard</h1>
     <p class="page-sub">Welcome back, {{ auth()->guard('coordinator')->user()->name }}</p>
     @if(auth()->guard('coordinator')->user()->major)
+        <div class="program-badge-wrap">
         <div class="program-badge">
             <i class="bi bi-mortarboard"></i>
             <span>{{ auth()->guard('coordinator')->user()->major }}</span>
+        </div>
         </div>
     @endif
 

@@ -4,29 +4,41 @@
 
 @push('styles')
 <style>
-    .progress-card { border-radius: 12px; padding: 1.25rem 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04); background: #fff; max-width: 280px; margin-bottom: 1.5rem; }
+    .progress-card {
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        border: 1px solid var(--dtr-border-soft);
+        box-shadow: var(--dtr-shadow-soft);
+        background: var(--dtr-card-bg);
+        max-width: 280px;
+        margin-bottom: 1.5rem;
+    }
     .progress-card .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
     .progress-card .card-header i { color: var(--dtr-primary, #4f46e5); }
-    .progress-card .card-header h4 { font-size: 1rem; font-weight: 600; color: #0f172a; margin: 0; }
+    .progress-card .card-header h4 { font-size: 1rem; font-weight: 600; color: var(--dtr-text); margin: 0; }
     .progress-stats { display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 0.75rem; align-items: baseline; }
-    .progress-stat-label { font-size: 0.8125rem; color: #64748b; font-weight: 500; }
-    .progress-stat-value { font-size: 1rem; font-weight: 600; color: #1e293b; font-variant-numeric: tabular-nums; }
+    .progress-stat-label { font-size: 0.8125rem; color: var(--dtr-muted); font-weight: 500; }
+    .progress-stat-value { font-size: 1rem; font-weight: 600; color: var(--dtr-text); font-variant-numeric: tabular-nums; }
     .progress-bar-wrap { display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.75rem; }
-    .progress-bar-track { width: 100%; max-width: 160px; height: 14px; background: #e2e8f0; border: 1.5px solid #cbd5e1; border-radius: 6px; overflow: hidden; box-sizing: border-box; }
+    .progress-bar-track { width: 100%; max-width: 160px; height: 14px; background: var(--dtr-surface-soft); border: 1.5px solid var(--dtr-input-border); border-radius: 6px; overflow: hidden; box-sizing: border-box; }
     .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #16a34a, #22c55e); border-radius: 5px; transition: width 0.3s ease; }
-    .progress-bar-label { font-size: 0.8125rem; font-weight: 600; color: #475569; }
+    .progress-bar-label { font-size: 0.8125rem; font-weight: 600; color: var(--dtr-muted); }
     .dtr-attendance-history {
-        --attendance-text: #1e293b;
-        --attendance-muted: #64748b;
-        --attendance-border: #e2e8f0;
-        --attendance-surface: #ffffff;
-        --attendance-heading: #0f172a;
+        --attendance-text: var(--dtr-text);
+        --attendance-muted: var(--dtr-muted);
+        --attendance-border: var(--dtr-border-soft);
+        --attendance-surface: var(--dtr-card-bg);
+        --attendance-heading: var(--dtr-text);
+        --attendance-surface-soft: var(--dtr-surface-soft);
+        --attendance-hover: var(--dtr-hover-bg);
     }
+    .dtr-attendance-history .page-title { text-align: center; }
+    .dtr-attendance-history .page-sub { text-align: center; max-width: 720px; margin-left: auto; margin-right: auto; }
     .dtr-attendance-history .card {
         border-radius: 12px;
         padding: 1.5rem 1.75rem;
         border: 1px solid var(--attendance-border);
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        box-shadow: var(--dtr-shadow-soft);
         background: var(--attendance-surface);
     }
     .dtr-attendance-history .card h4 {
@@ -42,7 +54,7 @@
         border-radius: 10px;
         overflow: hidden;
         border: 1px solid var(--attendance-border);
-        background: #f8fafc;
+        background: var(--attendance-surface-soft);
     }
     .dtr-attendance-history .filter-tabs label {
         margin: 0;
@@ -58,7 +70,7 @@
     .dtr-attendance-history .filter-tabs input:checked + label {
         background: var(--attendance-surface);
         color: var(--dtr-primary);
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
     }
     .dtr-attendance-history .filter-panel { display: none; }
     .dtr-attendance-history .filter-panel.active { display: block; }
@@ -67,6 +79,12 @@
         border-radius: 10px;
         font-size: 0.9375rem;
         padding: 0.5rem 0.75rem;
+        background: var(--dtr-input-bg);
+        color: var(--attendance-text);
+    }
+    .dtr-attendance-history .filter-form .form-control:focus {
+        border-color: var(--dtr-primary);
+        box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.2);
     }
     .dtr-attendance-history .filter-form .btn-primary {
         padding: 0.5rem 1rem;
@@ -82,7 +100,7 @@
     }
     .dtr-attendance-history .table-responsive .table { min-width: 600px; margin-bottom: 0; }
     .dtr-attendance-history .table thead th {
-        background: #f8fafc;
+        background: var(--attendance-surface-soft);
         color: var(--attendance-muted);
         font-weight: 600;
         font-size: 0.6875rem;
@@ -94,26 +112,23 @@
     .dtr-attendance-history .table tbody td {
         padding: 0.875rem 1.125rem;
         vertical-align: middle;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid var(--attendance-border);
         font-size: 0.875rem;
         color: var(--attendance-text);
     }
     .dtr-attendance-history .table tbody tr:last-child td { border-bottom: none; }
-    .dtr-attendance-history .table tbody tr:hover { background: #f8fafc; }
+    .dtr-attendance-history .table tbody tr:hover { background: var(--attendance-hover); }
     .dtr-attendance-history .empty-state {
         text-align: center;
         padding: 2.5rem 1.5rem;
         color: var(--attendance-muted);
     }
-    .dtr-attendance-history .empty-state i { font-size: 2.5rem; color: #e2e8f0; margin-bottom: 0.75rem; display: block; }
+    .dtr-attendance-history .empty-state i { font-size: 2.5rem; color: var(--attendance-muted); opacity: 0.45; margin-bottom: 0.75rem; display: block; }
 </style>
 @endpush
 
 @section('content')
 <div class="dtr-attendance-history">
-    <a href="{{ route('student.dashboard') }}" class="back-link d-inline-block mb-2">
-        <i class="bi bi-arrow-left"></i> Dashboard
-    </a>
     <h1 class="page-title">Attendance Logs and Progress</h1>
     <p class="page-sub mb-3">View by month or week</p>
 

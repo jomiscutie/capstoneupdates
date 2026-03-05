@@ -82,7 +82,7 @@
             padding: clamp(2rem, 4vw, 2.5rem);
             text-align: center;
             box-shadow: var(--dtr-shadow-md), inset 0 1px 0 rgba(255,255,255,0.9);
-            transition: transform var(--dtr-transition), box-shadow var(--dtr-transition);
+            transition: box-shadow var(--dtr-transition);
             border: 1px solid var(--dtr-glass-border);
             cursor: pointer;
             text-decoration: none;
@@ -108,7 +108,6 @@
         }
         .login-card.student::before { background: linear-gradient(135deg, transparent, var(--dtr-success)); }
         .login-card:hover {
-            transform: translateY(-8px);
             box-shadow: 0 24px 56px -16px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.5);
         }
         .login-card.student:hover {
@@ -127,7 +126,7 @@
             align-items: center;
             justify-content: center;
             font-size: 2.25rem;
-            transition: transform var(--dtr-transition);
+            transition: none;
             position: relative;
         }
         .icon-wrapper::after {
@@ -136,11 +135,10 @@
             inset: -3px;
             border-radius: 50%;
             border: 2px solid transparent;
-            transition: border-color var(--dtr-transition), transform var(--dtr-transition);
+            transition: border-color var(--dtr-transition);
         }
         .login-card:hover .icon-wrapper::after {
             border-color: rgba(255,255,255,0.5);
-            transform: scale(1.05);
         }
         .login-card.student .icon-wrapper {
             background: linear-gradient(135deg, var(--dtr-success) 0%, var(--dtr-success-dark) 100%);
@@ -151,9 +149,6 @@
             background: linear-gradient(135deg, var(--dtr-primary) 0%, var(--dtr-primary-dark) 100%);
             color: #fff;
             box-shadow: 0 8px 24px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
-        }
-        .login-card:hover .icon-wrapper {
-            transform: scale(1.1);
         }
         .login-card h3 {
             font-size: 1.35rem;
@@ -206,26 +201,17 @@
         <div class="header-section">
             <img src="{{ asset('images/norsu-seal.png') }}" alt="NORSU" class="norsu-logo" />
             <h1>Welcome to NORSU OJT DTR</h1>
-            <p>Please select your login type to continue</p>
+            <p>Please continue to unified login</p>
         </div>
 
         <div class="login-cards">
-            <a href="{{ route('student.login') }}" class="login-card student">
+            <a href="{{ route('login') }}" class="login-card coordinator">
                 <div class="icon-wrapper">
-                    <i class="bi bi-person-badge"></i>
+                    <i class="bi bi-box-arrow-in-right"></i>
                 </div>
-                <h3>Student Login</h3>
-                <p>Access your attendance records, time in/out, and view your daily logs</p>
-                <span class="login-btn">Login as Student</span>
-            </a>
-
-            <a href="{{ route('coordinator.login') }}" class="login-card coordinator">
-                <div class="icon-wrapper">
-                    <i class="bi bi-person-gear"></i>
-                </div>
-                <h3>Coordinator Login</h3>
-                <p>Manage student attendance, view reports, and monitor daily activities</p>
-                <span class="login-btn">Login as Coordinator</span>
+                <h3>Unified Login</h3>
+                <p>Students and coordinators can sign in from one page.</p>
+                <span class="login-btn">Proceed to Login</span>
             </a>
         </div>
     </div>

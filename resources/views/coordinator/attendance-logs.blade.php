@@ -5,11 +5,13 @@
 @push('styles')
 <style>
     .dtr-attendance {
-        --attendance-text: #1e293b;
-        --attendance-muted: #64748b;
-        --attendance-border: #e2e8f0;
-        --attendance-surface: #ffffff;
-        --attendance-heading: #0f172a;
+        --attendance-text: var(--dtr-text);
+        --attendance-muted: var(--dtr-muted);
+        --attendance-border: var(--dtr-border-soft);
+        --attendance-surface: var(--dtr-card-bg);
+        --attendance-heading: var(--dtr-text);
+        --attendance-surface-soft: var(--dtr-surface-soft);
+        --attendance-hover: var(--dtr-hover-bg);
     }
     .dtr-attendance .back-link {
         display: inline-flex; align-items: center; gap: 0.35rem;
@@ -20,23 +22,23 @@
     .dtr-attendance .back-link:hover { color: var(--dtr-primary); }
     .dtr-attendance .page-title {
         font-size: 1.5rem; font-weight: 600; color: var(--attendance-heading);
-        margin-bottom: 0.25rem; letter-spacing: -0.02em; line-height: 1.3;
+        margin-bottom: 0.25rem; letter-spacing: -0.02em; line-height: 1.3; text-align: center;
     }
     .dtr-attendance .page-sub {
         font-size: 0.875rem; color: var(--attendance-muted);
-        margin-bottom: 1.5rem; letter-spacing: 0.01em;
+        margin: 0 auto 1.5rem; letter-spacing: 0.01em; text-align: center; max-width: 760px;
     }
     .dtr-attendance .stats-box {
         background: var(--attendance-surface);
         border: 1px solid var(--attendance-border);
         border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        box-shadow: var(--dtr-shadow-soft);
         padding: 1.25rem 1rem;
         text-align: center;
         margin-bottom: 1rem;
         transition: box-shadow 0.2s ease, border-color 0.2s ease;
     }
-    .dtr-attendance .stats-box:hover { box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.06); }
+    .dtr-attendance .stats-box:hover { box-shadow: var(--dtr-shadow-soft); }
     .dtr-attendance .stats-box h4 {
         font-size: 0.6875rem; font-weight: 600; color: var(--attendance-muted);
         text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem;
@@ -48,7 +50,7 @@
         border-radius: 12px;
         padding: 1.5rem 1.75rem;
         border: 1px solid var(--attendance-border);
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        box-shadow: var(--dtr-shadow-soft);
         background: var(--attendance-surface);
     }
     .dtr-attendance .card h4 {
@@ -62,7 +64,7 @@
     }
     .dtr-attendance .table-responsive .table { min-width: 700px; margin-bottom: 0; }
     .dtr-attendance .table thead th {
-        background: #f8fafc;
+        background: var(--attendance-surface-soft);
         color: var(--attendance-muted);
         font-weight: 600;
         font-size: 0.6875rem;
@@ -74,39 +76,52 @@
     .dtr-attendance .table tbody td {
         padding: 0.875rem 1.125rem;
         vertical-align: middle;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid var(--attendance-border);
         font-size: 0.875rem;
         color: var(--attendance-text);
     }
     .dtr-attendance .table tbody tr:last-child td { border-bottom: none; }
-    .dtr-attendance .table tbody tr:hover { background: #f8fafc; }
+    .dtr-attendance .table tbody tr:hover { background: var(--attendance-hover); }
     .dtr-attendance .alert { border-radius: 10px; border: 1px solid var(--attendance-border); }
+    .dtr-attendance .alert-info {
+        background: var(--attendance-surface-soft);
+        color: var(--attendance-text);
+        border-color: var(--attendance-border);
+    }
+    .dtr-attendance .alert-info i {
+        color: var(--dtr-primary);
+    }
     .dtr-attendance .search-wrap { margin-bottom: 1rem; }
     .dtr-attendance .search-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; max-width: 320px; }
     .dtr-attendance .search-inner { position: relative; flex: 1; min-width: 160px; }
     .dtr-attendance .search-input {
-        width: 100%; padding: 0.45rem 2rem 0.45rem 2.25rem;
-        font-size: 0.875rem; border: 1px solid #1a1a1a; border-radius: 8px;
-        background: var(--attendance-surface); color: var(--attendance-text);
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        width: 100%; padding: 0.4rem 2rem 0.4rem 2rem;
+        font-size: 0.875rem;
+        border: none;
+        border-bottom: 2px solid var(--dtr-input-border);
+        border-radius: 0;
+        background: transparent;
+        color: var(--attendance-text);
+        transition: border-color 0.15s ease, background-color 0.15s ease;
     }
-    .dtr-attendance .search-input::placeholder { color: #94a3b8; }
+    .dtr-attendance .search-input::placeholder { color: var(--attendance-muted); }
     .dtr-attendance .search-input:focus {
         outline: none; border-color: var(--dtr-primary);
-        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+        background-color: rgba(37, 99, 235, 0.04);
+        box-shadow: none;
     }
     .dtr-attendance .search-icon {
         position: absolute; left: 0.65rem; top: 50%; transform: translateY(-50%);
-        color: #94a3b8; font-size: 0.9rem; pointer-events: none;
+        color: var(--attendance-muted); font-size: 0.9rem; pointer-events: none;
     }
     .dtr-attendance .search-clear {
-        position: absolute; right: 0.35rem; top: 50%; transform: translateY(-50%);
+        position: absolute; right: 0.2rem; top: 50%; transform: translateY(-50%);
         width: 24px; height: 24px; border: none; border-radius: 6px;
-        background: transparent; color: #64748b;
+        background: transparent; color: var(--attendance-muted);
         display: inline-flex; align-items: center; justify-content: center;
-        cursor: pointer; transition: background 0.2s, color 0.2s; text-decoration: none; font-size: 0.8125rem;
+        cursor: pointer; transition: color 0.2s; text-decoration: none; font-size: 0.8125rem;
     }
-    .dtr-attendance .search-clear:hover { background: #f1f5f9; color: var(--attendance-text); }
+    .dtr-attendance .search-clear:hover { background: transparent; color: var(--attendance-text); }
     .dtr-attendance .btn-search {
         padding: 0.45rem 0.9rem; font-size: 0.8125rem; font-weight: 600;
         border-radius: 8px; white-space: nowrap; flex-shrink: 0;
@@ -115,7 +130,7 @@
     .dtr-attendance .search-hint { font-size: 0.8125rem; color: var(--attendance-muted); margin-top: 0.5rem; }
     .dtr-attendance .filter-tabs {
         display: flex; gap: 0; border-radius: 10px; overflow: hidden;
-        border: 1px solid var(--attendance-border); background: #f8fafc;
+        border: 1px solid var(--attendance-border); background: var(--attendance-surface-soft);
     }
     .dtr-attendance .filter-tabs label {
         margin: 0; cursor: pointer; padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500;
@@ -137,12 +152,12 @@
     .dtr-attendance .view-student-bar {
         display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem;
         padding: 0.75rem 1.25rem; margin-bottom: 1.25rem;
-        background: #f0f9ff; border: 1px solid #bae6fd;
+        background: var(--attendance-surface-soft); border: 1px solid var(--attendance-border);
         border-radius: 10px; font-size: 0.875rem;
         letter-spacing: 0.01em;
     }
     .dtr-attendance .view-student-bar .view-student-label { color: var(--attendance-text); font-weight: 500; }
-    .dtr-attendance .view-student-bar .view-student-name { color: #0369a1; font-weight: 600; }
+    .dtr-attendance .view-student-bar .view-student-name { color: var(--dtr-primary); font-weight: 600; }
     .dtr-attendance .view-student-bar .btn-show-all {
         padding: 0.375rem 0.75rem; font-size: 0.8125rem; font-weight: 600;
         border-radius: 8px; letter-spacing: 0.02em;
@@ -155,11 +170,11 @@
     .dtr-attendance .student-list { list-style: none; padding: 0; margin: 0; }
     .dtr-attendance .student-list li {
         display: flex; align-items: center; flex-wrap: nowrap; gap: 1rem;
-        padding: 0.875rem 0; border-bottom: 1px solid #f1f5f9;
+        padding: 0.875rem 0; border-bottom: 1px solid var(--attendance-border);
         transition: background 0.2s ease;
     }
     .dtr-attendance .student-list li:last-child { border-bottom: none; }
-    .dtr-attendance .student-list li:hover { background: #f8fafc; padding-left: 0.5rem; padding-right: 0.5rem; margin: 0 -0.5rem; border-radius: 8px; }
+    .dtr-attendance .student-list li:hover { background: var(--attendance-hover); padding-left: 0.5rem; padding-right: 0.5rem; margin: 0 -0.5rem; border-radius: 8px; }
     .dtr-attendance .student-list .student-name {
         font-weight: 600; color: var(--attendance-text); width: 200px; min-width: 200px; flex-shrink: 0;
         font-size: 0.9375rem; letter-spacing: 0.01em;
@@ -173,8 +188,22 @@
         border-radius: 10px; letter-spacing: 0.02em;
         flex-shrink: 0; margin-left: auto; display: inline-flex; align-items: center; justify-content: center;
     }
-    .dtr-attendance .text-center.py-4.text-muted .fs-2 { color: #cbd5e1; }
+    .dtr-attendance .text-center.py-4.text-muted .fs-2 { color: var(--attendance-muted); opacity: 0.45; }
     .dtr-attendance .text-muted.mb-0 { font-size: 0.9375rem; color: var(--attendance-muted); }
+    html[data-theme="dark"] .dtr-attendance .stats-box {
+        background: #0f172a;
+        border-color: #334155;
+    }
+    html[data-theme="dark"] .dtr-attendance .card {
+        background: #0f172a;
+        border-color: #334155;
+    }
+    html[data-theme="dark"] .dtr-attendance .table thead th {
+        background: #1e293b;
+    }
+    html[data-theme="dark"] .dtr-attendance .table tbody tr:hover {
+        background: rgba(148, 163, 184, 0.12);
+    }
 </style>
 @endpush
 
@@ -184,9 +213,6 @@
     $major = $coordinator->major ?? null;
 @endphp
 <div class="dtr-attendance">
-    <a href="{{ route('coordinator.dashboard') }}" class="back-link d-inline-block">
-        <i class="bi bi-arrow-left"></i> Dashboard
-    </a>
     <h1 class="page-title">Attendance Logs</h1>
     <p class="page-sub">Attendance Management @if(($filter ?? 'month') === 'week' && !empty($weekLabel)) — {{ $weekLabel }} @else — {{ now()->format('F Y') }}@endif @if($major) · {{ $major }}@endif</p>
 
@@ -443,7 +469,7 @@
             @else
             @if(!empty($search ?? ''))
             <div class="text-center py-4 text-muted">
-                <i class="bi bi-search d-block fs-2 mb-2" style="color: #cbd5e1;"></i>
+                <i class="bi bi-search d-block fs-2 mb-2" style="color: var(--dtr-muted); opacity: 0.45;"></i>
                 <p class="mb-0 fw-medium">No logs match "{{ e($search) }}"</p>
                 <p class="small mt-1 mb-0">Try a different name or student number, or <a href="{{ route('coordinator.attendance.logs', array_filter(['month' => request('month', now()->format('Y-m')), 'filter' => $filter ?? 'month', 'week' => ($filter ?? '') === 'week' ? ($weekInput ?? null) : null])) }}">clear the search</a>.</p>
             </div>

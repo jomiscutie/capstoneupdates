@@ -19,7 +19,7 @@ Route::post('/login', [UnifiedAuthController::class, 'login'])->middleware('thro
 // -------------------- Coordinator Routes --------------------
 Route::prefix('coordinator')->group(function () {
     Route::middleware('guest:coordinator')->group(function () {
-        Route::get('login', [CoordinatorAuthController::class, 'showLoginForm'])->name('coordinator.login');
+        Route::get('login', fn () => redirect()->route('login'))->name('coordinator.login');
         Route::post('login', [CoordinatorAuthController::class, 'login'])->name('coordinator.login.submit')->middleware('throttle:5,1');
         Route::get('register', [CoordinatorAuthController::class, 'showRegisterForm'])->name('coordinator.register');
         Route::post('register', [CoordinatorAuthController::class, 'register'])->name('coordinator.register.submit')->middleware('throttle:5,1');
@@ -51,7 +51,7 @@ Route::prefix('coordinator')->group(function () {
 // -------------------- Student Routes --------------------
 Route::prefix('student')->group(function () {
     Route::middleware('guest:student')->group(function () {
-        Route::get('login', [StudentAuthController::class, 'showLoginForm'])->name('student.login');
+        Route::get('login', fn () => redirect()->route('login'))->name('student.login');
         Route::post('login', [StudentAuthController::class, 'login'])->name('student.login.submit')->middleware('throttle:5,1');
         Route::get('password/request', function () {
             return view('auth.student-forgot-password');

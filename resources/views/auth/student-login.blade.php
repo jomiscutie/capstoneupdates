@@ -47,30 +47,29 @@
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 450px;
+      max-width: 340px;
     }
     .login-card {
       background: rgba(255,255,255,0.82);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      border-radius: 1.5rem;
-      box-shadow: 0 24px 56px -16px rgba(79,70,229,0.2), 0 0 0 1px rgba(255,255,255,0.5), inset 0 1px 0 rgba(255,255,255,0.9);
-      padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 4vw, 2.5rem);
-      transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease;
+      border-radius: 0.9rem;
+      box-shadow: 0 10px 24px -18px rgba(79,70,229,0.25), 0 0 0 1px rgba(255,255,255,0.55), inset 0 1px 0 rgba(255,255,255,0.9);
+      padding: clamp(1rem, 2.5vw, 1.35rem) clamp(0.9rem, 2.5vw, 1.2rem);
+      transition: box-shadow 0.35s ease;
       border: 1px solid rgba(255,255,255,0.6);
     }
     .login-card:hover {
-      box-shadow: 0 28px 60px -16px rgba(79,70,229,0.28), 0 0 0 1px rgba(255,255,255,0.6);
-      transform: translateY(-4px);
+      box-shadow: 0 16px 34px -18px rgba(79,70,229,0.3), 0 0 0 1px rgba(255,255,255,0.6);
     }
     .login-header {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
     }
     .login-header .icon-wrapper {
-      width: 72px;
-      height: 72px;
-      margin: 0 auto 1.25rem;
+      width: 50px;
+      height: 50px;
+      margin: 0 auto 0.65rem;
       background: linear-gradient(135deg, var(--dtr-primary) 0%, var(--dtr-primary-dark) 100%);
       border-radius: 50%;
       display: flex;
@@ -78,45 +77,45 @@
       justify-content: center;
       box-shadow: 0 8px 28px rgba(79,70,229,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
     }
-    .login-header .icon-wrapper i { font-size: 1.9rem; color: #fff; }
+    .login-header .icon-wrapper i { font-size: 1.3rem; color: #fff; }
     .login-header h1 {
-      font-size: clamp(1.5rem, 3vw, 1.75rem);
+      font-size: clamp(1.15rem, 2.4vw, 1.3rem);
       font-weight: 700;
       color: #0f172a;
       margin-bottom: 0.35rem;
       letter-spacing: -0.02em;
     }
-    .login-header p { color: var(--dtr-muted); font-size: 0.95rem; }
-    .form-group { margin-bottom: 1.35rem; position: relative; }
+    .login-header p { color: var(--dtr-muted); font-size: 0.82rem; }
+    .form-group { margin-bottom: 0.9rem; position: relative; }
     .form-label {
       font-weight: 600;
       color: #334155;
-      font-size: 0.9rem;
-      margin-bottom: 0.5rem;
+      font-size: 0.8rem;
+      margin-bottom: 0.35rem;
       display: block;
     }
     .form-label i { margin-right: 0.5rem; color: var(--dtr-primary); }
     .input-wrapper { position: relative; }
     .input-icon {
       position: absolute;
-      left: 1rem;
+      left: 0.75rem;
       top: 50%;
       transform: translateY(-50%);
       color: #94a3b8;
-      font-size: 1.05rem;
+      font-size: 0.88rem;
       z-index: 2;
     }
     .form-control, .form-select {
       width: 100%;
-      padding: 0.875rem 1rem 0.875rem 2.75rem;
+      padding: 0.58rem 0.8rem 0.58rem 2.05rem;
       border: 1px solid var(--dtr-border);
       border-radius: var(--dtr-radius);
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       transition: border-color var(--dtr-transition), box-shadow var(--dtr-transition);
       background: #f8fafc;
     }
     .form-select {
-      padding-left: 2.75rem;
+      padding-left: 2.05rem;
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
       background-repeat: no-repeat;
       background-position: right 0.75rem center;
@@ -132,16 +131,16 @@
     .form-text { font-size: 0.8rem; color: var(--dtr-muted); margin-top: 0.5rem; }
     .btn-login {
       width: 100%;
-      padding: 0.875rem;
+      padding: 0.65rem;
       background: linear-gradient(135deg, var(--dtr-primary) 0%, var(--dtr-primary-dark) 100%);
       border: none;
       border-radius: var(--dtr-radius);
       color: #fff;
       font-weight: 600;
-      font-size: 1rem;
+      font-size: 0.9rem;
       transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease;
       box-shadow: 0 4px 18px rgba(79,70,229,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
-      margin-top: 0.5rem;
+      margin-top: 0.25rem;
       cursor: pointer;
     }
     .btn-login:hover {
@@ -152,11 +151,11 @@
     .btn-login:active { transform: translateY(0); }
     .register-link {
       text-align: center;
-      margin-top: 1.75rem;
-      padding-top: 1.5rem;
+      margin-top: 0.95rem;
+      padding-top: 0.75rem;
       border-top: 1px solid var(--dtr-border);
     }
-    .register-link p { color: var(--dtr-muted); font-size: 0.9rem; margin: 0; }
+    .register-link p { color: var(--dtr-muted); font-size: 0.8rem; margin: 0; }
     .register-link a {
       color: var(--dtr-primary);
       font-weight: 600;
@@ -317,9 +316,9 @@
         <div class="divider">
           <span>OR</span>
         </div>
-        <a href="{{ route('coordinator.login') }}" class="btn-switch">
+        <a href="{{ route('login') }}" class="btn-switch">
           <i class="bi bi-person-gear me-2"></i>
-          Login as Coordinator
+          Go to Unified Login
         </a>
       </div>
     </div>

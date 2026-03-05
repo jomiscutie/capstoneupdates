@@ -12,14 +12,6 @@ class Authenticate extends Middleware
             return null;
         }
 
-        if ($request->is('coordinator/*')) {
-            return route('coordinator.login');
-        }
-
-        if ($request->is('student/*')) {
-            return route('student.login');
-        }
-
         return route('login');
     }
 }

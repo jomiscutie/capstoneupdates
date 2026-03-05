@@ -4,17 +4,34 @@
 
 @push('styles')
 <style>
-    .alert-warning.late-alert { border-radius: 12px; border-left: 4px solid #ffc107; }
+    .page-title { text-align: center; }
+    .page-sub { text-align: center; }
+    .alert-warning.late-alert {
+        border-radius: 12px;
+        border-left: 4px solid #f59e0b;
+        border: 1px solid #fcd34d;
+        background: #fef3c7;
+        color: #92400e;
+    }
+    .alert-warning.late-alert i { color: #d97706; }
+    .alert-warning.late-alert strong { color: #b45309; }
+    html[data-theme="dark"] .alert-warning.late-alert {
+        border-color: rgba(245, 158, 11, 0.45);
+        background: rgba(245, 158, 11, 0.14);
+        color: #fde68a;
+    }
+    html[data-theme="dark"] .alert-warning.late-alert i { color: #fbbf24; }
+    html[data-theme="dark"] .alert-warning.late-alert strong { color: #fcd34d; }
     .alert-attendance-error { border-left: 4px solid #dc2626; font-size: 0.9375rem; }
     .attendance-status-notice { display: flex; flex-direction: column; gap: 0.5rem; }
     .notice-item.notice-recorded {
         display: flex; align-items: center;
         padding: 0.65rem 1rem;
-        background: #fef3c7;
-        border: 1px solid #fcd34d;
+        background: rgba(217, 119, 6, 0.12);
+        border: 1px solid rgba(217, 119, 6, 0.35);
         border-radius: 10px;
         font-size: 0.875rem;
-        color: #92400e;
+        color: var(--dtr-text);
     }
     .notice-item.notice-recorded i { color: #d97706; flex-shrink: 0; }
     /* Face verification: modal must sit above Bootstrap backdrop (backdrop is 1050) */
@@ -46,7 +63,7 @@
     @if(auth()->guard('student')->check())
         <h1 class="page-title">Dashboard</h1>
         <p class="page-sub">Welcome back, {{ auth()->guard('student')->user()->name }}</p>
-        <p class="text-muted small mb-3">
+        <p class="text-muted small mb-3 text-center">
             <i class="bi bi-card-text me-1"></i>{{ auth()->guard('student')->user()->student_no }}
             <span class="ms-2"><i class="bi bi-mortarboard me-1"></i>{{ auth()->guard('student')->user()->course }}</span>
         </p>
@@ -207,7 +224,7 @@
                 </div>
             @else
                 <div class="text-center py-4">
-                    <i class="bi bi-calendar-x" style="font-size: 3rem; color: #adb5bd;"></i>
+                    <i class="bi bi-calendar-x" style="font-size: 3rem; color: var(--dtr-muted);"></i>
                     <p class="text-muted mt-3 mb-0">No attendance record for today</p>
                 </div>
             @endif
@@ -216,7 +233,7 @@
     @else
         <div class="card text-center mt-5 p-5">
             <h2>Welcome, Guest</h2>
-            <p>Please <a href="{{ route('student.login') }}">Login</a> or <a href="{{ route('student.register') }}">Register</a> to access your dashboard.</p>
+            <p>Please <a href="{{ route('login') }}">Login</a> or <a href="{{ route('student.register') }}">Register</a> to access your dashboard.</p>
         </div>
     @endif
 
@@ -725,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function() {
 (function() {
     var timeoutMinutes = 30;
     var timeoutMs = timeoutMinutes * 60 * 1000;
-    var logoutUrl = '{{ route("student.login") }}';
+    var logoutUrl = '{{ route("login") }}';
     var timer = null;
     var lastActivity = Date.now();
     var throttleMs = 60000;
