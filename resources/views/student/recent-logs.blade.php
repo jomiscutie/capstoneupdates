@@ -124,13 +124,161 @@
         color: var(--attendance-muted);
     }
     .dtr-attendance-history .empty-state i { font-size: 2.5rem; color: var(--attendance-muted); opacity: 0.45; margin-bottom: 0.75rem; display: block; }
+    .term-status-card {
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        border: 1px solid var(--dtr-border-soft);
+        box-shadow: var(--dtr-shadow-soft);
+        background:
+            linear-gradient(135deg, rgba(20, 184, 166, 0.08), transparent 48%),
+            var(--dtr-card-bg);
+        margin-bottom: 1.5rem;
+    }
+    .term-status-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    .term-status-head h4 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--dtr-text);
+        margin: 0;
+    }
+    .term-status-head p {
+        margin: 0.2rem 0 0;
+        color: var(--dtr-muted);
+        font-size: 0.875rem;
+    }
+    .term-status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.38rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+    .term-status-badge.status-active {
+        background: rgba(34, 197, 94, 0.14);
+        color: #15803d;
+        border-color: rgba(34, 197, 94, 0.25);
+    }
+    .term-status-badge.status-completed {
+        background: rgba(37, 99, 235, 0.14);
+        color: #1d4ed8;
+        border-color: rgba(37, 99, 235, 0.25);
+    }
+    .term-status-badge.status-pending {
+        background: rgba(245, 158, 11, 0.16);
+        color: #b45309;
+        border-color: rgba(245, 158, 11, 0.25);
+    }
+    html[data-theme="dark"] .term-status-badge.status-active {
+        color: #86efac;
+    }
+    html[data-theme="dark"] .term-status-badge.status-completed {
+        color: #93c5fd;
+    }
+    html[data-theme="dark"] .term-status-badge.status-pending {
+        color: #fcd34d;
+    }
+    .term-status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+    }
+    .term-status-item {
+        padding: 0.85rem 0.95rem;
+        border-radius: 10px;
+        background: var(--dtr-surface-soft);
+        border: 1px solid var(--dtr-border-soft);
+    }
+    .term-status-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--dtr-muted);
+        margin-bottom: 0.3rem;
+    }
+    .term-status-value {
+        display: block;
+        font-size: 0.96rem;
+        font-weight: 700;
+        color: var(--dtr-text);
+    }
+    .term-status-note {
+        margin: 0.95rem 0 0;
+        color: var(--dtr-muted);
+        font-size: 0.875rem;
+    }
+    .term-history-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.9rem;
+    }
+    .term-history-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.34rem 0.65rem;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.12);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        color: var(--dtr-muted);
+        font-size: 0.76rem;
+        font-weight: 600;
+    }
 </style>
 @endpush
 
 @section('content')
 <div class="dtr-attendance-history">
     <h1 class="page-title">Attendance Logs and Progress</h1>
-    <p class="page-sub mb-3">View by month or week</p>
+    
+    <div class="term-status-card">
+        <div class="term-status-head">
+            <div>
+                <h4>Current OJT Term</h4>
+                <p>Your attendance and progress are tied to this active term.</p>
+            </div>
+            <span class="term-status-badge {{ $termSummary['badge_class'] }}">{{ $termSummary['badge'] }}</span>
+        </div>
+        <div class="term-status-grid">
+            <div class="term-status-item">
+                <span class="term-status-label">Term</span>
+                <span class="term-status-value">{{ $termSummary['headline'] }}</span>
+            </div>
+            <div class="term-status-item">
+                <span class="term-status-label">Section</span>
+                <span class="term-status-value">{{ $termSummary['section'] ?: 'Not assigned' }}</span>
+            </div>
+            <div class="term-status-item">
+                <span class="term-status-label">School Year</span>
+                <span class="term-status-value">{{ $termSummary['school_year'] ?: 'Not set' }}</span>
+            </div>
+            <div class="term-status-item">
+                <span class="term-status-label">Program</span>
+                <span class="term-status-value">{{ $termSummary['program'] ?: 'Not set' }}</span>
+            </div>
+        </div>
+        <p class="term-status-note">{{ $termSummary['note'] }}</p>
+        @if(($termSummary['history'] ?? collect())->isNotEmpty())
+            <div class="term-history-strip">
+                @foreach($termSummary['history'] as $historyItem)
+                    <span class="term-history-chip">{{ $historyItem->term }} · {{ $historyItem->section }}</span>
+                @endforeach
+            </div>
+        @endif
+    </div>
 
     <!-- Rendering progress -->
     <div class="progress-card">
@@ -174,7 +322,10 @@
                     <input type="month" id="recentMonthSelect" name="month" class="form-control form-control-sm" value="{{ $selectedMonth ?? now()->format('Y-m') }}" style="min-width: 160px;" aria-label="Month">
                 </div>
                 <div class="col-auto filter-panel {{ ($filter ?? '') === 'week' ? 'active' : '' }}" data-filter="week">
-                    <input type="week" id="recentWeekSelect" name="week" class="form-control form-control-sm" value="{{ $weekInput ?? '' }}" style="min-width: 160px;" aria-label="Week">
+                    <div class="d-flex flex-wrap gap-2">
+                        <input type="week" id="recentWeekStart" name="week_start" class="form-control form-control-sm" value="{{ $weekStartInput ?? $weekInput ?? '' }}" style="min-width: 160px;" aria-label="Start week">
+                        <input type="week" id="recentWeekEnd" name="week_end" class="form-control form-control-sm" value="{{ $weekEndInput ?? $weekStartInput ?? $weekInput ?? '' }}" style="min-width: 160px;" aria-label="End week">
+                    </div>
                 </div>
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary btn-sm">Apply</button>
@@ -187,7 +338,7 @@
                 <div class="empty-state">
                     <i class="bi bi-inbox"></i>
                     <p class="mb-0 fw-medium">No attendance logs found</p>
-                    <p class="small mt-1 mb-0">for {{ ($filter ?? 'month') === 'week' ? 'this week' : 'this month' }}</p>
+                    <p class="small mt-1 mb-0">for {{ ($filter ?? 'month') === 'week' ? 'the selected weeks' : 'this month' }}</p>
                 </div>
             @else
                 <div class="table-responsive">
@@ -226,7 +377,7 @@
                                                 {!! implode(' ', $snapshots) !!}
                                             </div>
                                         @else
-                                            <span class="text-muted small">â€”</span>
+                                            <span class="text-muted small">-</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -245,20 +396,37 @@ document.querySelectorAll('.progress-bar-fill[data-pct]').forEach(function(el) {
     var filterMonth = document.getElementById('recentFilterMonth');
     var filterWeek = document.getElementById('recentFilterWeek');
     var panels = document.querySelectorAll('.dtr-attendance-history .filter-panel');
-    var weekInput = document.getElementById('recentWeekSelect');
+    var weekStartInput = document.getElementById('recentWeekStart');
+    var weekEndInput = document.getElementById('recentWeekEnd');
+    function currentIsoWeek() {
+        var now = new Date();
+        var start = new Date(now);
+        start.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
+        var y = start.getFullYear();
+        var w = Math.ceil((((start - new Date(y, 0, 1)) / 86400000) + 1) / 7);
+        return y + '-W' + String(w).padStart(2, '0');
+    }
     function updatePanels() {
         var isWeek = filterWeek && filterWeek.checked;
         panels.forEach(function(p) {
             p.classList.toggle('active', p.getAttribute('data-filter') === (isWeek ? 'week' : 'month'));
         });
-        if (isWeek && weekInput && !weekInput.value) {
-            var now = new Date();
-            var start = new Date(now);
-            start.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
-            var y = start.getFullYear();
-            var w = Math.ceil((((start - new Date(y, 0, 1)) / 86400000) + 1) / 7);
-            weekInput.value = y + '-W' + String(w).padStart(2, '0');
+        if (isWeek) {
+            var fallbackWeek = currentIsoWeek();
+            if (weekStartInput && !weekStartInput.value) {
+                weekStartInput.value = fallbackWeek;
+            }
+            if (weekEndInput && !weekEndInput.value) {
+                weekEndInput.value = weekStartInput && weekStartInput.value ? weekStartInput.value : fallbackWeek;
+            }
         }
+    }
+    if (weekStartInput && weekEndInput) {
+        weekStartInput.addEventListener('change', function() {
+            if (!weekEndInput.value || weekEndInput.value < weekStartInput.value) {
+                weekEndInput.value = weekStartInput.value;
+            }
+        });
     }
     if (filterMonth) filterMonth.addEventListener('change', updatePanels);
     if (filterWeek) filterWeek.addEventListener('change', updatePanels);
@@ -267,3 +435,6 @@ document.querySelectorAll('.progress-bar-fill[data-pct]').forEach(function(el) {
 </script>
 @endpush
 @endsection
+
+
+

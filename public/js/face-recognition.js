@@ -183,10 +183,10 @@ class FaceRecognition {
     }
 
     async captureFaceEncoding() {
-        // Optimized: Capture fewer samples but faster for better UX
+        // Capture multiple samples for stable encoding (reduces false positives)
         this.faceDescriptors = [];
-        const captureCount = 3; // Reduced from 5 to 3 for faster capture
-        const captureInterval = 300; // Reduced from 500ms to 300ms
+        const captureCount = 5;
+        const captureInterval = 400;
 
         for (let i = 0; i < captureCount; i++) {
             const detection = await this.detectFace();
@@ -198,11 +198,11 @@ class FaceRecognition {
             }
         }
 
-        if (this.faceDescriptors.length === 0) {
-            throw new Error('No face detected. Please ensure your face is clearly visible.');
+        if (this.faceDescriptors.length < 2) {
+            throw new Error('No face detected. Please ensure your face is clearly visible and well lit.');
         }
 
-        // Average the descriptors for better accuracy
+        // Average the descriptors for better accuracy and fewer false matches
         const avgDescriptor = this.averageDescriptors(this.faceDescriptors);
         return JSON.stringify(avgDescriptor);
     }

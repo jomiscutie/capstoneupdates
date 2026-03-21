@@ -9,8 +9,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Coordinator extends Authenticatable
 {
     use HasFactory, Notifiable;
+
     protected $guard = 'coordinator';
-    // Add your fillable fields, relationships, etc.
+
     protected $fillable = [
         'name',
         'email',
@@ -21,9 +22,19 @@ class Coordinator extends Authenticatable
         'password',
         'role',
         'current_session_id',
+        'is_active',
     ];
     protected $hidden = [
         'password',
         'remember_token',
     ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    public function assignments()
+    {
+        return $this->hasMany(CoordinatorAssignment::class);
+    }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable; // ✅ not Model
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Schema;
 
@@ -10,7 +10,12 @@ class Student extends Authenticatable
 {
     use Notifiable;
 
-    /** True if the coordinator verification migration has been run. */
+    public const TERMS = StudentTermAssignment::TERMS;
+    public const ASSIGNMENT_TERMS = StudentTermAssignment::ASSIGNMENT_TERMS;
+    public const ASSIGNMENT_SEMESTERS = StudentTermAssignment::ASSIGNMENT_TERMS;
+    public const SECTIONS = StudentTermAssignment::SECTIONS;
+    public const ASSIGNMENT_SECTIONS = StudentTermAssignment::ASSIGNMENT_SECTIONS;
+
     public static function hasVerificationColumn(): bool
     {
         return Schema::hasColumn((new static)->getTable(), 'verification_status');
@@ -22,6 +27,8 @@ class Student extends Authenticatable
         'department',
         'major',
         'course',
+        'semester',
+        'section',
         'password',
         'face_encoding',
         'verification_status',
@@ -54,6 +61,18 @@ class Student extends Authenticatable
         return $this->hasMany(Attendance::class);
     }
 
+    public function termAssignments()
+    {
+        return $this->hasMany(StudentTermAssignment::class);
+    }
+
+    public function activeTermAssignment()
+    {
+        return $this->hasOne(StudentTermAssignment::class)
+            ->where('status', StudentTermAssignment::STATUS_ACTIVE)
+            ->latestOfMany('id');
+    }
+
     public function ojtConfirmedBy()
     {
         return $this->belongsTo(Coordinator::class, 'ojt_confirmed_by');
@@ -69,66 +88,107 @@ class Student extends Authenticatable
         return $this->belongsTo(Coordinator::class, 'rejected_by');
     }
 
-    /** Whether the student has been verified by a coordinator and can use the system. */
     public function isVerified(): bool
     {
         if (! static::hasVerificationColumn()) {
-            return true; // Before migration: treat all as verified
+            return true;
         }
+
         return $this->verification_status === 'verified';
     }
 
-    /** Whether the student is pending coordinator verification. */
     public function isPendingVerification(): bool
     {
         if (! static::hasVerificationColumn()) {
             return false;
         }
+
         return $this->verification_status === 'pending';
     }
 
-    /** Whether the student was rejected by a coordinator. */
     public function isRejected(): bool
     {
         if (! static::hasVerificationColumn()) {
             return false;
         }
+
         return $this->verification_status === 'rejected';
     }
 
-    /**
-     * Scope: only students belonging to the coordinator's program.
-     */
     public function scopeForCoordinator($query, $coordinator)
     {
+        $assignments = method_exists($coordinator, 'assignments')
+            ? $coordinator->assignments()->get(['course', 'semester', 'section'])
+            : collect();
+
+        if ($assignments->isNotEmpty()) {
+            return $query->whereHas('activeTermAssignment', function ($termQuery) use ($assignments) {
+                $termQuery->where(function ($studentQuery) use ($assignments) {
+                    foreach ($assignments as $assignment) {
+                        $studentQuery->orWhere(function ($matchQuery) use ($assignment) {
+                            $matchQuery->where('course', $assignment->course);
+
+                            if ($assignment->semester !== 'All') {
+                                $matchQuery->where('term', $assignment->semester);
+                            }
+
+                            if ($assignment->section !== 'All') {
+                                $matchQuery->where('section', $assignment->section);
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
         if (empty($coordinator->major)) {
             return $query->whereRaw('1 = 0');
         }
+
         return $query->where('course', $coordinator->major);
     }
 
-    /** Scope: only students verified by a coordinator. */
+    public function isVisibleToCoordinator($coordinator): bool
+    {
+        return static::query()
+            ->whereKey($this->id)
+            ->forCoordinator($coordinator)
+            ->exists();
+    }
+
+    public function getDisplayCourseAttribute(): ?string
+    {
+        return $this->activeTermAssignment?->course ?: $this->course;
+    }
+
+    public function getDisplayTermAttribute(): ?string
+    {
+        return $this->activeTermAssignment?->term;
+    }
+
+    public function getDisplaySectionAttribute(): ?string
+    {
+        return $this->activeTermAssignment?->section ?: $this->section;
+    }
+
     public function scopeVerified($query)
     {
         if (! static::hasVerificationColumn()) {
             return $query;
         }
+
         return $query->where('verification_status', 'verified');
     }
 
-    /** Scope: only students pending verification. */
     public function scopePendingVerification($query)
     {
         if (! static::hasVerificationColumn()) {
-            return $query->whereRaw('1 = 0'); // No pending if column missing
+            return $query->whereRaw('1 = 0');
         }
+
         return $query->where('verification_status', 'pending');
     }
 
-    /**
-     * Total hours rendered (decimal) from all attendance records.
-     * Parses "X hr Y min" per record and sums.
-     */
     public function getTotalRenderedHoursAttribute(): float
     {
         $totalMinutes = $this->attendances()
@@ -137,6 +197,7 @@ class Student extends Authenticatable
             ->sum(function ($att) {
                 return self::parseHoursRenderedToMinutes($att->hours_rendered);
             });
+
         return round($totalMinutes / 60, 2);
     }
 
@@ -155,12 +216,15 @@ class Student extends Authenticatable
         if ($value === null || $value === '') {
             return 0;
         }
+
         if (preg_match('/^\s*(\d+)\s*hr\s*(\d+)\s*min\s*$/i', $value, $m)) {
             return (int) $m[1] * 60 + (int) $m[2];
         }
+
         if (preg_match('/^\s*(\d+)\s*hr\s*$/i', $value, $m)) {
             return (int) $m[1] * 60;
         }
+
         return 0;
     }
 }

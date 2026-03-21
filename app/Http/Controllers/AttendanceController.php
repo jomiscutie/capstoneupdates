@@ -6,6 +6,8 @@ use App\Http\Requests\TimeInRequest;
 use App\Http\Requests\TimeOutRequest;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
+use App\Models\StudentTermAssignment;
+use App\Support\WeekRangeFilter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -455,32 +457,37 @@ class AttendanceController extends Controller
     public function recentLogs(Request $request)
     {
         $student = Auth::guard('student')->user();
+        $student->loadMissing([
+            'activeTermAssignment',
+            'termAssignments' => fn ($query) => $query->latest('id'),
+        ]);
         $studentId = $student->id;
 
         $filter = $request->input('filter', 'month');
         $selectedMonth = $request->input('month', now()->format('Y-m'));
         $weekInput = $request->input('week');
-        if ($filter === 'week' && empty($weekInput)) {
-            $now = \Carbon\Carbon::now();
-            $weekInput = $now->format('o') . '-W' . str_pad((string) $now->isoWeek(), 2, '0', STR_PAD_LEFT);
+        $weekStartInput = $request->input('week_start');
+        $weekEndInput = $request->input('week_end');
+        if ($filter === 'week') {
+            [$weekStartInput, $weekEndInput] = WeekRangeFilter::defaultInputs($weekStartInput, $weekEndInput, $weekInput);
         }
 
         $logs = collect();
         $weekLabel = '';
+        $weekRange = $filter === 'week' ? WeekRangeFilter::parse($weekStartInput, $weekEndInput) : null;
 
-        if ($filter === 'week' && $weekInput && preg_match('/^(\d{4})-W(\d{2})$/', $weekInput, $m)) {
-            $year = (int) $m[1];
-            $weekNum = (int) $m[2];
-            $start = \Carbon\Carbon::now()->setISODate($year, $weekNum)->startOfWeek();
-            $end = $start->copy()->endOfWeek();
-            $weekStart = $start->format('Y-m-d');
-            $weekEnd = $end->format('Y-m-d');
+        $start = null;
+        $end = null;
+        if ($filter === 'week' && $weekRange) {
+            $start = Carbon::parse($weekRange['start_date']);
+            $end = Carbon::parse($weekRange['end_date']);
             $weekLabel = $start->format('M j') . ' – ' . $end->format('M j, Y');
 
             $logs = Attendance::where('student_id', $studentId)
-                ->whereBetween('date', [$weekStart, $weekEnd])
+                ->whereBetween('date', [$weekRange['start_date'], $weekRange['end_date']])
                 ->orderBy('date', 'desc')
                 ->get();
+            $weekLabel = $weekRange['label'];
         } else {
             $filter = 'month';
             $parts = explode('-', $selectedMonth);
@@ -498,11 +505,59 @@ class AttendanceController extends Controller
         $required = (float) ($student->required_ojt_hours ?? 120);
         $progressPct = $required > 0 ? min(100, round(100 * $rendered / $required, 1)) : 0;
         $remaining = max(0, $required - $rendered);
+        $termSummary = $this->buildStudentTermSummary($student);
 
         return view('student.recent-logs', compact(
             'logs', 'rendered', 'required', 'progressPct', 'remaining',
-            'filter', 'selectedMonth', 'weekInput', 'weekLabel'
+            'filter', 'selectedMonth', 'weekInput', 'weekStartInput', 'weekEndInput', 'weekLabel', 'termSummary'
         ));
+    }
+
+    private function buildStudentTermSummary($student): array
+    {
+        $activeAssignment = $student->activeTermAssignment;
+        $latestAssignment = $student->termAssignments->first();
+        $completedAssignments = $student->termAssignments
+            ->where('status', StudentTermAssignment::STATUS_COMPLETED)
+            ->take(3)
+            ->values();
+
+        if ($activeAssignment) {
+            return [
+                'badge' => 'Active',
+                'badge_class' => 'status-active',
+                'headline' => $activeAssignment->term,
+                'section' => $activeAssignment->section,
+                'school_year' => $activeAssignment->school_year,
+                'program' => $activeAssignment->course ?: $student->course,
+                'note' => 'This is the term currently used for your attendance and coordinator assignment.',
+                'history' => collect(),
+            ];
+        }
+
+        if ($latestAssignment && $latestAssignment->status === StudentTermAssignment::STATUS_COMPLETED) {
+            return [
+                'badge' => 'Completed',
+                'badge_class' => 'status-completed',
+                'headline' => $latestAssignment->term,
+                'section' => $latestAssignment->section,
+                'school_year' => $latestAssignment->school_year,
+                'program' => $latestAssignment->course ?: $student->course,
+                'note' => 'Your latest OJT term is completed. Wait for the next assignment from the admin.',
+                'history' => $completedAssignments,
+            ];
+        }
+
+        return [
+            'badge' => 'Awaiting assignment',
+            'badge_class' => 'status-pending',
+            'headline' => 'No active term yet',
+            'section' => null,
+            'school_year' => null,
+            'program' => $student->course,
+            'note' => 'You do not have an active OJT term yet.',
+            'history' => collect(),
+        ];
     }
 
     public function coordinatorLogs(Request $request)
@@ -511,10 +566,11 @@ class AttendanceController extends Controller
         $search = $request->filled('q') ? trim($request->q) : '';
         $filter = $request->input('filter', 'month');
         $month = $request->input('month', now()->format('Y-m'));
-        $weekInput = $request->input('week'); // e.g. 2025-W04 from input type="week"
-        if ($filter === 'week' && empty($weekInput)) {
-            $now = \Carbon\Carbon::now();
-            $weekInput = $now->format('o') . '-W' . str_pad((string) $now->isoWeek(), 2, '0', STR_PAD_LEFT);
+        $weekInput = $request->input('week');
+        $weekStartInput = $request->input('week_start');
+        $weekEndInput = $request->input('week_end');
+        if ($filter === 'week') {
+            [$weekStartInput, $weekEndInput] = WeekRangeFilter::defaultInputs($weekStartInput, $weekEndInput, $weekInput);
         }
 
         $studentQuery = \App\Models\Student::forCoordinator($coordinator)->verified();
@@ -541,16 +597,21 @@ class AttendanceController extends Controller
         $weekStart = null;
         $weekEnd = null;
         $weekLabel = '';
+        $weekRange = $filter === 'week' ? WeekRangeFilter::parse($weekStartInput, $weekEndInput) : null;
+        $start = null;
+        $end = null;
+        if ($weekRange) {
+            $start = Carbon::parse($weekRange['start_date']);
+            $end = Carbon::parse($weekRange['end_date']);
+        }
 
-        if ($filter === 'week' && $weekInput && preg_match('/^(\d{4})-W(\d{2})$/', $weekInput, $m)) {
-            $year = (int) $m[1];
-            $weekNum = (int) $m[2];
-            $start = \Carbon\Carbon::now()->setISODate($year, $weekNum)->startOfWeek();
-            $end = $start->copy()->endOfWeek();
-            $weekStart = $start->format('Y-m-d');
-            $weekEnd = $end->format('Y-m-d');
+        if ($filter === 'week' && $weekRange) {
             $weekLabel = $start->format('M j') . ' – ' . $end->format('M j, Y');
 
+            $start = Carbon::parse($weekRange['start_date']);
+            $end = Carbon::parse($weekRange['end_date']);
+            $weekStart = $weekRange['start_date'];
+            $weekEnd = $weekRange['end_date'];
             $logs = \App\Models\Attendance::with('student')
                 ->whereIn('student_id', $studentIds)
                 ->whereBetween('date', [$weekStart, $weekEnd])
@@ -563,6 +624,7 @@ class AttendanceController extends Controller
                     $q->where('is_late', true)->orWhere('afternoon_is_late', true);
                 })
                 ->count();
+            $weekLabel = $weekRange['label'];
         } else {
             $filter = 'month';
             [$year, $monthNum] = explode('-', $month);
@@ -593,7 +655,7 @@ class AttendanceController extends Controller
 
         return view('coordinator.attendance-logs', compact(
             'logs', 'totalStudents', 'presentToday', 'absentToday', 'month', 'search',
-            'filter', 'weekInput', 'weekStart', 'weekEnd', 'weekLabel', 'lateCount', 'viewStudent', 'studentsWithLogs'
+            'filter', 'weekInput', 'weekStartInput', 'weekEndInput', 'weekStart', 'weekEnd', 'weekLabel', 'lateCount', 'viewStudent', 'studentsWithLogs'
         ));
     }
 

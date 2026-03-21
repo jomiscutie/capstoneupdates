@@ -56,6 +56,119 @@
     #faceVerificationModal #faceCanvas {
         transform: scaleX(-1);
     }
+    .term-status-card {
+        border-radius: 16px;
+        padding: 1.2rem 1.35rem;
+        border: 1px solid var(--dtr-border-soft);
+        background:
+            linear-gradient(135deg, rgba(20, 184, 166, 0.08), transparent 48%),
+            var(--dtr-card-bg);
+        box-shadow: var(--dtr-shadow-soft);
+        margin-bottom: 1.5rem;
+    }
+    .term-status-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    .term-status-head h4 {
+        margin: 0;
+        color: var(--dtr-text);
+        font-size: 1rem;
+        font-weight: 700;
+    }
+    .term-status-head p {
+        margin: 0.2rem 0 0;
+        color: var(--dtr-muted);
+        font-size: 0.875rem;
+    }
+    .term-status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.38rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+    .term-status-badge.status-active {
+        background: rgba(34, 197, 94, 0.14);
+        color: #15803d;
+        border-color: rgba(34, 197, 94, 0.25);
+    }
+    .term-status-badge.status-completed {
+        background: rgba(37, 99, 235, 0.14);
+        color: #1d4ed8;
+        border-color: rgba(37, 99, 235, 0.25);
+    }
+    .term-status-badge.status-pending {
+        background: rgba(245, 158, 11, 0.16);
+        color: #b45309;
+        border-color: rgba(245, 158, 11, 0.25);
+    }
+    html[data-theme="dark"] .term-status-badge.status-active {
+        color: #86efac;
+    }
+    html[data-theme="dark"] .term-status-badge.status-completed {
+        color: #93c5fd;
+    }
+    html[data-theme="dark"] .term-status-badge.status-pending {
+        color: #fcd34d;
+    }
+    .term-status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.85rem;
+    }
+    .term-status-item {
+        padding: 0.85rem 0.95rem;
+        border-radius: 12px;
+        background: var(--dtr-surface-soft);
+        border: 1px solid var(--dtr-border-soft);
+    }
+    .term-status-label {
+        display: block;
+        font-size: 0.76rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--dtr-muted);
+        margin-bottom: 0.3rem;
+    }
+    .term-status-value {
+        display: block;
+        color: var(--dtr-text);
+        font-size: 0.98rem;
+        font-weight: 700;
+    }
+    .term-status-note {
+        margin: 0.95rem 0 0;
+        color: var(--dtr-muted);
+        font-size: 0.875rem;
+    }
+    .term-history-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.9rem;
+    }
+    .term-history-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.34rem 0.65rem;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.12);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        color: var(--dtr-muted);
+        font-size: 0.76rem;
+        font-weight: 600;
+    }
 </style>
 @endpush
 
@@ -63,10 +176,42 @@
     @if(auth()->guard('student')->check())
         <h1 class="page-title">Dashboard</h1>
         <p class="page-sub">Welcome back, {{ auth()->guard('student')->user()->name }}</p>
-        <p class="text-muted small mb-3 text-center">
-            <i class="bi bi-card-text me-1"></i>{{ auth()->guard('student')->user()->student_no }}
-            <span class="ms-2"><i class="bi bi-mortarboard me-1"></i>{{ auth()->guard('student')->user()->course }}</span>
-        </p>
+        
+        <div class="term-status-card">
+            <div class="term-status-head">
+                <div>
+                    <h4>Current OJT Term</h4>
+                    <p>See your assigned term, section, and current standing.</p>
+                </div>
+                <span class="term-status-badge {{ $termSummary['badge_class'] }}">{{ $termSummary['badge'] }}</span>
+            </div>
+            <div class="term-status-grid">
+                <div class="term-status-item">
+                    <span class="term-status-label">Term</span>
+                    <span class="term-status-value">{{ $termSummary['headline'] }}</span>
+                </div>
+                <div class="term-status-item">
+                    <span class="term-status-label">Section</span>
+                    <span class="term-status-value">{{ $termSummary['section'] ?: 'Not assigned' }}</span>
+                </div>
+                <div class="term-status-item">
+                    <span class="term-status-label">School Year</span>
+                    <span class="term-status-value">{{ $termSummary['school_year'] ?: 'Not set' }}</span>
+                </div>
+                <div class="term-status-item">
+                    <span class="term-status-label">Program</span>
+                    <span class="term-status-value">{{ $termSummary['program'] ?: 'Not set' }}</span>
+                </div>
+            </div>
+            <p class="term-status-note">{{ $termSummary['note'] }}</p>
+            @if(($termSummary['history'] ?? collect())->isNotEmpty())
+                <div class="term-history-strip">
+                    @foreach($termSummary['history'] as $historyItem)
+                        <span class="term-history-chip">{{ $historyItem->term }} , {{ $historyItem->section }}</span>
+                    @endforeach
+                </div>
+            @endif
+        </div>
 
         <!-- Time & Actions Card -->
         <div class="card-section">
@@ -275,7 +420,7 @@
                         <i class="bi bi-key me-1"></i>Verify with password instead
                     </button>
                     <div id="passwordFallbackBlock" class="mt-3 text-start" style="display: none;">
-                        <p class="text-muted small mb-2">If the camera is still on, show your ID to the camera before submitting — a timestamped snapshot will be saved as proof.</p>
+                        <p class="text-muted small mb-2">If the camera is still on, show your ID to the camera before submitting - a timestamped snapshot will be saved as proof.</p>
                         <form id="passwordVerificationForm" method="POST" action="" enctype="multipart/form-data">
                             @csrf
                             <input type="hidden" name="verification_method" value="password">
@@ -444,9 +589,9 @@ async function openFaceVerification(action) {
                 verificationInterval = null;
                 try { btn.focus(); } catch (e) {}
             } else if (blinkCount > 0) {
-                document.getElementById('verificationStatus').innerHTML = '<p class="text-info"><i class="bi bi-eye me-2"></i>Face detected! Hold still — button will enable shortly.</p>';
+                document.getElementById('verificationStatus').innerHTML = '<p class="text-info"><i class="bi bi-eye me-2"></i>Face detected! Hold still - button will enable shortly.</p>';
             } else {
-                document.getElementById('verificationStatus').innerHTML = '<p class="text-info"><i class="bi bi-person me-2"></i>Face detected. Keep looking at the camera — Verify & Submit will enable in a moment.</p>';
+                document.getElementById('verificationStatus').innerHTML = '<p class="text-info"><i class="bi bi-person me-2"></i>Face detected. Keep looking at the camera - Verify & Submit will enable in a moment.</p>';
             }
             if (elapsed > maxWaitTime && document.getElementById('verifyFaceBtn').disabled) {
                 document.getElementById('verificationStatus').innerHTML = '<p class="text-warning"><i class="bi bi-exclamation-triangle me-2"></i>Face not detected clearly. Position your face in the frame and wait a few seconds.</p>';
@@ -676,7 +821,7 @@ function resetPasswordFallbackVisibility() {
 })();
 
 function showOfflineRecordedMessage(confidence) {
-    var matchText = (confidence != null && confidence !== '') ? ' — ' + confidence + '% match' : '';
+    var matchText = (confidence != null && confidence !== '') ? ' - ' + confidence + '% match' : '';
     var alert = document.createElement('div');
     alert.className = 'alert alert-info';
     alert.innerHTML = '<i class="bi bi-cloud-download me-2"></i><strong>Recorded offline' + matchText + '.</strong> Your ' + (currentAction === 'timein' ? 'Time In' : 'Time Out') + ' will sync when you are back online.';
@@ -739,40 +884,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }).catch(function() {});
 });
 
-(function() {
-    var timeoutMinutes = 30;
-    var timeoutMs = timeoutMinutes * 60 * 1000;
-    var logoutUrl = '{{ route("login") }}';
-    var timer = null;
-    var lastActivity = Date.now();
-    var throttleMs = 60000;
-    var lastThrottle = 0;
-
-    function resetTimer() {
-        lastActivity = Date.now();
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(function() {
-            if (document.visibilityState === 'visible') {
-                alert('Your session has expired due to inactivity. Please log in again.');
-                window.location.href = logoutUrl;
-            }
-        }, timeoutMs);
-    }
-
-    function onActivity(throttled) {
-        if (throttled) {
-            var now = Date.now();
-            if (now - lastThrottle < throttleMs) return;
-            lastThrottle = now;
-        }
-        resetTimer();
-    }
-
-    document.addEventListener('click', function() { onActivity(false); }, true);
-    document.addEventListener('keydown', function() { onActivity(false); }, true);
-    document.addEventListener('scroll', function() { onActivity(true); }, { passive: true });
-    document.addEventListener('mousemove', function() { onActivity(true); }, { passive: true });
-    resetTimer();
-})();
 </script>
 @endpush
+
+
+
+

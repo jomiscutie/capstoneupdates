@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Services\FaceEncodingService;
 use Illuminate\Http\Request;
 use App\Models\Student;
+use App\Models\StudentTermAssignment;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -74,6 +76,8 @@ class StudentAuthController extends Controller
             ],
             'name' => 'required|string|max:255',
             'course' => 'required|string|max:100',
+            'term' => ['required', Rule::in(Student::TERMS)],
+            'section' => ['required', Rule::in(Student::SECTIONS)],
             'password' => 'required|confirmed|min:6',
             'face_encoding' => 'required|string',
         ], [
@@ -85,31 +89,44 @@ class StudentAuthController extends Controller
         }
 
         // Reject if this face is already registered to another account (same face, different name/ID)
-        $newEncoding = json_decode($request->face_encoding, true);
-        if (is_array($newEncoding) && count($newEncoding) === FaceEncodingService::ENCODING_LENGTH) {
-            $existingWithFace = Student::whereNotNull('face_encoding')->get();
-            foreach ($existingWithFace as $existing) {
-                $stored = json_decode($existing->face_encoding, true);
-                if (is_array($stored) && FaceEncodingService::isSamePerson($newEncoding, $stored)) {
-                    return back()->withErrors(['face_encoding' => 'This face is already registered to another account. One person cannot register with multiple names or student numbers.'])->withInput();
+        // Can be disabled via FACE_DUPLICATE_CHECK=false if causing too many false positives
+        if (config('services.face_duplicate_check', true)) {
+            $newEncoding = json_decode($request->face_encoding, true);
+            if (is_array($newEncoding) && count($newEncoding) === FaceEncodingService::ENCODING_LENGTH) {
+                $existingWithFace = Student::whereNotNull('face_encoding')->get();
+                foreach ($existingWithFace as $existing) {
+                    $stored = json_decode($existing->face_encoding, true);
+                    if (is_array($stored) && FaceEncodingService::isSamePerson($newEncoding, $stored)) {
+                        return back()->withErrors(['face_encoding' => 'This face is already registered to another account. One person cannot register with multiple names or student numbers.'])->withInput();
+                    }
                 }
             }
         }
 
-        $student = Student::create([
-            'student_no' => $studentNo,
-            'name' => $name,
-            'course' => $request->course,
-            'password' => Hash::make($request->password),
-            'face_encoding' => $request->face_encoding,
-        ]);
+        $student = null;
 
-        Auth::guard('student')->login($student);
-        $request->session()->regenerate();
-        $student->current_session_id = $request->session()->getId();
-        $student->save();
+        DB::transaction(function () use ($request, $studentNo, $name, &$student) {
+            $student = Student::create([
+                'student_no' => $studentNo,
+                'name' => $name,
+                'course' => $request->course,
+                'section' => $request->section,
+                'password' => Hash::make($request->password),
+                'face_encoding' => $request->face_encoding,
+            ]);
 
-        return redirect()->route('student.dashboard')->with('success', 'Registered successfully!');
+            $student->termAssignments()->create([
+                'course' => $request->course,
+                'term' => $request->term,
+                'section' => $request->section,
+                'required_ojt_hours' => 120,
+                'status' => StudentTermAssignment::STATUS_ACTIVE,
+                'started_at' => now(),
+            ]);
+        });
+
+        // Do NOT log in - redirect to login page with pending verification message
+        return redirect('/login')->with('warning', '⚠️ WAIT FOR COORDINATOR\'S APPROVAL ⚠️ Your registration is pending. Please wait for the OJT coordinator to verify your account before you can log in.');
     }
 
     public function logout(Request $request)

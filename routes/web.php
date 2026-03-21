@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminManagementController;
+use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\StudentAuthController;
 use App\Http\Controllers\Auth\CoordinatorAuthController;
 use App\Http\Controllers\Auth\UnifiedAuthController;
@@ -17,12 +20,36 @@ Route::get('/login', [UnifiedAuthController::class, 'showLoginForm'])->name('log
 Route::post('/login', [UnifiedAuthController::class, 'login'])->middleware('throttle:5,1');
 
 // -------------------- Coordinator Routes --------------------
+Route::prefix('admin')->group(function () {
+    Route::middleware('guest:admin')->group(function () {
+        Route::get('login', fn () => redirect()->route('login'))->name('admin.login');
+    });
+
+    Route::middleware(['auth:admin', 'single.session'])->group(function () {
+        Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('coordinators', [AdminManagementController::class, 'coordinators'])->name('admin.coordinators');
+        Route::post('coordinators', [AdminManagementController::class, 'storeCoordinator'])->name('admin.coordinators.store');
+        Route::post('coordinators/{coordinator}/toggle', [AdminManagementController::class, 'toggleCoordinator'])->name('admin.coordinators.toggle');
+        Route::post('coordinators/{coordinator}/password', [AdminManagementController::class, 'updateCoordinatorPassword'])->name('admin.coordinators.password')->middleware('throttle:5,1');
+        Route::post('coordinators/{coordinator}/assignments', [AdminManagementController::class, 'addCoordinatorAssignment'])->name('admin.coordinators.assignments.store');
+        Route::post('coordinators/assignments/{assignment}/remove', [AdminManagementController::class, 'removeCoordinatorAssignment'])->name('admin.coordinators.assignments.remove');
+        Route::get('students', [AdminManagementController::class, 'students'])->name('admin.students');
+        Route::post('students/terms/batch', [AdminManagementController::class, 'batchStoreStudentTermAssignments'])->name('admin.students.terms.batch');
+        Route::post('students/{student}/terms', [AdminManagementController::class, 'storeStudentTermAssignment'])->name('admin.students.terms.store');
+        Route::post('students/terms/{assignment}/complete', [AdminManagementController::class, 'completeStudentTermAssignment'])->name('admin.students.terms.complete');
+        Route::get('settings', [AdminManagementController::class, 'settings'])->name('admin.settings');
+        Route::post('settings/password', [AdminManagementController::class, 'updatePassword'])->name('admin.settings.password')->middleware('throttle:5,1');
+        Route::post('logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+    });
+});
+
+// -------------------- Coordinator Routes --------------------
 Route::prefix('coordinator')->group(function () {
     Route::middleware('guest:coordinator')->group(function () {
         Route::get('login', fn () => redirect()->route('login'))->name('coordinator.login');
         Route::post('login', [CoordinatorAuthController::class, 'login'])->name('coordinator.login.submit')->middleware('throttle:5,1');
         Route::get('register', [CoordinatorAuthController::class, 'showRegisterForm'])->name('coordinator.register');
-        Route::post('register', [CoordinatorAuthController::class, 'register'])->name('coordinator.register.submit')->middleware('throttle:5,1');
+        Route::post('register', [CoordinatorAuthController::class, 'register'])->name('coordinator.register.submit');
     });
 
     Route::middleware(['auth:coordinator', 'single.session'])->group(function () {
@@ -43,6 +70,7 @@ Route::prefix('coordinator')->group(function () {
         Route::post('student/{student}/set-password', [OjtCompletionController::class, 'setStudentPassword'])->name('coordinator.student.set-password');
         Route::get('settings', [CoordinatorSettingsController::class, 'index'])->name('coordinator.settings');
         Route::post('settings/password', [CoordinatorSettingsController::class, 'updatePassword'])->name('coordinator.settings.password')->middleware('throttle:5,1');
+        Route::post('settings/students/required-hours/bulk', [CoordinatorSettingsController::class, 'bulkUpdateRequiredHours'])->name('coordinator.settings.required-hours.bulk');
         Route::post('settings/students/{student}/remove', [CoordinatorSettingsController::class, 'removeStudent'])->name('coordinator.settings.student.remove');
         Route::post('logout', [CoordinatorAuthController::class, 'logout'])->name('coordinator.logout');
     });

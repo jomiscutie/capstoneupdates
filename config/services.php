@@ -35,4 +35,18 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Face Recognition (Student Registration)
+    |--------------------------------------------------------------------------
+    | FACE_SAME_PERSON_THRESHOLD: Euclidean distance below which two faces are
+    | considered the same person. Lower = stricter (fewer false positives).
+    | Default 0.5. Use 0.45 if still getting false positives.
+    |
+    | FACE_DUPLICATE_CHECK: Set to false to disable the "same face, different
+    | account" check entirely (e.g. if false positives persist).
+    */
+    'face_same_person_threshold' => env('FACE_SAME_PERSON_THRESHOLD', 0.5),
+    'face_duplicate_check' => env('FACE_DUPLICATE_CHECK', true),
+
 ];

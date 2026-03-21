@@ -350,7 +350,7 @@
       </div>
       <div class="welcome">
         <h1>Student <span>Registration</span></h1>
-        <p>Create your account to get started</p>
+        <p>For currently enrolled NORSU OJT students using their official student number.</p>
       </div>
 
       @if($errors->any())
@@ -374,8 +374,9 @@
           </label>
           <div class="input-wrapper">
             <i class="bi bi-card-text input-icon"></i>
-            <input type="text" name="student_no" class="form-control" value="{{ old('student_no') }}" placeholder="Enter student number" required />
+            <input type="text" name="student_no" class="form-control" value="{{ old('student_no') }}" placeholder="Enter student number (e.g. 202212345)" required />
           </div>
+          <small class="login-hint d-block mt-1">Use your official student number exactly as it appears on your ID (e.g. 202212345).</small>
         </div>
 
         <div class="form-group">
@@ -386,6 +387,7 @@
             <i class="bi bi-person input-icon"></i>
             <input type="text" name="name" class="form-control" value="{{ old('name') }}" placeholder="Enter full name" required />
           </div>
+          <small class="login-hint d-block mt-1">Enter your complete name as recorded in NORSU (First, Middle, Last).</small>
         </div>
 
         <div class="form-group">
@@ -404,6 +406,39 @@
               <option value="MATHEMATICS" {{ old('course') == 'MATHEMATICS' ? 'selected' : '' }}>MATHEMATICS</option>
             </select>
           </div>
+          <small class="login-hint d-block mt-1">Select the program where you are officially enrolled for OJT.</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-calendar3"></i>Term
+          </label>
+          <div class="input-wrapper">
+            <i class="bi bi-calendar3 input-icon"></i>
+            <select name="term" class="form-select" required>
+              <option value="">Select Term</option>
+              @foreach(\App\Models\Student::TERMS as $termOption)
+              <option value="{{ $termOption }}" {{ old('term') == $termOption ? 'selected' : '' }}>{{ $termOption }}</option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-grid-3x3-gap"></i>Section
+            <div class="form-text">
+            </div>
+          </label>
+          <div class="input-wrapper">
+            <i class="bi bi-grid-3x3-gap input-icon"></i>
+            <select name="section" class="form-select" required>
+              <option value="">Select Section</option>
+              @foreach(\App\Models\Student::SECTIONS as $sectionOption)
+              <option value="{{ $sectionOption }}" {{ old('section') == $sectionOption ? 'selected' : '' }}>Section {{ $sectionOption }}</option>
+              @endforeach
+            </select>
+          </div>
         </div>
 
         <div class="form-group">
@@ -415,6 +450,7 @@
             <input type="password" name="password" class="form-control" placeholder="Enter password" required />
             <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password" title="Show password"><i class="bi bi-eye"></i></button>
           </div>
+          <small class="login-hint d-block mt-1">Use at least 8 characters with a mix of letters and numbers for better security.</small>
         </div>
 
         <div class="form-group">
@@ -425,6 +461,24 @@
             <i class="bi bi-key-fill input-icon"></i>
             <input type="password" name="password_confirmation" class="form-control" placeholder="Confirm password" required />
             <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password" title="Show password"><i class="bi bi-eye"></i></button>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-4);">
+          <div class="form-check text-start" style="font-size: 0.8rem; color: var(--login-muted);">
+            <input class="form-check-input me-2" type="checkbox" value="1" id="privacyConsent" required>
+            <label class="form-check-label" for="privacyConsent">
+              I understand that my personal information and captured facial data will be used for <strong>educational and OJT attendance purposes only</strong>, kept securely inside NORSU’s OJT DTR system, and handled in accordance with the Data Privacy Act of 2012 (RA 10173).
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-4);">
+          <div class="form-check text-start" style="font-size: 0.8rem; color: var(--login-muted);">
+            <input class="form-check-input me-2" type="checkbox" value="1" id="honestyConsent" required>
+            <label class="form-check-label" for="honestyConsent">
+              I agree to use this system honestly and only for my own attendance and OJT requirements, and I will not allow others to use my account or facial data.
+            </label>
           </div>
         </div>
 
@@ -439,11 +493,11 @@
 
       <div class="switch-login">
         <div class="divider">
-          <span>OR</span>
+          <span>Need coordinator access?</span>
         </div>
-        <a href="{{ route('coordinator.register') }}" class="btn-switch">
+        <a href="{{ route('login') }}" class="btn-switch">
           <i class="bi bi-person-gear me-2"></i>
-          Register as Coordinator
+          Contact Admin for Coordinator Account
         </a>
       </div>
       </div>
@@ -460,10 +514,20 @@
           </h5>
         </div>
         <div class="modal-body text-center">
-          <div class="alert alert-info mb-3">
+          <div class="alert alert-info mb-3 text-start" style="font-size: 0.85rem;">
             <i class="bi bi-info-circle me-2"></i>
-            <strong>Instructions:</strong> Look directly at the camera, ensure good lighting, and blink naturally 2-3 times. 
-            Your face will be automatically captured when ready.
+            <strong>Face registration steps:</strong>
+            <ol class="mt-2 mb-0 ps-4">
+              <li>Allow camera access when prompted.</li>
+              <li>Look directly at the camera with good lighting.</li>
+              <li>Blink naturally 2–3 times and hold your head steady.</li>
+              <li>Wait for the system to confirm that your face has been captured.</li>
+            </ol>
+          </div>
+          <div class="alert alert-secondary mb-3 text-start" style="font-size: 0.85rem;">
+            <i class="bi bi-shield-lock me-2"></i>
+            <strong>Data privacy notice:</strong> Captured faces are used for <strong>educational purposes only</strong> and are kept
+            securely inside NORSU’s OJT DTR system. They are not shared outside the university.
           </div>
           
           <div class="position-relative d-inline-block mb-3" style="background: #000; border-radius: 10px; overflow: hidden;">

@@ -26,7 +26,7 @@ class ReportController extends Controller
         $monthNum = $date->month;
 
         $student = Student::findOrFail($studentId);
-        if ($coordinator->major && $student->course !== $coordinator->major) {
+        if (! $student->isVisibleToCoordinator($coordinator)) {
             return back()->with('error', 'You do not have permission to view this student\'s report.');
         }
 
@@ -146,4 +146,3 @@ class ReportController extends Controller
         return view('coordinator.generate-report', compact('students'));
     }
 }
-

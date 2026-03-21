@@ -306,7 +306,7 @@
       </form>
 
       <div class="register-link">
-        <p>Don't have an account? <a href="{{ route('coordinator.register') }}">Register here</a></p>
+        <p>Need access? <a href="{{ route('login') }}">Contact an admin for a coordinator account</a></p>
       </div>
 
       <div class="switch-login">

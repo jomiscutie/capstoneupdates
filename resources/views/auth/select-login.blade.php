@@ -204,6 +204,18 @@
             <p>Please continue to unified login</p>
         </div>
 
+        @if(session('warning'))
+        <div class="alert alert-warning" style="margin: 1rem 0; padding: 1rem; border-radius: 0.5rem; background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1px solid #fcd34d;">
+            <i class="bi bi-exclamation-triangle me-2"></i>{{ session('warning') }}
+        </div>
+        @endif
+
+        @if(session('info'))
+        <div class="alert alert-info" style="margin: 1rem 0; padding: 1rem; border-radius: 0.5rem; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #93c5fd;">
+            <i class="bi bi-info-circle me-2"></i>{{ session('info') }}
+        </div>
+        @endif
+
         <div class="login-cards">
             <a href="{{ route('login') }}" class="login-card coordinator">
                 <div class="icon-wrapper">

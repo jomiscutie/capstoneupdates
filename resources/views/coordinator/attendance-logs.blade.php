@@ -237,7 +237,7 @@
         </div>
         <div class="col-md-3">
             <div class="stats-box stats-warning">
-                <h4>{{ ($filter ?? 'month') === 'week' ? 'Late This Week' : 'Late This Month' }}</h4>
+                <h4>{{ ($filter ?? 'month') === 'week' ? 'Late In Range' : 'Late This Month' }}</h4>
                 <p class="fs-3 fw-bold mb-0">{{ $lateCount ?? 0 }}</p>
             </div>
         </div>
@@ -259,8 +259,16 @@
                     <input type="month" id="monthSelect" name="month" class="form-control form-control-sm" value="{{ request('month', now()->format('Y-m')) }}" style="min-width: 160px;" aria-label="Month">
                 </div>
                 <div class="col-auto filter-panel {{ ($filter ?? '') === 'week' ? 'active' : '' }}" data-filter="week">
-                    <label for="weekSelect" class="form-label small mb-0 text-muted">Week</label>
-                    <input type="week" id="weekSelect" name="week" class="form-control form-control-sm" value="{{ $weekInput ?? '' }}" style="min-width: 160px;">
+                    <div class="d-flex flex-wrap gap-2">
+                        <div>
+                            <label for="weekStartSelect" class="form-label small mb-1 text-muted">Start week</label>
+                            <input type="week" id="weekStartSelect" name="week_start" class="form-control form-control-sm" value="{{ $weekStartInput ?? $weekInput ?? '' }}" style="min-width: 160px;">
+                        </div>
+                        <div>
+                            <label for="weekEndSelect" class="form-label small mb-1 text-muted">End week</label>
+                            <input type="week" id="weekEndSelect" name="week_end" class="form-control form-control-sm" value="{{ $weekEndInput ?? $weekStartInput ?? $weekInput ?? '' }}" style="min-width: 160px;">
+                        </div>
+                    </div>
                 </div>
                 @if(!empty($search ?? ''))
                 <input type="hidden" name="q" value="{{ e($search) }}">
@@ -282,7 +290,7 @@
     <div class="view-student-bar">
         <span class="view-student-label"><i class="bi bi-person-video2 me-1"></i>Showing attendance for</span>
         <span class="view-student-name">{{ $viewStudent->name }} ({{ $viewStudent->student_no ?? '—' }})</span>
-        <a href="{{ route('coordinator.attendance.logs', array_filter(['month' => request('month', now()->format('Y-m')), 'filter' => $filter ?? 'month', 'week' => ($filter ?? '') === 'week' ? ($weekInput ?? null) : null])) }}" class="btn btn-sm btn-outline-primary btn-show-all ms-2">Show all</a>
+        <a href="{{ route('coordinator.attendance.logs', array_filter(['month' => request('month', now()->format('Y-m')), 'filter' => $filter ?? 'month', 'week_start' => ($filter ?? '') === 'week' ? ($weekStartInput ?? $weekInput ?? null) : null, 'week_end' => ($filter ?? '') === 'week' ? ($weekEndInput ?? $weekStartInput ?? $weekInput ?? null) : null])) }}" class="btn btn-sm btn-outline-primary btn-show-all ms-2">Show all</a>
     </div>
     @endif
 
@@ -293,8 +301,9 @@
                 <form action="{{ route('coordinator.attendance.logs') }}" method="GET" class="search-row" role="search">
                     <input type="hidden" name="filter" value="{{ $filter ?? 'month' }}">
                     <input type="hidden" name="month" value="{{ request('month', now()->format('Y-m')) }}">
-                    @if(($filter ?? '') === 'week' && !empty($weekInput))
-                    <input type="hidden" name="week" value="{{ $weekInput }}">
+                    @if(($filter ?? '') === 'week')
+                    <input type="hidden" name="week_start" value="{{ $weekStartInput ?? $weekInput }}">
+                    <input type="hidden" name="week_end" value="{{ $weekEndInput ?? $weekStartInput ?? $weekInput }}">
                     @endif
                     <div class="search-inner">
                         <i class="bi bi-search search-icon" aria-hidden="true"></i>
@@ -306,7 +315,7 @@
                                autocomplete="off"
                                aria-label="Search by name or student number">
                         @if(!empty($search ?? ''))
-                        <a href="{{ route('coordinator.attendance.logs', array_filter(['month' => request('month', now()->format('Y-m')), 'filter' => $filter ?? 'month', 'week' => ($filter ?? '') === 'week' ? ($weekInput ?? null) : null])) }}" class="search-clear" title="Clear search" aria-label="Clear search">
+                        <a href="{{ route('coordinator.attendance.logs', array_filter(['month' => request('month', now()->format('Y-m')), 'filter' => $filter ?? 'month', 'week_start' => ($filter ?? '') === 'week' ? ($weekStartInput ?? $weekInput ?? null) : null, 'week_end' => ($filter ?? '') === 'week' ? ($weekEndInput ?? $weekStartInput ?? $weekInput ?? null) : null])) }}" class="search-clear" title="Clear search" aria-label="Clear search">
                             <i class="bi bi-x-lg"></i>
                         </a>
                         @endif
@@ -441,7 +450,7 @@
                 </table>
             </div>
             @else
-            <p class="text-muted mb-0">No attendance logs for this student for {{ ($filter ?? 'month') === 'week' ? 'this week' : 'this month' }}.</p>
+            <p class="text-muted mb-0">No attendance logs for this student for {{ ($filter ?? 'month') === 'week' ? 'the selected weeks' : 'this month' }}.</p>
             @endif
         @else
             {{-- List of students (no repeating names) with View attendance button --}}
@@ -454,7 +463,8 @@
                         'student_id' => $student->id ?? null,
                         'month' => request('month', now()->format('Y-m')),
                         'filter' => $filter ?? 'month',
-                        'week' => ($filter ?? '') === 'week' ? ($weekInput ?? null) : null,
+                        'week_start' => ($filter ?? '') === 'week' ? ($weekStartInput ?? $weekInput ?? null) : null,
+                        'week_end' => ($filter ?? '') === 'week' ? ($weekEndInput ?? $weekStartInput ?? $weekInput ?? null) : null,
                     ]);
                 @endphp
                 <li>
@@ -471,10 +481,10 @@
             <div class="text-center py-4 text-muted">
                 <i class="bi bi-search d-block fs-2 mb-2" style="color: var(--dtr-muted); opacity: 0.45;"></i>
                 <p class="mb-0 fw-medium">No logs match "{{ e($search) }}"</p>
-                <p class="small mt-1 mb-0">Try a different name or student number, or <a href="{{ route('coordinator.attendance.logs', array_filter(['month' => request('month', now()->format('Y-m')), 'filter' => $filter ?? 'month', 'week' => ($filter ?? '') === 'week' ? ($weekInput ?? null) : null])) }}">clear the search</a>.</p>
+                <p class="small mt-1 mb-0">Try a different name or student number, or <a href="{{ route('coordinator.attendance.logs', array_filter(['month' => request('month', now()->format('Y-m')), 'filter' => $filter ?? 'month', 'week_start' => ($filter ?? '') === 'week' ? ($weekStartInput ?? $weekInput ?? null) : null, 'week_end' => ($filter ?? '') === 'week' ? ($weekEndInput ?? $weekStartInput ?? $weekInput ?? null) : null])) }}">clear the search</a>.</p>
             </div>
             @else
-            <p class="text-muted mb-0">No attendance logs for {{ ($filter ?? 'month') === 'week' ? 'this week' : 'this month' }}.</p>
+            <p class="text-muted mb-0">No attendance logs for {{ ($filter ?? 'month') === 'week' ? 'the selected weeks' : 'this month' }}.</p>
             @endif
             @endif
         @endif
@@ -488,20 +498,37 @@
     var filterMonth = document.getElementById('filterMonth');
     var filterWeek = document.getElementById('filterWeek');
     var panels = document.querySelectorAll('.dtr-attendance .filter-panel');
-    var weekInput = document.getElementById('weekSelect');
+    var weekStartInput = document.getElementById('weekStartSelect');
+    var weekEndInput = document.getElementById('weekEndSelect');
+    function currentIsoWeek() {
+        var now = new Date();
+        var start = new Date(now);
+        start.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
+        var y = start.getFullYear();
+        var w = Math.ceil((((start - new Date(y, 0, 1)) / 86400000) + 1) / 7);
+        return y + '-W' + String(w).padStart(2, '0');
+    }
     function updatePanels() {
         var isWeek = filterWeek && filterWeek.checked;
         panels.forEach(function(p) {
             p.classList.toggle('active', p.getAttribute('data-filter') === (isWeek ? 'week' : 'month'));
         });
-        if (isWeek && weekInput && !weekInput.value) {
-            var now = new Date();
-            var start = new Date(now);
-            start.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
-            var y = start.getFullYear();
-            var w = Math.ceil((((start - new Date(y, 0, 1)) / 86400000) + 1) / 7);
-            weekInput.value = y + '-W' + String(w).padStart(2, '0');
+        if (isWeek) {
+            var fallbackWeek = currentIsoWeek();
+            if (weekStartInput && !weekStartInput.value) {
+                weekStartInput.value = fallbackWeek;
+            }
+            if (weekEndInput && !weekEndInput.value) {
+                weekEndInput.value = weekStartInput && weekStartInput.value ? weekStartInput.value : fallbackWeek;
+            }
         }
+    }
+    if (weekStartInput && weekEndInput) {
+        weekStartInput.addEventListener('change', function() {
+            if (!weekEndInput.value || weekEndInput.value < weekStartInput.value) {
+                weekEndInput.value = weekStartInput.value;
+            }
+        });
     }
     if (filterMonth) filterMonth.addEventListener('change', updatePanels);
     if (filterWeek) filterWeek.addEventListener('change', updatePanels);

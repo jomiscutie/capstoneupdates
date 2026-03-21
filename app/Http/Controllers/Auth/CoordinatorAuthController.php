@@ -29,6 +29,12 @@ class CoordinatorAuthController extends Controller
         if (Auth::guard('coordinator')->attempt($credentials)) {
             $coordinator = Auth::guard('coordinator')->user();
 
+            if (! ($coordinator->is_active ?? true)) {
+                Auth::guard('coordinator')->logout();
+                return back()->withErrors(['email' => 'Your coordinator account is inactive. Please contact an administrator.'])
+                    ->withInput();
+            }
+
             $request->session()->regenerate();
             $coordinator->current_session_id = $request->session()->getId();
             $coordinator->save();
@@ -46,35 +52,15 @@ class CoordinatorAuthController extends Controller
     // Show registration form
     public function showRegisterForm()
     {
-        return view('auth.coordinator-register');
+        return redirect()->route('login')
+            ->with('info', 'Coordinator accounts are now created and managed by the admin.');
     }
 
     // Handle registration
     public function register(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:coordinators,email',
-            'password' => 'required|confirmed|min:6',
-            'college' => 'required',
-            'course' => 'required',
-        ]);
-
-        $coordinator = Coordinator::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'college' => $request->college,
-            'major' => $request->course, // Store course in major field for coordinators
-        ]);
-
-        Auth::guard('coordinator')->login($coordinator);
-        $request->session()->regenerate();
-        $coordinator->current_session_id = $request->session()->getId();
-        $coordinator->save();
-
-        return redirect()->route('coordinator.dashboard')
-                         ->with('success', 'Registered and logged in successfully.');
+        return redirect()->route('login')
+            ->with('info', 'Coordinator accounts are now created and managed by the admin.');
     }
 
     // Logout
