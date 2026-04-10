@@ -291,14 +291,19 @@ class FaceRecognition {
             this.faceDetectedCount++;
         }
 
-        // Allow button when: face seen enough times (so user can always click after ~2 sec)
-        const hasEnoughDetections = this.faceDetectedCount >= 5;
+        // Strict liveness: requires both blink AND stability
         const strictLiveness = hasBlink && isStable;
-        const fallbackLiveness = hasEnoughDetections && (hasBlink || isStable);
-        // Let user click after face detected 5+ times even without blink/stable (verify step still runs)
-        const canProceed = hasEnoughDetections;
+        
+        // Moderate liveness: requires blink OR stability plus more detections
+        const hasEnoughDetections = this.faceDetectedCount >= 8;
+        const moderateLiveness = hasEnoughDetections && (hasBlink || isStable);
+        
+        // Note: The pure detection count fallback (canProceed) was removed
+        // as it was too lenient and could allow photo-based bypass attempts.
+        // Server-side verification still runs as an additional layer of security.
+        // If users have issues with liveness, they can use password verification as fallback.
 
-        return strictLiveness || fallbackLiveness || canProceed;
+        return strictLiveness || moderateLiveness;
     }
 }
 

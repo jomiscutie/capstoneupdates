@@ -29,15 +29,17 @@ class AttendanceController extends Controller
             return back()->with('error', 'Your account must be verified by your coordinator before you can record attendance. Please contact your OJT coordinator.');
         }
 
-        // Alternative: password verification when camera is unavailable
+        // Password fallback is allowed only as an explicit exception.
         if ($request->input('verification_method') === 'password') {
             if (!$request->filled('password')) {
                 return back()->with('error', 'Please enter your password to verify your identity.');
             }
+            if (!$request->filled('verification_reason')) {
+                return back()->with('error', 'Please select why password verification is needed before recording attendance.');
+            }
             if (!Hash::check($request->password, $student->password)) {
                 return back()->with('error', 'Incorrect password. Please try again.');
             }
-            // Password valid; skip face verification
         } elseif ($request->filled('face_encoding') && $student->face_encoding) {
             $storedEncoding = json_decode($student->face_encoding, true);
             $providedEncoding = json_decode($request->face_encoding, true);
@@ -145,9 +147,11 @@ class AttendanceController extends Controller
             $attendance->afternoon_is_late = $isLate;
             $attendance->afternoon_late_minutes = $lateMinutes;
             
-            $verificationNote = $request->input('verification_method') === 'password' ? ' (password verification)' : (' with face verification. ✓' . $this->confidenceSuffix($request));
-            $message = $isLate 
-                ? "Afternoon Time In recorded successfully. ⚠️ You are {$lateMinutes} minute(s) late." . ($request->input('verification_method') === 'password' ? ' (password verification)' : $this->confidenceSuffix($request))
+            $verificationNote = $request->input('verification_method') === 'password'
+                ? ' (password verification)'
+                : (' with face verification.' . $this->confidenceSuffix($request));
+            $message = $isLate
+                ? "Afternoon Time In recorded successfully. You are {$lateMinutes} minute(s) late." . ($request->input('verification_method') === 'password' ? ' (password verification)' : $this->confidenceSuffix($request))
                 : 'Afternoon Time In recorded successfully' . $verificationNote;
         } else {
             // MORNING TIME-IN: Before 12:00 PM (00:00:00 to 11:59:59)
@@ -192,9 +196,11 @@ class AttendanceController extends Controller
             $attendance->is_late = $isLate;
             $attendance->late_minutes = $lateMinutes;
             
-            $verificationNote = $request->input('verification_method') === 'password' ? ' (password verification)' : (' with face verification. ✓' . $this->confidenceSuffix($request));
-            $message = $isLate 
-                ? "Morning Time In recorded successfully. ⚠️ You are {$lateMinutes} minute(s) late." . ($request->input('verification_method') === 'password' ? ' (password verification)' : $this->confidenceSuffix($request))
+            $verificationNote = $request->input('verification_method') === 'password'
+                ? ' (password verification)'
+                : (' with face verification.' . $this->confidenceSuffix($request));
+            $message = $isLate
+                ? "Morning Time In recorded successfully. You are {$lateMinutes} minute(s) late." . ($request->input('verification_method') === 'password' ? ' (password verification)' : $this->confidenceSuffix($request))
                 : 'Morning Time In recorded successfully' . $verificationNote;
         }
 
@@ -229,15 +235,17 @@ class AttendanceController extends Controller
             return back()->with('error', 'Your account must be verified by your coordinator before you can record attendance. Please contact your OJT coordinator.');
         }
 
-        // Alternative: password verification when camera is unavailable
+        // Password fallback is allowed only as an explicit exception.
         if ($request->input('verification_method') === 'password') {
             if (!$request->filled('password')) {
                 return back()->with('error', 'Please enter your password to verify your identity.');
             }
+            if (!$request->filled('verification_reason')) {
+                return back()->with('error', 'Please select why password verification is needed before recording attendance.');
+            }
             if (!Hash::check($request->password, $student->password)) {
                 return back()->with('error', 'Incorrect password. Please try again.');
             }
-            // Password valid; skip face verification
         } elseif ($request->filled('face_encoding') && $student->face_encoding) {
             $storedEncoding = json_decode($student->face_encoding, true);
             $providedEncoding = json_decode($request->face_encoding, true);
@@ -337,7 +345,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Optional suffix for success message: " — 94% match" when verification_confidence is sent.
+     * Optional suffix for success message: " - 94% match" when verification_confidence is sent.
      */
     private function confidenceSuffix(Request $request): string
     {
@@ -348,7 +356,7 @@ class AttendanceController extends Controller
         if ($pct < 0 || $pct > 100) {
             return '';
         }
-        return " — {$pct}% match";
+        return " - {$pct}% match";
     }
 
     /**
@@ -481,7 +489,7 @@ class AttendanceController extends Controller
         if ($filter === 'week' && $weekRange) {
             $start = Carbon::parse($weekRange['start_date']);
             $end = Carbon::parse($weekRange['end_date']);
-            $weekLabel = $start->format('M j') . ' – ' . $end->format('M j, Y');
+            $weekLabel = $start->format('M j') . ' - ' . $end->format('M j, Y');
 
             $logs = Attendance::where('student_id', $studentId)
                 ->whereBetween('date', [$weekRange['start_date'], $weekRange['end_date']])
@@ -501,8 +509,9 @@ class AttendanceController extends Controller
                 ->get();
         }
 
-        $rendered = (float) ($student->total_rendered_hours ?? 0);
-        $required = (float) ($student->required_ojt_hours ?? 120);
+        // Use term-specific hours from active term assignment
+        $rendered = (float) $student->renderedHoursForAssignment($student->activeTermAssignment);
+        $required = (float) $student->requiredHoursForAssignment($student->activeTermAssignment);
         $progressPct = $required > 0 ? min(100, round(100 * $rendered / $required, 1)) : 0;
         $remaining = max(0, $required - $rendered);
         $termSummary = $this->buildStudentTermSummary($student);
@@ -606,7 +615,7 @@ class AttendanceController extends Controller
         }
 
         if ($filter === 'week' && $weekRange) {
-            $weekLabel = $start->format('M j') . ' – ' . $end->format('M j, Y');
+            $weekLabel = $start->format('M j') . ' - ' . $end->format('M j, Y');
 
             $start = Carbon::parse($weekRange['start_date']);
             $end = Carbon::parse($weekRange['end_date']);

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Services\FaceEncodingService;
+use App\Support\Services\FaceEncodingService;
 use Illuminate\Http\Request;
 use App\Models\Student;
 use App\Models\StudentTermAssignment;
@@ -76,12 +76,14 @@ class StudentAuthController extends Controller
             ],
             'name' => 'required|string|max:255',
             'course' => 'required|string|max:100',
+            'school_year' => ['required', 'string', 'max:20', 'regex:/^\d{4}-\d{4}$/'],
             'term' => ['required', Rule::in(Student::TERMS)],
             'section' => ['required', Rule::in(Student::SECTIONS)],
-            'password' => 'required|confirmed|min:6',
+            'password' => ['required', 'string', 'confirmed', Password::min(8)],
             'face_encoding' => 'required|string',
         ], [
             'student_no.unique' => 'This student number is already registered. Please log in instead.',
+            'school_year.regex' => 'School year must be in the format YYYY-YYYY, like 2026-2027.',
         ]);
 
         if (Student::where('student_no', $studentNo)->exists()) {
@@ -117,6 +119,7 @@ class StudentAuthController extends Controller
 
             $student->termAssignments()->create([
                 'course' => $request->course,
+                'school_year' => $request->school_year,
                 'term' => $request->term,
                 'section' => $request->section,
                 'required_ojt_hours' => 120,
@@ -126,7 +129,7 @@ class StudentAuthController extends Controller
         });
 
         // Do NOT log in - redirect to login page with pending verification message
-        return redirect('/login')->with('warning', '⚠️ WAIT FOR COORDINATOR\'S APPROVAL ⚠️ Your registration is pending. Please wait for the OJT coordinator to verify your account before you can log in.');
+        return redirect('/login')->with('warning', 'Registration submitted successfully. Wait for your coordinator to verify your account before you log in.');
     }
 
     public function logout(Request $request)
@@ -177,3 +180,4 @@ class StudentAuthController extends Controller
         return redirect()->route('student.settings')->with('success', 'Your password has been updated.');
     }
 }
+

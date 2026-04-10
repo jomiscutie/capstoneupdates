@@ -118,7 +118,7 @@ class Student extends Authenticatable
     public function scopeForCoordinator($query, $coordinator)
     {
         $assignments = method_exists($coordinator, 'assignments')
-            ? $coordinator->assignments()->get(['course', 'semester', 'section'])
+            ? $coordinator->assignments()->get(['course', 'school_year', 'semester', 'section'])
             : collect();
 
         if ($assignments->isNotEmpty()) {
@@ -126,7 +126,14 @@ class Student extends Authenticatable
                 $termQuery->where(function ($studentQuery) use ($assignments) {
                     foreach ($assignments as $assignment) {
                         $studentQuery->orWhere(function ($matchQuery) use ($assignment) {
-                            $matchQuery->where('course', $assignment->course);
+                            // Match course - use LIKE for flexible matching (e.g., "INFORMATION TECHNOLOGY" matches "Bachelor of Science in Information Technology")
+                            $matchQuery->where('course', 'like', '%' . $assignment->course . '%');
+
+                            // School year matching - if assignment has school_year, match it; otherwise match any
+                            if (! empty($assignment->school_year)) {
+                                $matchQuery->where('school_year', $assignment->school_year);
+                            }
+                            // If school_year is NULL/empty in assignment, don't filter by school_year (match all)
 
                             if ($assignment->semester !== 'All') {
                                 $matchQuery->where('term', $assignment->semester);
@@ -145,7 +152,7 @@ class Student extends Authenticatable
             return $query->whereRaw('1 = 0');
         }
 
-        return $query->where('course', $coordinator->major);
+        return $query->where('course', 'like', '%' . $coordinator->major . '%');
     }
 
     public function isVisibleToCoordinator($coordinator): bool
@@ -171,6 +178,22 @@ class Student extends Authenticatable
         return $this->activeTermAssignment?->section ?: $this->section;
     }
 
+    public function getCurrentRequiredHoursAttribute(): float
+    {
+        return $this->requiredHoursForAssignment();
+    }
+
+    public function completionConfirmationForAssignment(?StudentTermAssignment $assignment = null): ?StudentTermAssignment
+    {
+        $assignment ??= $this->activeTermAssignment;
+
+        if ($assignment && $assignment->confirmed_at) {
+            return $assignment;
+        }
+
+        return null;
+    }
+
     public function scopeVerified($query)
     {
         if (! static::hasVerificationColumn()) {
@@ -191,24 +214,52 @@ class Student extends Authenticatable
 
     public function getTotalRenderedHoursAttribute(): float
     {
-        $totalMinutes = $this->attendances()
-            ->whereNotNull('hours_rendered')
-            ->get()
-            ->sum(function ($att) {
-                return self::parseHoursRenderedToMinutes($att->hours_rendered);
-            });
+        return $this->renderedHoursForAssignment();
+    }
+
+    public static function minutesFromRenderedHours(?string $value): int
+    {
+        return self::parseHoursRenderedToMinutes($value);
+    }
+
+    public function renderedHoursForAssignment(?StudentTermAssignment $assignment = null): float
+    {
+        $assignment ??= $this->activeTermAssignment;
+
+        $query = $this->attendances()->whereNotNull('hours_rendered');
+
+        if ($assignment?->started_at) {
+            $query->whereDate('date', '>=', $assignment->started_at->toDateString());
+        }
+
+        if ($assignment?->completed_at) {
+            $query->whereDate('date', '<=', $assignment->completed_at->toDateString());
+        }
+
+        $totalMinutes = $query->get()->sum(function ($att) {
+            return self::parseHoursRenderedToMinutes($att->hours_rendered);
+        });
 
         return round($totalMinutes / 60, 2);
     }
 
-    public function hasReachedRequiredHours(): bool
+    public function requiredHoursForAssignment(?StudentTermAssignment $assignment = null): float
     {
-        return $this->total_rendered_hours >= (float) $this->required_ojt_hours;
+        $assignment ??= $this->activeTermAssignment;
+
+        return (float) ($assignment?->required_ojt_hours ?? $this->required_ojt_hours ?? 120);
     }
 
-    public function isOjtCompletionConfirmed(): bool
+    public function hasReachedRequiredHours(?StudentTermAssignment $assignment = null): bool
     {
-        return $this->ojt_completion_confirmed_at !== null;
+        $assignment ??= $this->activeTermAssignment;
+
+        return $this->renderedHoursForAssignment($assignment) >= $this->requiredHoursForAssignment($assignment);
+    }
+
+    public function isOjtCompletionConfirmed(?StudentTermAssignment $assignment = null): bool
+    {
+        return $this->completionConfirmationForAssignment($assignment) !== null;
     }
 
     private static function parseHoursRenderedToMinutes(?string $value): int

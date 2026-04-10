@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Monthly Attendance — {{ $student->name }}</title>
+    <title>Monthly Attendance - {{ $student->name }}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -145,7 +145,7 @@
     <div class="info-block">
         <p><strong>Student:</strong> {{ $student->name }}</p>
         <p><strong>Student No:</strong> {{ $student->student_no }}</p>
-        <p><strong>Course:</strong> {{ $student->course ?? '—' }}</p>
+        <p><strong>Course:</strong> {{ $student->course ?? '-' }}</p>
         @if($coordinator)
         <p><strong>Prepared by:</strong> {{ $coordinator->name }}</p>
         @endif
@@ -173,32 +173,11 @@
                 @foreach($attendances as $attendance)
                     <tr>
                         <td>{{ \Carbon\Carbon::parse($attendance->date)->format('m/d/y') }}</td>
-                        <td>{{ $attendance->time_in_12 ? $attendance->time_in_12 . ($attendance->is_late ? ' (Late)' : '') : '—' }}</td>
-                        <td>{{ $attendance->afternoon_time_in_12 ? $attendance->afternoon_time_in_12 . ($attendance->afternoon_is_late ? ' (Late)' : '') : '—' }}</td>
-                        <td>{{ $attendance->time_out_12 ?? '—' }}</td>
+                        <td>{{ $attendance->time_in_12 ? $attendance->time_in_12 . ($attendance->is_late ? ' (Late)' : '') : '-' }}</td>
+                        <td>{{ $attendance->afternoon_time_in_12 ? $attendance->afternoon_time_in_12 . ($attendance->afternoon_is_late ? ' (Late)' : '') : '-' }}</td>
+                        <td>{{ $attendance->time_out_12 ?? '-' }}</td>
                         <td>
-                            @php
-                                $dayMinutes = 0;
-                                if ($attendance->time_in && $attendance->time_out) {
-                                    $in = \Carbon\Carbon::parse($attendance->time_in);
-                                    $out = \Carbon\Carbon::parse($attendance->time_out);
-                                    if ($out->format('H') < 12) {
-                                        $dayMinutes += abs($out->diffInMinutes($in));
-                                    }
-                                }
-                                if ($attendance->afternoon_time_in && $attendance->time_out) {
-                                    $in = \Carbon\Carbon::parse($attendance->afternoon_time_in);
-                                    $out = \Carbon\Carbon::parse($attendance->time_out);
-                                    $dayMinutes += abs($out->diffInMinutes($in));
-                                }
-                                $dayHours = floor($dayMinutes / 60);
-                                $dayMins = $dayMinutes % 60;
-                            @endphp
-                            @if($dayMinutes > 0)
-                                {{ $dayHours }}h {{ $dayMins }}m
-                            @else
-                                —
-                            @endif
+                            {{ $attendance->hours_rendered ?? '-' }}
                         </td>
                     </tr>
                 @endforeach
@@ -226,7 +205,9 @@
     @endif
 
     <div class="footer-block">
-        Generated {{ $generatedAt }} · NORSU OJT DTR
+        Generated {{ $generatedAt }} - NORSU OJT DTR
     </div>
 </body>
 </html>
+
+

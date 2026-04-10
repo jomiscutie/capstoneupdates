@@ -48,25 +48,10 @@ class ReportController extends Controller
             return $attendance->is_late || $attendance->afternoon_is_late;
         })->count();
         
-        // Calculate total hours rendered
-        $totalMinutes = 0;
-        foreach ($attendances as $attendance) {
-            // Morning hours
-            if ($attendance->time_in && $attendance->time_out) {
-                $morningIn = Carbon::parse($attendance->time_in);
-                $timeOut = Carbon::parse($attendance->time_out);
-                // Only count if time_out is before 12 PM (lunch break scenario)
-                if ($timeOut->format('H') < 12) {
-                    $totalMinutes += abs($timeOut->diffInMinutes($morningIn));
-                }
-            }
-            // Afternoon hours
-            if ($attendance->afternoon_time_in && $attendance->time_out) {
-                $afternoonIn = Carbon::parse($attendance->afternoon_time_in);
-                $timeOut = Carbon::parse($attendance->time_out);
-                $totalMinutes += abs($timeOut->diffInMinutes($afternoonIn));
-            }
-        }
+        // Use saved rendered hours so the report matches the attendance flow exactly.
+        $totalMinutes = $attendances->sum(function ($attendance) {
+            return Student::minutesFromRenderedHours($attendance->hours_rendered);
+        });
         
         $totalHours = floor($totalMinutes / 60);
         $remainingMinutes = $totalMinutes % 60;

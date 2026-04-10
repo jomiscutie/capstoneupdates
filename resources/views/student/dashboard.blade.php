@@ -345,22 +345,10 @@
                         <div class="label">Hours Rendered</div>
                         <div class="value">
                             @php
-                                $totalMinutes = 0;
-                                if ($attendance->time_in && $attendance->time_out) {
-                                    $in = \Carbon\Carbon::parse($attendance->time_in);
-                                    $out = \Carbon\Carbon::parse($attendance->time_out);
-                                    $totalMinutes += abs($out->diffInMinutes($in));
-                                }
-                                if ($attendance->afternoon_time_in && $attendance->time_out) {
-                                    $in = \Carbon\Carbon::parse($attendance->afternoon_time_in);
-                                    $out = \Carbon\Carbon::parse($attendance->time_out);
-                                    $totalMinutes += abs($out->diffInMinutes($in));
-                                }
-                                $hours = floor($totalMinutes / 60);
-                                $minutes = $totalMinutes % 60;
+                                $hoursRendered = $attendance->hours_rendered ?? '';
                             @endphp
-                            @if($totalMinutes > 0)
-                                {{ $hours }}h {{ $minutes }}m
+                            @if($hoursRendered !== '')
+                                {{ str_replace([' hr ', ' min', ' hr'], ['h ', 'm', 'h'], $hoursRendered) }}
                             @else
                                 0h 0m
                             @endif
@@ -426,8 +414,8 @@
                             <input type="hidden" name="verification_method" value="password">
                             <input type="hidden" name="recorded_at" id="passwordRecordedAt">
                             <div class="mb-2">
-                                <label for="verification_reason" class="form-label small">Reason (optional)</label>
-                                <select name="verification_reason" id="verification_reason" class="form-select form-select-sm">
+                                <label for="verification_reason" class="form-label small">Reason</label>
+                                <select name="verification_reason" id="verification_reason" class="form-select form-select-sm" required>
                                     <option value="">Select reason</option>
                                     <option value="Camera not working">Camera not working</option>
                                     <option value="Device or browser issue">Device or browser issue</option>
@@ -886,7 +874,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </script>
 @endpush
-
-
-
 

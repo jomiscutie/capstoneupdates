@@ -63,6 +63,7 @@ Route::prefix('coordinator')->group(function () {
         Route::get('attendance-analytics', [AttendanceController::class, 'attendanceAnalytics'])->name('coordinator.attendance.analytics');
         Route::get('generate-report', [ReportController::class, 'showReportForm'])->name('coordinator.generate.report');
         Route::post('generate-report', [ReportController::class, 'generateMonthlyReport'])->name('coordinator.generate.report.submit');
+        Route::get('students', [CoordinatorSettingsController::class, 'students'])->name('coordinator.students');
         Route::get('ojt-completion', [OjtCompletionController::class, 'index'])->name('coordinator.ojt.completion');
         Route::post('ojt-completion/confirm/{student}', [OjtCompletionController::class, 'confirm'])->name('coordinator.ojt.completion.confirm');
         Route::post('ojt-completion/required-hours/{student}', [OjtCompletionController::class, 'updateRequiredHours'])->name('coordinator.ojt.completion.required-hours');
@@ -71,7 +72,6 @@ Route::prefix('coordinator')->group(function () {
         Route::get('settings', [CoordinatorSettingsController::class, 'index'])->name('coordinator.settings');
         Route::post('settings/password', [CoordinatorSettingsController::class, 'updatePassword'])->name('coordinator.settings.password')->middleware('throttle:5,1');
         Route::post('settings/students/required-hours/bulk', [CoordinatorSettingsController::class, 'bulkUpdateRequiredHours'])->name('coordinator.settings.required-hours.bulk');
-        Route::post('settings/students/{student}/remove', [CoordinatorSettingsController::class, 'removeStudent'])->name('coordinator.settings.student.remove');
         Route::post('logout', [CoordinatorAuthController::class, 'logout'])->name('coordinator.logout');
     });
 });

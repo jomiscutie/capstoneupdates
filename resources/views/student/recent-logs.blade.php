@@ -274,7 +274,7 @@
         @if(($termSummary['history'] ?? collect())->isNotEmpty())
             <div class="term-history-strip">
                 @foreach($termSummary['history'] as $historyItem)
-                    <span class="term-history-chip">{{ $historyItem->term }} · {{ $historyItem->section }}</span>
+                    <span class="term-history-chip">{{ $historyItem->term }} ï¿½ {{ $historyItem->section }}</span>
                 @endforeach
             </div>
         @endif
@@ -308,6 +308,7 @@
     <div class="card">
         <div class="card-body">
             <h4><i class="bi bi-clock-history me-2"></i>Recent logs</h4>
+
             <form method="GET" class="row g-3 align-items-center flex-wrap filter-form mb-3">
                 <div class="col-auto">
                     <span class="text-muted small me-2">View by</span>

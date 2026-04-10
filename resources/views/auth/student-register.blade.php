@@ -426,6 +426,17 @@
 
         <div class="form-group">
           <label class="form-label">
+            <i class="bi bi-journal-text"></i>School Year
+          </label>
+          <div class="input-wrapper">
+            <i class="bi bi-journal-text input-icon"></i>
+            <input type="text" name="school_year" class="form-control" value="{{ old('school_year') }}" placeholder="Example: 2026-2027" pattern="\d{4}-\d{4}" inputmode="numeric" required />
+          </div>
+          <small class="login-hint d-block mt-1">Use the school year shown on your load slip, for example 2026-2027.</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
             <i class="bi bi-grid-3x3-gap"></i>Section
             <div class="form-text">
             </div>
@@ -447,7 +458,7 @@
           </label>
           <div class="input-wrapper has-password-toggle">
             <i class="bi bi-key input-icon"></i>
-            <input type="password" name="password" class="form-control" placeholder="Enter password" required />
+            <input type="password" name="password" class="form-control" placeholder="Enter password" minlength="8" required />
             <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password" title="Show password"><i class="bi bi-eye"></i></button>
           </div>
           <small class="login-hint d-block mt-1">Use at least 8 characters with a mix of letters and numbers for better security.</small>
@@ -459,7 +470,7 @@
           </label>
           <div class="input-wrapper has-password-toggle">
             <i class="bi bi-key-fill input-icon"></i>
-            <input type="password" name="password_confirmation" class="form-control" placeholder="Confirm password" required />
+            <input type="password" name="password_confirmation" class="form-control" placeholder="Confirm password" minlength="8" required />
             <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password" title="Show password"><i class="bi bi-eye"></i></button>
           </div>
         </div>
@@ -468,7 +479,7 @@
           <div class="form-check text-start" style="font-size: 0.8rem; color: var(--login-muted);">
             <input class="form-check-input me-2" type="checkbox" value="1" id="privacyConsent" required>
             <label class="form-check-label" for="privacyConsent">
-              I understand that my personal information and captured facial data will be used for <strong>educational and OJT attendance purposes only</strong>, kept securely inside NORSU’s OJT DTR system, and handled in accordance with the Data Privacy Act of 2012 (RA 10173).
+              I understand that my personal information and captured facial data will be used for <strong>educational and OJT attendance purposes only</strong>, kept securely inside NORSU's OJT DTR system, and handled in accordance with the Data Privacy Act of 2012 (RA 10173).
             </label>
           </div>
         </div>
@@ -520,14 +531,14 @@
             <ol class="mt-2 mb-0 ps-4">
               <li>Allow camera access when prompted.</li>
               <li>Look directly at the camera with good lighting.</li>
-              <li>Blink naturally 2–3 times and hold your head steady.</li>
+              <li>Blink naturally 2-3 times and hold your head steady.</li>
               <li>Wait for the system to confirm that your face has been captured.</li>
             </ol>
           </div>
           <div class="alert alert-secondary mb-3 text-start" style="font-size: 0.85rem;">
             <i class="bi bi-shield-lock me-2"></i>
             <strong>Data privacy notice:</strong> Captured faces are used for <strong>educational purposes only</strong> and are kept
-            securely inside NORSU’s OJT DTR system. They are not shared outside the university.
+            securely inside NORSU's OJT DTR system. They are not shared outside the university.
           </div>
           
           <div class="position-relative d-inline-block mb-3" style="background: #000; border-radius: 10px; overflow: hidden;">
