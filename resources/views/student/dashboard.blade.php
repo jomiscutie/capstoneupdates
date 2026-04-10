@@ -254,6 +254,12 @@
                         <span>Afternoon time-in already recorded today at <strong>{{ $attendance->afternoon_time_in_12 }}</strong>. Duplicate not allowed.</span>
                     </div>
                 @endif
+                @if($attendance->lunch_break_out)
+                    <div class="notice-item notice-recorded">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <span>Lunch / break out already recorded today at <strong>{{ $attendance->lunch_break_out_12 }}</strong> (DTR morning departure).</span>
+                    </div>
+                @endif
                 @if($attendance->time_out)
                     <div class="notice-item notice-recorded">
                         <i class="bi bi-check-circle-fill me-2"></i>
@@ -262,6 +268,21 @@
                 @endif
             </div>
             @endif
+
+            @php
+                $showLunchBreakButton = isset($attendance) && $attendance
+                    && $attendance->time_in
+                    && ! $attendance->lunch_break_out
+                    && ! $attendance->afternoon_time_in
+                    && ! $attendance->time_out;
+                $timeOutCoolingDown = !empty($timeOutUnlockAtIso ?? null);
+                $canTimeOut = isset($attendance) && $attendance
+                    && ($attendance->time_in || $attendance->afternoon_time_in)
+                    && ! $attendance->time_out
+                    && ! $timeOutCoolingDown;
+                $showTimeOutLockedHint = ! $canTimeOut && (! isset($attendance) || ! $attendance
+                    || ((! $attendance->time_in && ! $attendance->afternoon_time_in) && ! $attendance->time_out));
+            @endphp
 
             <div class="time-display">
                 <div class="time-item">
@@ -282,10 +303,30 @@
                 <button type="button" class="btn btn-action btn-timein" onclick="openFaceVerification('timein')">
                     <i class="bi bi-check-circle"></i> Time In
                 </button>
-                <button type="button" class="btn btn-action btn-timeout" onclick="openFaceVerification('timeout')">
+                @if($showLunchBreakButton)
+                <button type="button" class="btn btn-action btn-lunchbreak" onclick="openFaceVerification('lunchbreak')">
+                    <i class="bi bi-cup-hot"></i> Lunch / break out
+                </button>
+                @endif
+                <button type="button" class="btn btn-action btn-timeout"
+                    @if($canTimeOut) onclick="openFaceVerification('timeout')" @endif
+                    @if(! $canTimeOut) disabled aria-disabled="true" title="{{ $timeOutCoolingDown ? 'Time Out will be available 30 minutes after your latest time-in.' : 'Record morning or afternoon time-in first, then you can time out.' }}" @endif>
                     <i class="bi bi-x-circle"></i> Time Out
                 </button>
             </div>
+            @if($timeOutCoolingDown)
+            <p class="text-muted small mt-2 mb-0" id="timeOutCooldownHint"
+               data-unlock-at="{{ $timeOutUnlockAtIso }}"
+               data-initial-minutes="{{ (int) ($timeOutMinutesRemaining ?? 0) }}">
+                <i class="bi bi-hourglass-split me-1"></i><strong>Time Out</strong> will unlock in about <strong><span id="timeOutMinutesLeft">{{ (int) ($timeOutMinutesRemaining ?? 0) }}</span> minute(s)</strong> after your latest time-in.
+            </p>
+            @endif
+            @if($showTimeOutLockedHint)
+            <p class="text-muted small mt-2 mb-0"><i class="bi bi-info-circle me-1"></i><strong>Time Out</strong> stays disabled until you have at least one <strong>Time In</strong> today (morning or afternoon).</p>
+            @endif
+            @if($showLunchBreakButton)
+            <p class="text-muted small mt-2 mb-0">When you leave for lunch, tap <strong>Lunch / break out</strong> so your DTR <em>A.M. departure</em> is recorded. Then use <strong>Time In</strong> after lunch.</p>
+            @endif
         </div>
 
         <!-- Today's Attendance Summary -->
@@ -322,6 +363,10 @@
                                 <span class="text-muted">-</span>
                             @endif
                         </div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">A.M. departure (lunch)</div>
+                        <div class="value">{{ $attendance->lunch_break_out_12 ?? '-' }}</div>
                     </div>
                     <div class="summary-item">
                         <div class="label">Afternoon Time In</div>
@@ -378,12 +423,11 @@
                     <h5 class="modal-title mb-0" id="faceVerificationModalLabel">Face Verification Required</h5>
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" onclick="stopFaceVerification()" aria-label="Cancel">Cancel</button>
-                        <button type="button" class="btn btn-primary btn-sm" id="verifyFaceBtn" onclick="verifyAndSubmit()" disabled aria-label="Verify and submit">Verify & Submit</button>
                     </div>
                 </div>
                 <div class="modal-body text-center">
                     <div id="faceVerificationBlock">
-                        <p id="faceVerificationModalDesc" class="mb-3"><strong>Show your ID to the camera</strong> while verifying. Look at the camera with your ID visible in frame. When your face is detected, click &quot;Verify & Submit&quot; above. A timestamped photo will be saved as proof of attendance.</p>
+                        <p id="faceVerificationModalDesc" class="mb-3"><strong>Show your ID to the camera</strong> while verifying. Look at the camera with your ID visible in frame. Once your face is verified, attendance is submitted automatically. A timestamped photo will be saved as proof of attendance.</p>
                         <div class="position-relative d-inline-block" style="max-height: 50vh;">
                             <video id="faceVideo" autoplay playsinline style="width: 100%; max-width: 640px; max-height: 50vh; border-radius: 10px; display: block;"></video>
                             <canvas id="faceCanvas" style="position: absolute; top: 0; left: 0; width: 100%; max-width: 640px; pointer-events: none;"></canvas>
@@ -509,16 +553,116 @@ function scheduleMidnightReload() {
 }
 scheduleMidnightReload();
 
+function updateTimeOutCooldownHint() {
+    var hint = document.getElementById('timeOutCooldownHint');
+    var minutesEl = document.getElementById('timeOutMinutesLeft');
+    if (!hint || !minutesEl) return;
+    var unlockAt = hint.getAttribute('data-unlock-at');
+    if (!unlockAt) return;
+    var unlockDate = new Date(unlockAt);
+    var now = new Date();
+    var diffMs = unlockDate.getTime() - now.getTime();
+    if (diffMs <= 0) {
+        minutesEl.textContent = '0';
+        window.location.reload();
+        return;
+    }
+    var mins = Math.max(1, Math.ceil(diffMs / 60000));
+    minutesEl.textContent = String(mins);
+}
+setInterval(updateTimeOutCooldownHint, 15000);
+updateTimeOutCooldownHint();
+
 let currentAction = '';
 let verificationInterval = null;
 let faceModalTriggerButton = null;
+let autoSubmitTimer = null;
+let autoSubmitCountdownTimer = null;
+let isSubmittingAttendance = false;
+
+function attendancePostUrlForAction(action) {
+    if (action === 'timein') return '{{ route("student.timein") }}';
+    if (action === 'lunchbreak') return '{{ route("student.lunch.breakout") }}';
+    return '{{ route("student.timeout") }}';
+}
+
+function attendanceActionLabel(action) {
+    if (action === 'timein') return 'Time In';
+    if (action === 'lunchbreak') return 'Lunch / break out';
+    return 'Time Out';
+}
+
+function showCameraErrorStatus(message) {
+    var statusEl = document.getElementById('verificationStatus');
+    if (!statusEl) return;
+    statusEl.innerHTML =
+        '<p class="text-danger mb-1"><i class="bi bi-camera-video-off me-2"></i>Camera unavailable.</p>' +
+        '<p class="text-muted small mb-2">' + (message || 'Please check camera permission and availability, then try again.') + '</p>' +
+        '<button type="button" class="btn btn-outline-primary btn-sm" onclick="retryCameraSetup()"><i class="bi bi-arrow-repeat me-1"></i>Retry camera</button>' +
+        '<p class="text-muted small mt-2 mb-0">You can also use <strong>Verify with password instead</strong> below.</p>';
+}
+
+async function retryCameraSetup() {
+    if (!currentAction) return;
+    stopFaceVerification();
+    document.getElementById('verificationStatus').innerHTML = '<p class="text-muted">Retrying camera...</p>';
+    var video = document.getElementById('faceVideo');
+    var canvas = document.getElementById('faceCanvas');
+    const cameraResult = await faceRecognition.initializeCamera(video, canvas);
+    if (!cameraResult || !cameraResult.ok) {
+        showCameraErrorStatus(cameraResult && cameraResult.message ? cameraResult.message : '');
+        return;
+    }
+    document.getElementById('verificationStatus').innerHTML = '<p class="text-info">Camera reconnected. Detecting face...</p>';
+    faceRecognition.resetLiveness();
+    document.getElementById('blinkCount').textContent = '0';
+    if (verificationInterval) {
+        clearInterval(verificationInterval);
+        verificationInterval = null;
+    }
+    let startTime = Date.now();
+    const maxWaitTime = 10000;
+    const runLoop = async () => {
+        if (!document.getElementById('faceVerificationModal')?.classList.contains('show')) return;
+        const detection = await faceRecognition.detectFace(false);
+        const elapsed = Date.now() - startTime;
+        let nextDelay = 240;
+        if (detection) {
+            const blinkCount = faceRecognition.blinkCount;
+            document.getElementById('blinkCount').textContent = blinkCount;
+            const isLive = faceRecognition.checkLiveness(detection);
+            nextDelay = 460;
+            if (isLive) {
+                document.getElementById('verificationStatus').innerHTML = '<p class="text-success"><i class="bi bi-check-circle me-2"></i>Face detected. Auto-submitting attendance...</p>';
+                verifyAndSubmit();
+                return;
+            } else if (blinkCount > 0) {
+                document.getElementById('verificationStatus').innerHTML = '<p class="text-info"><i class="bi bi-eye me-2"></i>Face detected! Hold still - button will enable shortly.</p>';
+            } else {
+                document.getElementById('verificationStatus').innerHTML = '<p class="text-info"><i class="bi bi-person me-2"></i>Face detected. Keep looking at the camera - auto submit will start shortly.</p>';
+            }
+            if (elapsed > maxWaitTime) {
+                document.getElementById('verificationStatus').innerHTML = '<p class="text-warning"><i class="bi bi-exclamation-triangle me-2"></i>Face not detected clearly. Position your face in the frame and wait a few seconds.</p>';
+            }
+        } else {
+            document.getElementById('verificationStatus').innerHTML = '<p class="text-warning"><i class="bi bi-exclamation-triangle me-2"></i>No face detected. Please position yourself in front of the camera.</p>';
+            document.getElementById('blinkCount').textContent = '0';
+            nextDelay = 220;
+        }
+        verificationInterval = setTimeout(runLoop, nextDelay);
+    };
+    runLoop();
+}
 
 async function openFaceVerification(action) {
     currentAction = action;
     faceModalTriggerButton = document.activeElement || document.querySelector('[onclick*="openFaceVerification(\'' + action + '\')"]');
+    var modalTitle = document.getElementById('faceVerificationModalLabel');
+    if (modalTitle) {
+        modalTitle.textContent = 'Face Verification — ' + attendanceActionLabel(action);
+    }
     document.getElementById('actionTypeInput').value = action;
     document.getElementById('verificationStatus').innerHTML = '<p class="text-muted">Loading face recognition models...</p>';
-    document.getElementById('verifyFaceBtn').disabled = true;
     resetPasswordFallbackVisibility();
 
     const modalEl = document.getElementById('faceVerificationModal');
@@ -547,9 +691,9 @@ async function openFaceVerification(action) {
 
     const video = document.getElementById('faceVideo');
     const canvas = document.getElementById('faceCanvas');
-    const cameraReady = await faceRecognition.initializeCamera(video, canvas);
-    if (!cameraReady) {
-        document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Camera unavailable or access denied.</p><p class="text-muted small mt-2">Use <strong>Verify with password instead</strong> below to record your attendance.</p>';
+    const cameraResult = await faceRecognition.initializeCamera(video, canvas);
+    if (!cameraResult || !cameraResult.ok) {
+        showCameraErrorStatus(cameraResult && cameraResult.message ? cameraResult.message : '');
         return;
     }
 
@@ -560,38 +704,68 @@ async function openFaceVerification(action) {
     const maxWaitTime = 10000;
     document.getElementById('verificationStatus').innerHTML = '<p class="text-info">Detecting face... Please look at the camera.</p>';
 
-    verificationInterval = setInterval(async () => {
-        const detection = await faceRecognition.detectFace();
+    const runLoop = async () => {
+        if (!document.getElementById('faceVerificationModal')?.classList.contains('show')) return;
+        const detection = await faceRecognition.detectFace(false);
         const elapsed = Date.now() - startTime;
+        let nextDelay = 240;
 
         if (detection) {
             const blinkCount = faceRecognition.blinkCount;
             document.getElementById('blinkCount').textContent = blinkCount;
             const isLive = faceRecognition.checkLiveness(detection);
+            nextDelay = 460;
 
             if (isLive) {
-                document.getElementById('verificationStatus').innerHTML = '<p class="text-success"><i class="bi bi-check-circle me-2"></i>Face detected! Click &quot;Verify & Submit&quot; below.</p>';
-                var btn = document.getElementById('verifyFaceBtn');
-                btn.disabled = false;
-                clearInterval(verificationInterval);
-                verificationInterval = null;
-                try { btn.focus(); } catch (e) {}
+                var countdownMs = 600;
+                var countdownTenths = Math.ceil(countdownMs / 100);
+                document.getElementById('verificationStatus').innerHTML =
+                    '<p class="text-success mb-1"><i class="bi bi-check-circle me-2"></i>Face verified.</p>' +
+                    '<p class="text-muted small mb-0">Auto-submitting in <strong id="autoSubmitCountdown">' + (countdownTenths / 10).toFixed(1) + 's</strong>...</p>';
+                if (autoSubmitTimer) {
+                    clearTimeout(autoSubmitTimer);
+                    autoSubmitTimer = null;
+                }
+                if (autoSubmitCountdownTimer) {
+                    clearInterval(autoSubmitCountdownTimer);
+                    autoSubmitCountdownTimer = null;
+                }
+                autoSubmitCountdownTimer = setInterval(function () {
+                    countdownTenths -= 1;
+                    var el = document.getElementById('autoSubmitCountdown');
+                    if (el) {
+                        el.textContent = Math.max(0, countdownTenths / 10).toFixed(1) + 's';
+                    }
+                    if (countdownTenths <= 0) {
+                        clearInterval(autoSubmitCountdownTimer);
+                        autoSubmitCountdownTimer = null;
+                    }
+                }, 100);
+                autoSubmitTimer = setTimeout(function () {
+                    if (!isSubmittingAttendance) {
+                        verifyAndSubmit();
+                    }
+                }, countdownMs);
+                return;
             } else if (blinkCount > 0) {
                 document.getElementById('verificationStatus').innerHTML = '<p class="text-info"><i class="bi bi-eye me-2"></i>Face detected! Hold still - button will enable shortly.</p>';
             } else {
-                document.getElementById('verificationStatus').innerHTML = '<p class="text-info"><i class="bi bi-person me-2"></i>Face detected. Keep looking at the camera - Verify & Submit will enable in a moment.</p>';
+                document.getElementById('verificationStatus').innerHTML = '<p class="text-info"><i class="bi bi-person me-2"></i>Face detected. Keep looking at the camera - auto submit will start shortly.</p>';
             }
-            if (elapsed > maxWaitTime && document.getElementById('verifyFaceBtn').disabled) {
+            if (elapsed > maxWaitTime) {
                 document.getElementById('verificationStatus').innerHTML = '<p class="text-warning"><i class="bi bi-exclamation-triangle me-2"></i>Face not detected clearly. Position your face in the frame and wait a few seconds.</p>';
             }
         } else {
             document.getElementById('verificationStatus').innerHTML = '<p class="text-warning"><i class="bi bi-exclamation-triangle me-2"></i>No face detected. Please position yourself in front of the camera.</p>';
             document.getElementById('blinkCount').textContent = '0';
+            nextDelay = 220;
         }
-    }, 400);
+        verificationInterval = setTimeout(runLoop, nextDelay);
+    };
+    runLoop();
 }
 
-function captureVerificationSnapshot() {
+function captureVerificationSnapshot(jpegQuality) {
     return new Promise(function(resolve, reject) {
         var video = document.getElementById('faceVideo');
         if (!video || video.readyState < 2) {
@@ -615,15 +789,55 @@ function captureVerificationSnapshot() {
         ctx.fillStyle = '#fff';
         ctx.font = '14px monospace';
         ctx.fillText(timestampStr, 8, canvas.height - 10);
+        var q = typeof jpegQuality === 'number' ? jpegQuality : 0.92;
         canvas.toBlob(function(blob) {
             if (blob) resolve(blob);
             else reject(new Error('Failed to create image'));
-        }, 'image/jpeg', 0.92);
+        }, 'image/jpeg', q);
+    });
+}
+
+function blobToBase64(blob) {
+    return new Promise(function(resolve, reject) {
+        var reader = new FileReader();
+        reader.onloadend = function() {
+            var s = reader.result;
+            if (typeof s !== 'string') {
+                reject(new Error('Read failed'));
+                return;
+            }
+            var i = s.indexOf(',');
+            resolve(i >= 0 ? s.slice(i + 1) : s);
+        };
+        reader.onerror = function() {
+            reject(reader.error || new Error('Read failed'));
+        };
+        reader.readAsDataURL(blob);
+    });
+}
+
+/** Keeps queued snapshots under Laravel max upload (~2MB) when possible. */
+function captureSnapshotForOfflineQueue() {
+    return captureVerificationSnapshot(0.86).then(function(blob) {
+        if (blob.size <= 1900000) return blob;
+        return captureVerificationSnapshot(0.72);
+    }).then(function(blob) {
+        if (blob.size <= 1900000) return blob;
+        return captureVerificationSnapshot(0.62);
     });
 }
 
 async function verifyAndSubmit() {
-    document.getElementById('verifyFaceBtn').disabled = true;
+    if (isSubmittingAttendance) return;
+    isSubmittingAttendance = true;
+    if (autoSubmitTimer) {
+        clearTimeout(autoSubmitTimer);
+        autoSubmitTimer = null;
+    }
+    if (autoSubmitCountdownTimer) {
+        clearInterval(autoSubmitCountdownTimer);
+        autoSubmitCountdownTimer = null;
+    }
     document.getElementById('verificationStatus').innerHTML = '<p class="text-info">Verifying face...</p>';
 
     try {
@@ -634,19 +848,20 @@ async function verifyAndSubmit() {
         } catch (e) {
             console.error('Student JSON parse error:', e);
             document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Could not read account data. Please refresh the page.</p>';
-            document.getElementById('verifyFaceBtn').disabled = false;
+            isSubmittingAttendance = false;
             return;
         }
         if (!student || !student.face_encoding) {
             alert('Face not registered. Please contact administrator.');
             stopFaceVerification();
+            isSubmittingAttendance = false;
             return;
         }
 
         const verification = await faceRecognition.verifyFace(student.face_encoding);
         if (!verification || typeof verification.verified === 'undefined') {
             document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Verification failed. Please try again.</p>';
-            document.getElementById('verifyFaceBtn').disabled = false;
+            isSubmittingAttendance = false;
             return;
         }
 
@@ -657,25 +872,35 @@ async function verifyAndSubmit() {
             const token = form.querySelector('input[name="_token"]').value;
             const timeInUrl = '{{ route("student.timein") }}';
             const timeOutUrl = '{{ route("student.timeout") }}';
+            const lunchBreakUrl = '{{ route("student.lunch.breakout") }}';
+            var postUrl = attendancePostUrlForAction(currentAction);
 
             if (typeof window.DtrOfflineQueue !== 'undefined' && !window.DtrOfflineQueue.isOnline()) {
                 var confidence = verification.confidence;
-                window.DtrOfflineQueue.addPending({
-                    action_type: currentAction,
-                    face_encoding: encoding,
-                    recorded_at: recordedAt,
-                    _token: token,
-                    time_in_url: timeInUrl,
-                    time_out_url: timeOutUrl,
-                    verification_confidence: confidence
+                captureSnapshotForOfflineQueue().then(function(blob) {
+                    return blobToBase64(blob);
+                }).then(function(b64) {
+                    return window.DtrOfflineQueue.addPending({
+                        action_type: currentAction,
+                        face_encoding: encoding,
+                        recorded_at: recordedAt,
+                        _token: token,
+                        time_in_url: timeInUrl,
+                        time_out_url: timeOutUrl,
+                        lunch_break_url: lunchBreakUrl,
+                        verification_confidence: confidence,
+                        snapshot_jpeg_base64: b64
+                    });
                 }).then(function() {
                     stopFaceVerification();
-                    bootstrap.Modal.getInstance(document.getElementById('faceVerificationModal')).hide();
+                    var modalEl = document.getElementById('faceVerificationModal');
+                    var modalInst = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInst) modalInst.hide();
                     showOfflineRecordedMessage(confidence);
                 }).catch(function(err) {
                     console.error('Offline queue add failed', err);
-                    document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Could not save offline. Try again when online.</p>';
-                    document.getElementById('verifyFaceBtn').disabled = false;
+                    document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Could not save offline with a verification photo. Check the camera, then try again (or wait until you are online).</p>';
+                    isSubmittingAttendance = false;
                 });
                 return;
             }
@@ -683,7 +908,7 @@ async function verifyAndSubmit() {
             document.getElementById('faceEncodingInput').value = encoding;
             document.getElementById('recordedAtInput').value = recordedAt;
             document.getElementById('verificationConfidenceInput').value = (verification.confidence != null) ? verification.confidence : 0;
-            form.action = currentAction === 'timein' ? timeInUrl : timeOutUrl;
+            form.action = postUrl;
 
             captureVerificationSnapshot().then(function(blob) {
                 var formData = new FormData();
@@ -692,7 +917,7 @@ async function verifyAndSubmit() {
                 formData.append('recorded_at', recordedAt);
                 formData.append('verification_confidence', (verification.confidence != null) ? verification.confidence : 0);
                 formData.append('verification_snapshot', blob, 'verification-' + currentAction + '.jpg');
-                form.action = currentAction === 'timein' ? timeInUrl : timeOutUrl;
+                form.action = postUrl;
                 fetch(form.action, {
                     method: 'POST',
                     body: formData,
@@ -705,17 +930,45 @@ async function verifyAndSubmit() {
                     }
                 }).catch(function(err) {
                     console.error('Submit error', err);
-                    document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Failed to submit. Please try again.</p>';
-                    document.getElementById('verifyFaceBtn').disabled = false;
+                    if (typeof window.DtrOfflineQueue === 'undefined') {
+                        document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Failed to submit. Please try again.</p>';
+                        isSubmittingAttendance = false;
+                        return;
+                    }
+                    var confidenceQueued = verification.confidence;
+                    blobToBase64(blob).then(function(b64) {
+                        return window.DtrOfflineQueue.addPending({
+                            action_type: currentAction,
+                            face_encoding: encoding,
+                            recorded_at: recordedAt,
+                            _token: token,
+                            time_in_url: timeInUrl,
+                            time_out_url: timeOutUrl,
+                            lunch_break_url: lunchBreakUrl,
+                            verification_confidence: confidenceQueued,
+                            snapshot_jpeg_base64: b64
+                        });
+                    }).then(function() {
+                        stopFaceVerification();
+                        var modalEl2 = document.getElementById('faceVerificationModal');
+                        var modalInst2 = bootstrap.Modal.getInstance(modalEl2);
+                        if (modalInst2) modalInst2.hide();
+                        showOfflineRecordedMessage(confidenceQueued);
+                    }).catch(function(queueErr) {
+                        console.error('Queue after failed submit', queueErr);
+                        document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Failed to submit and could not save for later sync. Please try again.</p>';
+                        isSubmittingAttendance = false;
+                    });
                 });
             }).catch(function(err) {
                 console.error('Snapshot error', err);
                 var formData = new FormData(form);
-                form.action = currentAction === 'timein' ? timeInUrl : timeOutUrl;
+                form.action = postUrl;
                 fetch(form.action, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' } }).then(function(res) {
                     if (res.redirected) window.location.href = res.url;
                     else window.location.reload();
                 }).catch(function() {
+                    isSubmittingAttendance = false;
                     form.submit();
                 });
             });
@@ -733,22 +986,31 @@ async function verifyAndSubmit() {
             errorMsg += '<p class="text-muted small">Matches: ' + ratio + '% (' + att + ' attempts)</p>';
             errorMsg += '<p class="text-warning mt-2"><small>Try: better lighting, look straight at the camera, or move slightly closer.</small></p>';
             document.getElementById('verificationStatus').innerHTML = errorMsg;
-            document.getElementById('verifyFaceBtn').disabled = false;
             faceRecognition.resetLiveness();
             document.getElementById('blinkCount').textContent = '0';
+            isSubmittingAttendance = false;
         }
     } catch (error) {
         console.error('Verification error:', error);
         document.getElementById('verificationStatus').innerHTML = '<p class="text-danger">Error during verification. Please try again.</p><p class="text-muted small">' + (error.message || '') + '</p>';
-        document.getElementById('verifyFaceBtn').disabled = false;
+        isSubmittingAttendance = false;
     }
 }
 
 function stopFaceVerification() {
     if (verificationInterval) {
-        clearInterval(verificationInterval);
+        clearTimeout(verificationInterval);
         verificationInterval = null;
     }
+    if (autoSubmitTimer) {
+        clearTimeout(autoSubmitTimer);
+        autoSubmitTimer = null;
+    }
+    if (autoSubmitCountdownTimer) {
+        clearInterval(autoSubmitCountdownTimer);
+        autoSubmitCountdownTimer = null;
+    }
+    isSubmittingAttendance = false;
     faceRecognition.stopCamera();
     faceRecognition.resetLiveness();
 }
@@ -762,8 +1024,8 @@ function togglePasswordFallback() {
         passwordBlock.style.display = 'block';
         btn.innerHTML = '<i class="bi bi-camera me-1"></i>Back to face verification';
         document.getElementById('passwordRecordedAt').value = new Date().toISOString();
-        document.getElementById('passwordVerificationForm').action = currentAction === 'timein' ? '{{ route("student.timein") }}' : '{{ route("student.timeout") }}';
-        document.getElementById('passwordSubmitLabel').textContent = currentAction === 'timein' ? 'Time In' : 'Time Out';
+        document.getElementById('passwordVerificationForm').action = attendancePostUrlForAction(currentAction);
+        document.getElementById('passwordSubmitLabel').textContent = attendanceActionLabel(currentAction);
         document.getElementById('passwordVerificationPassword').value = '';
         document.getElementById('passwordVerificationPassword').focus();
     } else {
@@ -812,7 +1074,7 @@ function showOfflineRecordedMessage(confidence) {
     var matchText = (confidence != null && confidence !== '') ? ' - ' + confidence + '% match' : '';
     var alert = document.createElement('div');
     alert.className = 'alert alert-info';
-    alert.innerHTML = '<i class="bi bi-cloud-download me-2"></i><strong>Recorded offline' + matchText + '.</strong> Your ' + (currentAction === 'timein' ? 'Time In' : 'Time Out') + ' will sync when you are back online.';
+    alert.innerHTML = '<i class="bi bi-cloud-download me-2"></i><strong>Recorded offline' + matchText + '.</strong> Your ' + attendanceActionLabel(currentAction) + ' and verification photo will sync when you are back online.';
     var card = document.querySelector('.card-section');
     if (card && card.querySelector('.alert')) {
         card.insertBefore(alert, card.querySelector('.alert'));
@@ -862,6 +1124,10 @@ updateOfflineBanner();
 window.dtrOfflineQueueOnSynced = showSyncToast;
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Warm-up face-api models in background for faster first verification.
+    if (typeof faceRecognition !== 'undefined' && faceRecognition && typeof faceRecognition.loadModels === 'function') {
+        faceRecognition.loadModels().catch(function() {});
+    }
     if (typeof window.DtrOfflineQueue === 'undefined' || !window.DtrOfflineQueue.isOnline()) return;
     window.DtrOfflineQueue.getAllPending().then(function(items) {
         if (items.length) {

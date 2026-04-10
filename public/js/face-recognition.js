@@ -15,6 +15,7 @@ class FaceRecognition {
         this.faceStableTime = 0;
         this.lastFacePosition = null;
         this.faceDetectedCount = 0;
+        this.lastDescriptorCache = null;
     }
 
     async loadModels() {
@@ -44,24 +45,82 @@ class FaceRecognition {
         this.canvas = canvasElement;
         this.ctx = canvasElement.getContext('2d');
 
-        try {
-            // Lower resolution = much faster processing and less lag (320x240 is enough for face detection)
-            const stream = await navigator.mediaDevices.getUserMedia({
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return {
+                ok: false,
+                code: 'UNSUPPORTED',
+                message: 'This browser does not support camera access. Use a modern browser like Chrome, Edge, or Firefox.'
+            };
+        }
+
+        // Multi-step fallback to improve compatibility across devices/browsers.
+        const constraintsToTry = [
+            {
                 video: {
                     width: { ideal: 320, max: 480 },
                     height: { ideal: 240, max: 360 },
                     facingMode: 'user'
                 }
-            });
+            },
+            {
+                video: {
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    facingMode: { ideal: 'user' }
+                }
+            },
+            {
+                video: true
+            }
+        ];
+
+        try {
+            let stream = null;
+            let lastError = null;
+
+            for (const constraints of constraintsToTry) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    if (stream) break;
+                } catch (err) {
+                    lastError = err;
+                }
+            }
+
+            if (!stream) {
+                throw lastError || new Error('Unable to access camera');
+            }
+
             this.video.srcObject = stream;
-            return true;
+            return { ok: true };
         } catch (error) {
             console.error('Error accessing camera:', error);
-            return false;
+            return {
+                ok: false,
+                code: error && error.name ? error.name : 'CAMERA_ERROR',
+                message: this.getCameraErrorMessage(error)
+            };
         }
     }
 
-    async detectFace() {
+    getCameraErrorMessage(error) {
+        const name = error && error.name ? error.name : '';
+        if (name === 'NotAllowedError' || name === 'SecurityError') {
+            return 'Camera permission was denied. Allow camera access in your browser/site settings, then try again.';
+        }
+        if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+            return 'No camera device was found. Connect/enable a camera, then retry.';
+        }
+        if (name === 'NotReadableError' || name === 'TrackStartError') {
+            return 'Camera is busy or blocked by another app (Zoom/Meet/Teams/Camera app). Close it, then retry.';
+        }
+        if (name === 'OverconstrainedError' || name === 'ConstraintNotSatisfiedError') {
+            return 'Camera settings are not supported on this device. Retry and the system will use compatible defaults.';
+        }
+        return 'Camera is unavailable right now. Check permission/device availability and try again.';
+    }
+
+    async detectFace(includeDescriptor = true) {
         if (!this.modelsLoaded || !this.video || this.video.readyState !== 4) {
             return null;
         }
@@ -69,10 +128,15 @@ class FaceRecognition {
         try {
             // inputSize 128 = faster, less lag (224/416 = slower). Skip expressions to speed up.
             const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
-            const detection = await faceapi
+            let detectionTask = faceapi
                 .detectSingleFace(this.video, options)
-                .withFaceLandmarks()
-                .withFaceDescriptor();
+                .withFaceLandmarks();
+
+            if (includeDescriptor) {
+                detectionTask = detectionTask.withFaceDescriptor();
+            }
+
+            const detection = await detectionTask;
 
             if (detection) {
                 // Draw face detection box
@@ -80,6 +144,13 @@ class FaceRecognition {
                 
                 // Check for liveness (blink detection)
                 this.detectBlink(detection);
+
+                if (includeDescriptor && detection.descriptor) {
+                    this.lastDescriptorCache = {
+                        descriptor: Array.from(detection.descriptor),
+                        capturedAt: Date.now()
+                    };
+                }
                 
                 return detection;
             }
@@ -88,6 +159,12 @@ class FaceRecognition {
             console.error('Error detecting face:', error);
             return null;
         }
+    }
+
+    getCachedDescriptor(maxAgeMs = 1800) {
+        if (!this.lastDescriptorCache || !this.lastDescriptorCache.descriptor) return null;
+        if ((Date.now() - this.lastDescriptorCache.capturedAt) > maxAgeMs) return null;
+        return this.lastDescriptorCache.descriptor;
     }
 
     drawDetection(detection) {
@@ -227,12 +304,14 @@ class FaceRecognition {
                 return { verified: false, message: 'Invalid stored face data', confidence: 0, distance: 1, matchRatio: 0, attempts: 0, encoding: null };
             }
 
-            const detection = await this.detectFace();
-            if (!detection || !detection.descriptor) {
-                return { verified: false, message: 'No face detected', confidence: 0, distance: 1, matchRatio: 0, attempts: 0, encoding: null };
+            let current = this.getCachedDescriptor(1800);
+            if (!current) {
+                const detection = await this.detectFace(true);
+                if (!detection || !detection.descriptor) {
+                    return { verified: false, message: 'No face detected', confidence: 0, distance: 1, matchRatio: 0, attempts: 0, encoding: null };
+                }
+                current = Array.from(detection.descriptor);
             }
-
-            const current = Array.from(detection.descriptor);
             const distance = this.calculateDistance(stored, current);
             const threshold = 0.6;
             const confidence = Math.max(0, Math.min(100, (1 - (distance / threshold)) * 100));
@@ -272,6 +351,7 @@ class FaceRecognition {
         if (this.canvas && this.ctx) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
+        this.lastDescriptorCache = null;
     }
 
     resetLiveness() {

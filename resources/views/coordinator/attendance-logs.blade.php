@@ -190,6 +190,7 @@
     }
     .dtr-attendance .text-center.py-4.text-muted .fs-2 { color: var(--attendance-muted); opacity: 0.45; }
     .dtr-attendance .text-muted.mb-0 { font-size: 0.9375rem; color: var(--attendance-muted); }
+    .dtr-attendance .invalidate-form textarea { min-width: 220px; }
     html[data-theme="dark"] .dtr-attendance .stats-box {
         background: #0f172a;
         border-color: #334155;
@@ -297,6 +298,12 @@
     <div class="card">
         <div class="card-body">
             <h4 class="mb-3">Logs @if(($filter ?? 'month') === 'week' && !empty($weekLabel))<span class="text-muted fw-normal">({{ $weekLabel }})</span>@elseif($major)<span class="text-muted fw-normal">({{ $major }})</span>@endif</h4>
+            @if($errors->has('reason'))
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    {{ $errors->first('reason') }}
+                </div>
+            @endif
             <div class="search-wrap">
                 <form action="{{ route('coordinator.attendance.logs') }}" method="GET" class="search-row" role="search">
                     <input type="hidden" name="filter" value="{{ $filter ?? 'month' }}">
@@ -342,6 +349,7 @@
                             <th>Status</th>
                             <th>Hours Rendered</th>
                             <th class="text-nowrap">Verification snapshot</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -443,6 +451,17 @@
                                     @else
                                         <span class="text-muted small">—</span>
                                     @endif
+                                </td>
+                                <td>
+                                    <form action="{{ route('coordinator.attendance.invalidate', $log) }}" method="POST" class="invalidate-form d-flex flex-column gap-2">
+                                        @csrf
+                                        <textarea name="reason" class="form-control form-control-sm" rows="2" maxlength="1000" placeholder="Reason (fraud/fake record)..." required></textarea>
+                                        <button type="submit"
+                                                class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Submit invalidation request for this attendance record? Admin approval is required before it is excluded from reports.');">
+                                            <i class="bi bi-shield-exclamation"></i> Request invalidation
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @endforeach

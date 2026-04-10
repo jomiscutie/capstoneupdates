@@ -91,7 +91,7 @@ class CoordinatorAuthController extends Controller
         $studentIds = $students->pluck('id');
         $today = now()->format('Y-m-d');
 
-        $studentIdsPresentToday = \App\Models\Attendance::whereIn('student_id', $studentIds)
+        $studentIdsPresentToday = \App\Models\Attendance::valid()->whereIn('student_id', $studentIds)
             ->where('date', $today)
             ->distinct()
             ->pluck('student_id');
@@ -100,7 +100,7 @@ class CoordinatorAuthController extends Controller
         $studentsNotTimedIn = $totalStudents - $studentsTimedIn;
 
         // Count late arrivals today (both morning and afternoon)
-        $lateArrivalsToday = \App\Models\Attendance::whereIn('student_id', $studentIds)
+        $lateArrivalsToday = \App\Models\Attendance::valid()->whereIn('student_id', $studentIds)
             ->where('date', $today)
             ->where(function($query) {
                 $query->where('is_late', true)
@@ -121,7 +121,7 @@ class CoordinatorAuthController extends Controller
         $studentIds = \App\Models\Student::forCoordinator($coordinator)->verified()->pluck('id');
         $today = now()->format('Y-m-d');
 
-        $studentIdsPresentToday = \App\Models\Attendance::whereIn('student_id', $studentIds)
+        $studentIdsPresentToday = \App\Models\Attendance::valid()->whereIn('student_id', $studentIds)
             ->where('date', $today)
             ->distinct()
             ->pluck('student_id');

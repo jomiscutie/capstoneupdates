@@ -226,7 +226,7 @@ class Student extends Authenticatable
     {
         $assignment ??= $this->activeTermAssignment;
 
-        $query = $this->attendances()->whereNotNull('hours_rendered');
+        $query = $this->attendances()->valid()->whereNotNull('hours_rendered');
 
         if ($assignment?->started_at) {
             $query->whereDate('date', '>=', $assignment->started_at->toDateString());

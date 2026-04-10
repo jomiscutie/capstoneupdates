@@ -213,6 +213,42 @@
       background: var(--login-purple-dark);
       color: #fff;
     }
+    .register-alt-action {
+      margin-top: var(--space-3);
+      text-align: center;
+    }
+    .btn-register-alt {
+      width: 100%;
+      padding: 0.625rem 0.95rem;
+      border: 1px solid #dbe2ea;
+      border-radius: 10px;
+      background: #fff;
+      color: #334155;
+      font-weight: 500;
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      transition: border-color var(--login-transition), background var(--login-transition), color var(--login-transition), transform var(--login-transition);
+    }
+    .btn-register-alt:hover {
+      border-color: #c7d2fe;
+      background: #f8faff;
+      color: #4338ca;
+      transform: translateY(-1px);
+    }
+    .btn-register-alt:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14);
+      border-color: #6366f1;
+    }
+    .register-alt-note {
+      margin-top: 0.5rem;
+      color: #64748b;
+      font-size: 0.75rem;
+      line-height: 1.45;
+    }
     .auth-tabs {
       display: flex;
       gap: 0;
@@ -366,7 +402,7 @@
 
       <form action="{{ route('student.register.submit') }}" method="POST" id="registerForm">
         @csrf
-        <input type="hidden" name="face_encoding" id="faceEncodingInput" required>
+        <input type="hidden" name="face_encoding" id="faceEncodingInput">
         
         <div class="form-group">
           <label class="form-label">
@@ -496,6 +532,13 @@
         <button type="button" class="btn btn-register" onclick="openFaceCapture()">
           <i class="bi bi-camera me-2"></i>Register with Face Recognition
         </button>
+        <div class="register-alt-action">
+          <button type="button" class="btn-register-alt" onclick="submitWithoutFace()">
+            <i class="bi bi-person-check"></i>
+            <span>Continue without camera</span>
+          </button>
+          <p class="register-alt-note">Use only if camera access is unavailable. Your coordinator can still verify your account.</p>
+        </div>
       </form>
 
       <div class="login-link">
@@ -692,9 +735,10 @@
     const video = document.getElementById('captureVideo');
     const canvas = document.getElementById('captureCanvas');
     
-    const cameraReady = await faceRecognition.initializeCamera(video, canvas);
-    if (!cameraReady) {
-      document.getElementById('captureStatus').innerHTML = '<p class="text-danger"><i class="bi bi-camera-video-off me-2"></i>Camera access denied. Please allow camera permissions and refresh.</p>';
+    const cameraResult = await faceRecognition.initializeCamera(video, canvas);
+    if (!cameraResult || !cameraResult.ok) {
+      var cameraMsg = (cameraResult && cameraResult.message) ? cameraResult.message : 'Camera is unavailable.';
+      document.getElementById('captureStatus').innerHTML = '<p class="text-danger"><i class="bi bi-camera-video-off me-2"></i>' + cameraMsg + '</p><p class="text-muted small">You can close this dialog and use "Continue registration without camera".</p>';
       document.getElementById('cancelBtn').disabled = false;
       return;
     }
@@ -842,6 +886,18 @@
   document.getElementById('faceCaptureModal').addEventListener('hidden.bs.modal', function () {
     stopFaceCapture();
   });
+
+  function submitWithoutFace() {
+    const form = document.getElementById('registerForm');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    const ok = confirm('Continue registration without face enrollment? You can still proceed, but camera-based verification may not be available until your device issue is fixed.');
+    if (!ok) return;
+    document.getElementById('faceEncodingInput').value = '';
+    form.submit();
+  }
 
   document.body.addEventListener('click', function (e) {
     var btn = e.target.closest('[data-password-toggle]');

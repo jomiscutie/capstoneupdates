@@ -1,19 +1,20 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminManagementController;
-use App\Http\Controllers\Auth\AdminAuthController;
-use App\Http\Controllers\Auth\StudentAuthController;
-use App\Http\Controllers\Auth\CoordinatorAuthController;
-use App\Http\Controllers\Auth\UnifiedAuthController;
+use App\Http\Controllers\AdminOversightController;
 use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\OjtCompletionController;
-use App\Http\Controllers\StudentDashboardController;
-use App\Http\Controllers\StudentVerificationController;
-use App\Http\Controllers\StudentSettingsController;
+use App\Http\Controllers\Auth\AdminAuthController;
+use App\Http\Controllers\Auth\CoordinatorAuthController;
+use App\Http\Controllers\Auth\StudentAuthController;
+use App\Http\Controllers\Auth\UnifiedAuthController;
 use App\Http\Controllers\CoordinatorSettingsController;
+use App\Http\Controllers\OjtCompletionController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\StudentDashboardController;
+use App\Http\Controllers\StudentSettingsController;
+use App\Http\Controllers\StudentVerificationController;
+use Illuminate\Support\Facades\Route;
 
 // -------------------- Unified login (one form for both roles) --------------------
 Route::get('/login', [UnifiedAuthController::class, 'showLoginForm'])->name('login');
@@ -34,6 +35,13 @@ Route::prefix('admin')->group(function () {
         Route::post('coordinators/{coordinator}/assignments', [AdminManagementController::class, 'addCoordinatorAssignment'])->name('admin.coordinators.assignments.store');
         Route::post('coordinators/assignments/{assignment}/remove', [AdminManagementController::class, 'removeCoordinatorAssignment'])->name('admin.coordinators.assignments.remove');
         Route::get('students', [AdminManagementController::class, 'students'])->name('admin.students');
+        Route::get('invalidations', [AdminOversightController::class, 'invalidations'])->name('admin.invalidations');
+        Route::post('invalidations/{attendance}/review', [AdminOversightController::class, 'reviewInvalidation'])->name('admin.invalidations.review');
+        Route::post('invalidations/{attendance}/restore', [AdminOversightController::class, 'restoreAttendance'])->name('admin.invalidations.restore');
+        Route::get('face-enrollment', [AdminOversightController::class, 'faceEnrollment'])->name('admin.face_enrollment');
+        Route::get('audit-logs', [AdminOversightController::class, 'auditLogs'])->name('admin.audit_logs');
+        Route::get('session-monitor', [AdminOversightController::class, 'sessions'])->name('admin.sessions');
+        Route::post('session-monitor/force-logout', [AdminOversightController::class, 'forceLogout'])->name('admin.sessions.force_logout');
         Route::post('students/terms/batch', [AdminManagementController::class, 'batchStoreStudentTermAssignments'])->name('admin.students.terms.batch');
         Route::post('students/{student}/terms', [AdminManagementController::class, 'storeStudentTermAssignment'])->name('admin.students.terms.store');
         Route::post('students/terms/{assignment}/complete', [AdminManagementController::class, 'completeStudentTermAssignment'])->name('admin.students.terms.complete');
@@ -59,10 +67,12 @@ Route::prefix('coordinator')->group(function () {
         Route::post('pending-verification/verify/{student}', [StudentVerificationController::class, 'verify'])->name('coordinator.pending.verification.verify');
         Route::post('pending-verification/reject/{student}', [StudentVerificationController::class, 'reject'])->name('coordinator.pending.verification.reject');
         Route::get('attendance-logs', [AttendanceController::class, 'coordinatorLogs'])->name('coordinator.attendance.logs');
+        Route::post('attendance/{attendance}/invalidate', [AttendanceController::class, 'invalidateAttendance'])->name('coordinator.attendance.invalidate');
         Route::get('attendance/{attendance}/verification-snapshot/{type}', [AttendanceController::class, 'viewVerificationSnapshot'])->where('type', 'morning|afternoon|timeout')->name('coordinator.attendance.verification_snapshot');
         Route::get('attendance-analytics', [AttendanceController::class, 'attendanceAnalytics'])->name('coordinator.attendance.analytics');
         Route::get('generate-report', [ReportController::class, 'showReportForm'])->name('coordinator.generate.report');
         Route::post('generate-report', [ReportController::class, 'generateMonthlyReport'])->name('coordinator.generate.report.submit');
+        Route::post('generate-report/batch', [ReportController::class, 'generateBatchMonthlyReports'])->name('coordinator.generate.report.batch')->middleware('throttle:12,1');
         Route::get('students', [CoordinatorSettingsController::class, 'students'])->name('coordinator.students');
         Route::get('ojt-completion', [OjtCompletionController::class, 'index'])->name('coordinator.ojt.completion');
         Route::post('ojt-completion/confirm/{student}', [OjtCompletionController::class, 'confirm'])->name('coordinator.ojt.completion.confirm');
@@ -92,11 +102,13 @@ Route::prefix('student')->group(function () {
         Route::get('dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
 
         Route::post('time-in', [AttendanceController::class, 'timeIn'])->name('student.timein');
+        Route::post('lunch-break-out', [AttendanceController::class, 'lunchBreakOut'])->name('student.lunch.breakout');
         Route::post('time-out', [AttendanceController::class, 'timeOut'])->name('student.timeout');
         Route::post('verify-face', [AttendanceController::class, 'verifyFaceEncoding'])->name('student.verify.face');
         Route::get('recent-logs', [AttendanceController::class, 'recentLogs'])->name('student.recentlogs');
         Route::get('attendance/{attendance}/verification-snapshot/{type}', [AttendanceController::class, 'viewVerificationSnapshot'])->where('type', 'morning|afternoon|timeout')->name('student.attendance.verification_snapshot');
         Route::get('settings', [StudentSettingsController::class, 'index'])->name('student.settings');
+        Route::post('settings/face-enrollment', [StudentSettingsController::class, 'saveFaceEnrollment'])->name('student.settings.face-enrollment');
         Route::get('password/change', fn () => redirect()->route('student.settings'))->name('student.password.change');
         Route::post('password/change', [StudentAuthController::class, 'changePassword'])->name('student.password.change.submit')->middleware('throttle:5,1');
         Route::post('logout', [StudentAuthController::class, 'logout'])->name('student.logout');

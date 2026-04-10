@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Attendance extends Model
 {
@@ -18,6 +19,7 @@ class Attendance extends Model
         'date',
         'time_in',
         'afternoon_time_in',
+        'lunch_break_out',
         'time_out',
         'hours_rendered',
         'is_late',
@@ -27,11 +29,37 @@ class Attendance extends Model
         'verification_snapshot',
         'afternoon_verification_snapshot',
         'timeout_verification_snapshot',
+        'is_invalid',
+        'invalidated_at',
+        'invalidated_by',
+        'invalidation_reason',
+        'invalidation_status',
+        'invalidation_requested_at',
+        'invalidation_reviewed_by',
+        'invalidation_reviewed_at',
+        'invalidation_review_note',
+    ];
+
+    protected $casts = [
+        'is_invalid' => 'boolean',
+        'invalidated_at' => 'datetime',
+        'invalidation_requested_at' => 'datetime',
+        'invalidation_reviewed_at' => 'datetime',
     ];
 
     public function student()
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function invalidatedByCoordinator(): BelongsTo
+    {
+        return $this->belongsTo(Coordinator::class, 'invalidated_by');
+    }
+
+    public function scopeValid($query)
+    {
+        return $query->where('is_invalid', false);
     }
 
     /** Time in, 12-hour format (e.g. 8:00 AM), or null. */
@@ -56,6 +84,7 @@ class Attendance extends Model
     public function getLunchBreakOut12Attribute(): ?string
     {
         $val = $this->attributes['lunch_break_out'] ?? null;
+
         return $val ? Carbon::parse($val)->format(self::TIME_12_FORMAT) : null;
     }
 
@@ -68,12 +97,13 @@ class Attendance extends Model
         $h = (int) floor($minutes / 60);
         $m = $minutes % 60;
         if ($h > 0 && $m > 0) {
-            return $h . ' hr ' . $m . ' min';
+            return $h.' hr '.$m.' min';
         }
         if ($h > 0) {
-            return $h . ' hr';
+            return $h.' hr';
         }
-        return $m . ' min';
+
+        return $m.' min';
     }
 
     /** Morning late duration as "X hr Y min". */

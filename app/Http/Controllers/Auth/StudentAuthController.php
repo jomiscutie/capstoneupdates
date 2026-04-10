@@ -80,7 +80,7 @@ class StudentAuthController extends Controller
             'term' => ['required', Rule::in(Student::TERMS)],
             'section' => ['required', Rule::in(Student::SECTIONS)],
             'password' => ['required', 'string', 'confirmed', Password::min(8)],
-            'face_encoding' => 'required|string',
+            'face_encoding' => 'nullable|string',
         ], [
             'student_no.unique' => 'This student number is already registered. Please log in instead.',
             'school_year.regex' => 'School year must be in the format YYYY-YYYY, like 2026-2027.',
@@ -92,8 +92,10 @@ class StudentAuthController extends Controller
 
         // Reject if this face is already registered to another account (same face, different name/ID)
         // Can be disabled via FACE_DUPLICATE_CHECK=false if causing too many false positives
-        if (config('services.face_duplicate_check', true)) {
-            $newEncoding = json_decode($request->face_encoding, true);
+        $faceEncoding = trim((string) $request->input('face_encoding', ''));
+
+        if ($faceEncoding !== '' && config('services.face_duplicate_check', true)) {
+            $newEncoding = json_decode($faceEncoding, true);
             if (is_array($newEncoding) && count($newEncoding) === FaceEncodingService::ENCODING_LENGTH) {
                 $existingWithFace = Student::whereNotNull('face_encoding')->get();
                 foreach ($existingWithFace as $existing) {
@@ -107,14 +109,14 @@ class StudentAuthController extends Controller
 
         $student = null;
 
-        DB::transaction(function () use ($request, $studentNo, $name, &$student) {
+        DB::transaction(function () use ($request, $studentNo, $name, $faceEncoding, &$student) {
             $student = Student::create([
                 'student_no' => $studentNo,
                 'name' => $name,
                 'course' => $request->course,
                 'section' => $request->section,
                 'password' => Hash::make($request->password),
-                'face_encoding' => $request->face_encoding,
+                'face_encoding' => $faceEncoding !== '' ? $faceEncoding : null,
             ]);
 
             $student->termAssignments()->create([
@@ -128,8 +130,13 @@ class StudentAuthController extends Controller
             ]);
         });
 
-        // Do NOT log in - redirect to login page with pending verification message
-        return redirect('/login')->with('warning', 'Registration submitted successfully. Wait for your coordinator to verify your account before you log in.');
+        // Do NOT log in - redirect to login page with pending verification message.
+        // If face was skipped, include a clear reminder so coordinator can assist later.
+        $message = $faceEncoding === ''
+            ? 'Registration submitted without face enrollment. Wait for your coordinator to verify your account. You may use password verification while your camera is unavailable.'
+            : 'Registration submitted successfully. Wait for your coordinator to verify your account before you log in.';
+
+        return redirect('/login')->with('warning', $message);
     }
 
     public function logout(Request $request)
