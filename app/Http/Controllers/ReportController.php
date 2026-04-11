@@ -248,7 +248,7 @@ class ReportController extends Controller
             'totalHours' => $totalHours,
             'totalMinutes' => $remainingMinutes,
             'coordinator' => $coordinator,
-            'generatedAt' => Carbon::now('Asia/Manila')->format('F d, Y h:i A'),
+            'generatedAt' => Carbon::now('Asia/Manila')->format('F d, Y g:i A'),
             'logoDataUri' => $logoDataUri,
             'dtrRows' => $dtrRows,
             'monthName' => $date->format('F'),

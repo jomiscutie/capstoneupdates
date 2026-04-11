@@ -298,17 +298,17 @@ class AttendanceController extends Controller
                 }
             }
 
-            // Require a minimum 30-minute gap before allowing time-out.
-            // Use the latest recorded time-in for the day (afternoon time-in if present, otherwise morning time-in).
+            // Minimum gap after latest time-in before time-out (configurable).
+            $cooldownMinutes = (int) config('dtr.time_out_cooldown_minutes', 30);
             $timeInReference = $attendance->afternoon_time_in ?: $attendance->time_in;
-            if ($timeInReference) {
-                $minTimeoutAt = Carbon::parse($today.' '.$timeInReference, 'Asia/Manila')->addMinutes(30);
+            if ($timeInReference && $cooldownMinutes > 0) {
+                $minTimeoutAt = Carbon::parse($today.' '.$timeInReference, 'Asia/Manila')->addMinutes($cooldownMinutes);
                 if ($currentTime->lt($minTimeoutAt)) {
                     $remainingMinutes = max(1, (int) ceil($currentTime->diffInMinutes($minTimeoutAt, false) * -1));
 
                     return back()->with(
                         'error',
-                        "You can only time out after at least 30 minutes from your latest time-in. Please wait {$remainingMinutes} more minute(s)."
+                        "You can only time out after at least {$cooldownMinutes} minute(s) from your latest time-in. Please wait {$remainingMinutes} more minute(s)."
                     );
                 }
             }

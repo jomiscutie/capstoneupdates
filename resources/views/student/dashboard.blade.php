@@ -310,7 +310,7 @@
                 @endif
                 <button type="button" class="btn btn-action btn-timeout"
                     @if($canTimeOut) onclick="openFaceVerification('timeout')" @endif
-                    @if(! $canTimeOut) disabled aria-disabled="true" title="{{ $timeOutCoolingDown ? 'Time Out will be available 30 minutes after your latest time-in.' : 'Record morning or afternoon time-in first, then you can time out.' }}" @endif>
+                    @if(! $canTimeOut) disabled aria-disabled="true" title="{{ $timeOutCoolingDown ? 'Time Out will be available '.(int)($timeOutCooldownMinutes ?? 30).' minute(s) after your latest time-in.' : 'Record morning or afternoon time-in first, then you can time out.' }}" @endif>
                     <i class="bi bi-x-circle"></i> Time Out
                 </button>
             </div>
@@ -318,7 +318,7 @@
             <p class="text-muted small mt-2 mb-0" id="timeOutCooldownHint"
                data-unlock-at="{{ $timeOutUnlockAtIso }}"
                data-initial-minutes="{{ (int) ($timeOutMinutesRemaining ?? 0) }}">
-                <i class="bi bi-hourglass-split me-1"></i><strong>Time Out</strong> will unlock in about <strong><span id="timeOutMinutesLeft">{{ (int) ($timeOutMinutesRemaining ?? 0) }}</span> minute(s)</strong> after your latest time-in.
+                <i class="bi bi-hourglass-split me-1"></i><strong>Time Out</strong> will unlock in about <strong><span id="timeOutMinutesLeft">{{ (int) ($timeOutMinutesRemaining ?? 0) }}</span> minute(s)</strong>@if(! empty($timeOutUnlockAtDisplay ?? null)) (around <strong>{{ $timeOutUnlockAtDisplay }}</strong> Manila time)@endif after your latest time-in.
             </p>
             @endif
             @if($showTimeOutLockedHint)
@@ -521,7 +521,7 @@ function updateClock() {
     const dayEl = document.getElementById('day');
     const monthYearEl = document.getElementById('month-year');
     if (clockEl) {
-        clockEl.innerText = now.toLocaleTimeString('en-US', {
+        clockEl.innerText = now.toLocaleTimeString('en-PH', {
             timeZone: 'Asia/Manila',
             hour12: true,
             hour: 'numeric',
@@ -530,12 +530,12 @@ function updateClock() {
         });
     }
     if (dayEl) {
-        dayEl.innerText = now.toLocaleDateString('en-US', {
+        dayEl.innerText = now.toLocaleDateString('en-PH', {
             timeZone: 'Asia/Manila',
         });
     }
     if (monthYearEl) {
-        monthYearEl.innerText = now.toLocaleDateString('en-US', {
+        monthYearEl.innerText = now.toLocaleDateString('en-PH', {
             month: 'long',
             year: 'numeric',
             timeZone: 'Asia/Manila',
@@ -783,7 +783,7 @@ function captureVerificationSnapshot(jpegQuality) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         ctx.restore();
         var now = new Date();
-        var timestampStr = now.toLocaleString('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) + ' Asia/Manila';
+        var timestampStr = now.toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true }) + ' (Asia/Manila)';
         ctx.fillStyle = 'rgba(0,0,0,0.7)';
         ctx.fillRect(0, canvas.height - 28, canvas.width, 28);
         ctx.fillStyle = '#fff';

@@ -98,7 +98,16 @@
         border: 1px solid var(--attendance-border);
         background: var(--attendance-surface);
     }
-    .dtr-attendance-history .table-responsive .table { min-width: 600px; margin-bottom: 0; }
+    .dtr-attendance-history .table-responsive .table { min-width: 920px; margin-bottom: 0; }
+    .dtr-attendance-history .table-dtr-layout thead th {
+        text-align: center;
+        vertical-align: middle;
+    }
+    .dtr-attendance-history .table-dtr-layout thead tr.subhead th {
+        font-size: 0.625rem;
+        padding-top: 0.35rem;
+        padding-bottom: 0.35rem;
+    }
     .dtr-attendance-history .table thead th {
         background: var(--attendance-surface-soft);
         color: var(--attendance-muted);
@@ -118,6 +127,11 @@
     }
     .dtr-attendance-history .table tbody tr:last-child td { border-bottom: none; }
     .dtr-attendance-history .table tbody tr:hover { background: var(--attendance-hover); }
+    .dtr-attendance-history .table-dtr-layout tbody td.dtr-time {
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
     .dtr-attendance-history .empty-state {
         text-align: center;
         padding: 2.5rem 1.5rem;
@@ -343,23 +357,47 @@
                 </div>
             @else
                 <div class="table-responsive">
-                    <table class="table align-middle">
+                    <table class="table align-middle table-dtr-layout">
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Time In</th>
-                                <th>Time Out</th>
-                                <th>Hours Rendered</th>
-                                <th class="text-nowrap">Verification snapshot</th>
+                                <th rowspan="2">Date</th>
+                                <th colspan="2">A.M.</th>
+                                <th colspan="2">P.M.</th>
+                                <th colspan="2">Under time</th>
+                                <th rowspan="2" title="Total time after you record time out for the day">Hours<br>rendered</th>
+                                <th rowspan="2" class="text-nowrap">Verification</th>
+                            </tr>
+                            <tr class="subhead">
+                                <th>Arrival</th>
+                                <th>Departure</th>
+                                <th>Arrival</th>
+                                <th>Departure</th>
+                                <th>Hours</th>
+                                <th>Minutes</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($logs as $log)
+                                @php
+                                    $lateTotal = (int) ($log->late_minutes ?? 0) + (int) ($log->afternoon_late_minutes ?? 0);
+                                    $utH = $lateTotal > 0 ? intdiv($lateTotal, 60) : null;
+                                    $utM = $lateTotal > 0 ? $lateTotal % 60 : null;
+                                @endphp
                                 <tr>
-                                    <td>{{ \Carbon\Carbon::parse($log->date)->format('m/d/y') }}</td>
-                                    <td>{{ $log->time_in_12 ?? '-' }}</td>
-                                    <td>{{ $log->time_out_12 ?? '-' }}</td>
-                                    <td>{{ $log->hours_rendered ?? '-' }}</td>
+                                    <td class="text-nowrap">{{ \Carbon\Carbon::parse($log->date)->format('m/d/y') }}</td>
+                                    <td class="dtr-time">@if($log->time_in){{ $log->time_in_12 }}@else<span class="text-muted">—</span>@endif</td>
+                                    <td class="dtr-time">@if($log->lunch_break_out){{ $log->lunch_break_out_12 }}@else<span class="text-muted">—</span>@endif</td>
+                                    <td class="dtr-time">@if($log->afternoon_time_in){{ $log->afternoon_time_in_12 }}@else<span class="text-muted">—</span>@endif</td>
+                                    <td class="dtr-time">@if($log->time_out){{ $log->time_out_12 }}@else<span class="text-muted">—</span>@endif</td>
+                                    <td class="dtr-time">@if($utH !== null){{ $utH }}@else<span class="text-muted">—</span>@endif</td>
+                                    <td class="dtr-time">@if($utM !== null){{ $utM }}@else<span class="text-muted">—</span>@endif</td>
+                                    <td class="dtr-time">
+                                        @if($log->hours_rendered)
+                                            {{ $log->hours_rendered }}
+                                        @else
+                                            <span class="text-muted" title="Recorded when you time out for the day.">—</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         @php
                                             $snapshots = [];
@@ -386,6 +424,8 @@
                         </tbody>
                     </table>
                 </div>
+                
+                    
             @endif
         </div>
     </div>

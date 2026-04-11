@@ -31,6 +31,7 @@ Route::prefix('admin')->group(function () {
         Route::get('coordinators', [AdminManagementController::class, 'coordinators'])->name('admin.coordinators');
         Route::post('coordinators', [AdminManagementController::class, 'storeCoordinator'])->name('admin.coordinators.store');
         Route::post('coordinators/{coordinator}/toggle', [AdminManagementController::class, 'toggleCoordinator'])->name('admin.coordinators.toggle');
+        Route::delete('coordinators/{coordinator}', [AdminManagementController::class, 'destroyCoordinator'])->name('admin.coordinators.destroy');
         Route::post('coordinators/{coordinator}/password', [AdminManagementController::class, 'updateCoordinatorPassword'])->name('admin.coordinators.password')->middleware('throttle:5,1');
         Route::post('coordinators/{coordinator}/assignments', [AdminManagementController::class, 'addCoordinatorAssignment'])->name('admin.coordinators.assignments.store');
         Route::post('coordinators/assignments/{assignment}/remove', [AdminManagementController::class, 'removeCoordinatorAssignment'])->name('admin.coordinators.assignments.remove');
