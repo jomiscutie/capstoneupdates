@@ -75,31 +75,51 @@ class AttendanceController extends Controller
             }
             $timeInString = $currentTime->toTimeString();
 
-            // CRITICAL: Determine if it's morning (before 12:00 PM) or afternoon (12:00 PM onwards)
-            // Use explicit time comparison for accuracy - this ensures 2 PM goes to afternoon
             $noon = Carbon::createFromTime(12, 0, 0, 'Asia/Manila');
-            $isAfternoon = $currentTime->gte($noon); // Greater than or equal to 12:00 PM (12:00:00 and later)
+            $serverNow = Carbon::now('Asia/Manila');
 
-            // VALIDATION: Double-check the time string to ensure it matches the period
-            $timeHour = (int) $currentTime->format('H'); // Get hour in 24-hour format (0-23)
-            if ($timeHour >= 12 && ! $isAfternoon) {
-                // Force afternoon if hour is 12 or greater (safety check)
-                $isAfternoon = true;
-            }
-            if ($timeHour < 12 && $isAfternoon) {
-                // Force morning if hour is less than 12 (safety check)
-                $isAfternoon = false;
-            }
-
-            // Get or create attendance record
+            // Get or create attendance record (needed before morning/afternoon routing)
             $attendance = Attendance::valid()->firstOrNew([
                 'student_id' => $studentId,
                 'date' => $today,
             ]);
 
+            // After A.M. departure (lunch break out), the next Time In is always "afternoon return", even
+            // if the clock is still before 12:00 (e.g. lunch at 11:00, back at 11:30 or 11:45).
+            $returnFromLunch = $attendance->time_in
+                && $attendance->lunch_break_out
+                && ! $attendance->afternoon_time_in;
+
+            $isAfternoon = $currentTime->gte($noon);
+            $timeHour = (int) $currentTime->format('H');
+
+            // Hour bucketing: do not force "morning" when this tap is the post-lunch return before noon.
+            if (! $returnFromLunch || $currentTime->gte($noon)) {
+                if ($timeHour >= 12 && ! $isAfternoon) {
+                    $isAfternoon = true;
+                }
+                if ($timeHour < 12 && $isAfternoon) {
+                    $isAfternoon = false;
+                }
+            }
+
+            $afternoonInAllowedBeforeNoon = false;
+            if ($returnFromLunch && $currentTime->lt($noon)) {
+                $isAfternoon = true;
+                $afternoonInAllowedBeforeNoon = true;
+            }
+
+            // Second Time In when wall clock is already p.m. but client `recorded_at` is still a.m.
+            // (offline sync, stale password hidden field) — use server time for this tap.
+            if ($attendance->time_in && ! $attendance->afternoon_time_in && $serverNow->gte($noon) && $currentTime->lt($noon)) {
+                $isAfternoon = true;
+                $currentTime = $serverNow;
+                $timeInString = $currentTime->toTimeString();
+                $afternoonInAllowedBeforeNoon = false;
+            }
+
             if ($isAfternoon) {
-                // AFTERNOON TIME-IN: 12:00 PM (12:00:00) onwards
-                // Examples: 12:00 PM, 1:00 PM, 2:00 PM, 3:00 PM, etc. ALL go here
+                // AFTERNOON TIME-IN: normally 12:00 PM onwards; also return-from-lunch before noon when lunch out is recorded
 
                 if ($attendance->afternoon_time_in) {
                     $recorded = \Carbon\Carbon::parse($attendance->afternoon_time_in)->format('g:i A');
@@ -131,6 +151,13 @@ class AttendanceController extends Controller
                     $attendance->late_minutes = null;
                 }
 
+                if ($attendance->lunch_break_out) {
+                    $lunchEnd = Carbon::parse($today.' '.$attendance->lunch_break_out, 'Asia/Manila');
+                    if ($currentTime->lte($lunchEnd)) {
+                        return back()->with('error', 'Afternoon time-in must be after your lunch / break out ('.$lunchEnd->format('g:i A').').');
+                    }
+                }
+
                 // Afternoon return: on time through 1:00 PM (13:00–13:00:59). Late from 1:01 PM onward.
                 $deadline1300 = Carbon::parse($today.' 13:00:00', 'Asia/Manila');
                 $hm = ((int) $currentTime->format('H')) * 60 + (int) $currentTime->format('i');
@@ -140,9 +167,9 @@ class AttendanceController extends Controller
                     $lateMinutes = abs((int) $deadline1300->diffInMinutes($currentTime, false));
                 }
 
-                // FINAL VALIDATION: Ensure the time string hour is >= 12 before saving
+                // Reject impossible clock (afternoon slot) unless this is return-from-lunch before noon
                 $savedTimeHour = (int) Carbon::parse($timeInString)->format('H');
-                if ($savedTimeHour < 12) {
+                if ($savedTimeHour < 12 && ! $afternoonInAllowedBeforeNoon) {
                     return back()->with('error', 'System error: Time validation failed. Please try again.');
                 }
 

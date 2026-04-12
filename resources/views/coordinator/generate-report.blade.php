@@ -155,7 +155,6 @@
                     <div class="mb-3">
                         <label for="report_student_search" class="form-label"><i class="bi bi-search me-1"></i>Find students</label>
                         <input type="search" id="report_student_search" class="report-student-search" placeholder="Name or ID of the students" autocomplete="off" enterkeyhint="search">
-                        <p class="report-search-hint mb-0">
                     </div>
 
                     <div class="report-list-toolbar mode-batch-only">
@@ -362,8 +361,7 @@
             var hay = row.getAttribute('data-student-search') || '';
             row.classList.toggle('is-filtered-out', !matchesWildcard(hay, q));
         });
-        if (isBatch()) updateSummary();
-        else updateSummary();
+        updateSummary();
     }
 
     function formatMonthDisplay(ym) {

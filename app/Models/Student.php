@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Schema;
 
 class Student extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, SoftDeletes;
 
     public const TERMS = StudentTermAssignment::TERMS;
     public const ASSIGNMENT_TERMS = StudentTermAssignment::ASSIGNMENT_TERMS;

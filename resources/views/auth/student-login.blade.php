@@ -6,6 +6,7 @@
   <title>Student Login - NORSU OJT DTR</title>
   <link rel="stylesheet" href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" />
   <link rel="stylesheet" href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.css') }}" />
+  <link rel="stylesheet" href="{{ asset('css/hide-native-password-reveal.css') }}" />
   <style>
     :root {
       --dtr-primary: #4f46e5;

@@ -325,7 +325,10 @@
             <p class="text-muted small mt-2 mb-0"><i class="bi bi-info-circle me-1"></i><strong>Time Out</strong> stays disabled until you have at least one <strong>Time In</strong> today (morning or afternoon).</p>
             @endif
             @if($showLunchBreakButton)
-            <p class="text-muted small mt-2 mb-0">When you leave for lunch, tap <strong>Lunch / break out</strong> so your DTR <em>A.M. departure</em> is recorded. Then use <strong>Time In</strong> after lunch.</p>
+            <p class="text-muted small mt-2 mb-0">When you leave for lunch, tap <strong>Lunch / break out</strong> so your DTR <em>A.M. departure</em> is recorded. Then use <strong>Time In</strong> when you return (your <strong>Afternoon time-in</strong> is recorded on that tap—even if your break ends before 12:00 noon).</p>
+            @endif
+            @if(isset($attendance) && $attendance && $attendance->lunch_break_out && ! $attendance->afternoon_time_in && ! $attendance->time_out)
+            <p class="text-muted small mt-2 mb-0"><i class="bi bi-info-circle me-1"></i>After lunch, use <strong>Time In</strong> as soon as you are back on duty. The system counts it as afternoon return as long as it is <strong>after</strong> your lunch / break out time.</p>
             @endif
         </div>
 
@@ -1050,6 +1053,10 @@ function resetPasswordFallbackVisibility() {
         pwForm.addEventListener('submit', function(e) {
             e.preventDefault();
             var form = this;
+            var ra = document.getElementById('passwordRecordedAt');
+            if (ra) {
+                ra.value = new Date().toISOString();
+            }
             var submitBtn = document.getElementById('passwordSubmitBtn');
             if (submitBtn) submitBtn.disabled = true;
             captureVerificationSnapshot().then(function(blob) {

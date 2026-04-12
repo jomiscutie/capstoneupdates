@@ -36,6 +36,10 @@ Route::prefix('admin')->group(function () {
         Route::post('coordinators/{coordinator}/assignments', [AdminManagementController::class, 'addCoordinatorAssignment'])->name('admin.coordinators.assignments.store');
         Route::post('coordinators/assignments/{assignment}/remove', [AdminManagementController::class, 'removeCoordinatorAssignment'])->name('admin.coordinators.assignments.remove');
         Route::get('students', [AdminManagementController::class, 'students'])->name('admin.students');
+        Route::get('students/archived', [AdminManagementController::class, 'archivedStudents'])->name('admin.students.archived');
+        Route::post('students/restore/{id}', [AdminManagementController::class, 'restoreStudent'])->name('admin.students.restore')->middleware('throttle:30,1');
+        Route::delete('students/{student}', [AdminManagementController::class, 'destroyStudent'])->name('admin.students.destroy')->middleware('throttle:30,1');
+        Route::post('students/delete-batch', [AdminManagementController::class, 'bulkDestroyStudents'])->name('admin.students.delete-batch')->middleware('throttle:10,1');
         Route::get('invalidations', [AdminOversightController::class, 'invalidations'])->name('admin.invalidations');
         Route::post('invalidations/{attendance}/review', [AdminOversightController::class, 'reviewInvalidation'])->name('admin.invalidations.review');
         Route::post('invalidations/{attendance}/restore', [AdminOversightController::class, 'restoreAttendance'])->name('admin.invalidations.restore');
@@ -83,6 +87,8 @@ Route::prefix('coordinator')->group(function () {
         Route::get('settings', [CoordinatorSettingsController::class, 'index'])->name('coordinator.settings');
         Route::post('settings/password', [CoordinatorSettingsController::class, 'updatePassword'])->name('coordinator.settings.password')->middleware('throttle:5,1');
         Route::post('settings/students/required-hours/bulk', [CoordinatorSettingsController::class, 'bulkUpdateRequiredHours'])->name('coordinator.settings.required-hours.bulk');
+        Route::delete('settings/students/{student}', [CoordinatorSettingsController::class, 'destroyStudent'])->name('coordinator.settings.students.destroy')->middleware('throttle:30,1');
+        Route::post('settings/students/delete-batch', [CoordinatorSettingsController::class, 'bulkDestroyStudents'])->name('coordinator.settings.students.delete-batch')->middleware('throttle:10,1');
         Route::post('logout', [CoordinatorAuthController::class, 'logout'])->name('coordinator.logout');
     });
 });
