@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Support\ProgramAlias;
 use Illuminate\Http\Request;
 use App\Models\Coordinator;
 use Illuminate\Support\Facades\Hash;
@@ -85,6 +86,19 @@ class CoordinatorAuthController extends Controller
         $coordinator = Auth::guard('coordinator')->user();
         $students = \App\Models\Student::forCoordinator($coordinator)->verified()->get();
         $pendingVerificationCount = \App\Models\Student::forCoordinator($coordinator)->pendingVerification()->count();
+        $assignedPrograms = $coordinator->assignments()
+            ->pluck('course')
+            ->map(fn ($course) => ProgramAlias::normalizeCourse(trim((string) $course)))
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        if ($assignedPrograms->isEmpty() && !empty($coordinator->major)) {
+            $assignedPrograms = collect([ProgramAlias::normalizeCourse(trim((string) $coordinator->major))])
+                ->filter()
+                ->values();
+        }
 
         $totalStudents = $students->count();
 
@@ -109,7 +123,15 @@ class CoordinatorAuthController extends Controller
             ->distinct('student_id')
             ->count('student_id');
 
-        return view('coordinator.dashboard', compact('totalStudents', 'studentsTimedIn', 'studentsNotTimedIn', 'students', 'lateArrivalsToday', 'pendingVerificationCount'));
+        return view('coordinator.dashboard', compact(
+            'totalStudents',
+            'studentsTimedIn',
+            'studentsNotTimedIn',
+            'students',
+            'lateArrivalsToday',
+            'pendingVerificationCount',
+            'assignedPrograms'
+        ));
     }
 
     /**

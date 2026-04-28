@@ -34,15 +34,24 @@ Route::prefix('admin')->group(function () {
         Route::delete('coordinators/{coordinator}', [AdminManagementController::class, 'destroyCoordinator'])->name('admin.coordinators.destroy');
         Route::post('coordinators/{coordinator}/password', [AdminManagementController::class, 'updateCoordinatorPassword'])->name('admin.coordinators.password')->middleware('throttle:5,1');
         Route::post('coordinators/{coordinator}/assignments', [AdminManagementController::class, 'addCoordinatorAssignment'])->name('admin.coordinators.assignments.store');
+        Route::post('coordinators/assignments/{assignment}', [AdminManagementController::class, 'updateCoordinatorAssignment'])->name('admin.coordinators.assignments.update');
         Route::post('coordinators/assignments/{assignment}/remove', [AdminManagementController::class, 'removeCoordinatorAssignment'])->name('admin.coordinators.assignments.remove');
+        Route::get('options', [AdminManagementController::class, 'options'])->name('admin.options');
+        Route::post('options/programs', [AdminManagementController::class, 'storeProgramOption'])->name('admin.options.programs.store');
+        Route::post('options/sections', [AdminManagementController::class, 'storeSectionOption'])->name('admin.options.sections.store');
+        Route::post('options/{option}/deactivate', [AdminManagementController::class, 'deactivateOption'])->name('admin.options.deactivate');
         Route::get('students', [AdminManagementController::class, 'students'])->name('admin.students');
         Route::get('students/archived', [AdminManagementController::class, 'archivedStudents'])->name('admin.students.archived');
         Route::post('students/restore/{id}', [AdminManagementController::class, 'restoreStudent'])->name('admin.students.restore')->middleware('throttle:30,1');
+        Route::post('students/archived/{id}/remove', [AdminManagementController::class, 'forceRemoveArchivedStudent'])->name('admin.students.archived.remove')->middleware('throttle:20,1');
         Route::delete('students/{student}', [AdminManagementController::class, 'destroyStudent'])->name('admin.students.destroy')->middleware('throttle:30,1');
         Route::post('students/delete-batch', [AdminManagementController::class, 'bulkDestroyStudents'])->name('admin.students.delete-batch')->middleware('throttle:10,1');
         Route::get('invalidations', [AdminOversightController::class, 'invalidations'])->name('admin.invalidations');
         Route::post('invalidations/{attendance}/review', [AdminOversightController::class, 'reviewInvalidation'])->name('admin.invalidations.review');
         Route::post('invalidations/{attendance}/restore', [AdminOversightController::class, 'restoreAttendance'])->name('admin.invalidations.restore');
+        Route::get('manual-attendance-requests', [AdminOversightController::class, 'manualAttendanceRequests'])->name('admin.manual.requests');
+        Route::post('manual-attendance-requests/{manualRequest}/review', [AdminOversightController::class, 'reviewManualAttendanceRequest'])->name('admin.manual.requests.review');
+        Route::post('manual-attendance-requests/bulk-review', [AdminOversightController::class, 'bulkReviewManualAttendanceRequests'])->name('admin.manual.requests.bulk.review');
         Route::get('face-enrollment', [AdminOversightController::class, 'faceEnrollment'])->name('admin.face_enrollment');
         Route::get('audit-logs', [AdminOversightController::class, 'auditLogs'])->name('admin.audit_logs');
         Route::get('session-monitor', [AdminOversightController::class, 'sessions'])->name('admin.sessions');
@@ -72,6 +81,9 @@ Route::prefix('coordinator')->group(function () {
         Route::post('pending-verification/verify/{student}', [StudentVerificationController::class, 'verify'])->name('coordinator.pending.verification.verify');
         Route::post('pending-verification/reject/{student}', [StudentVerificationController::class, 'reject'])->name('coordinator.pending.verification.reject');
         Route::get('attendance-logs', [AttendanceController::class, 'coordinatorLogs'])->name('coordinator.attendance.logs');
+        Route::get('manual-attendance-requests', [AttendanceController::class, 'coordinatorManualRequests'])->name('coordinator.manual.requests');
+        Route::post('manual-attendance-requests/{manualRequest}/review', [AttendanceController::class, 'reviewManualRequest'])->name('coordinator.manual.requests.review');
+        Route::post('manual-attendance-requests/bulk-review', [AttendanceController::class, 'coordinatorBulkReviewManualRequests'])->name('coordinator.manual.requests.bulk.review');
         Route::post('attendance/{attendance}/invalidate', [AttendanceController::class, 'invalidateAttendance'])->name('coordinator.attendance.invalidate');
         Route::get('attendance/{attendance}/verification-snapshot/{type}', [AttendanceController::class, 'viewVerificationSnapshot'])->where('type', 'morning|afternoon|timeout')->name('coordinator.attendance.verification_snapshot');
         Route::get('attendance-analytics', [AttendanceController::class, 'attendanceAnalytics'])->name('coordinator.attendance.analytics');
@@ -93,6 +105,17 @@ Route::prefix('coordinator')->group(function () {
     });
 });
 
+// -------------------- Kiosk Routes (attendance capture only) --------------------
+Route::prefix('kiosk')
+    ->middleware(['kiosk.access', 'throttle:90,1'])
+    ->group(function () {
+        Route::get('/', [AttendanceController::class, 'kioskIndex'])->name('kiosk.index');
+        Route::post('identify', [AttendanceController::class, 'kioskIdentify'])->name('kiosk.identify');
+        Route::post('time-in', [AttendanceController::class, 'kioskTimeIn'])->name('kiosk.timein');
+        Route::post('lunch-break-out', [AttendanceController::class, 'kioskLunchBreakOut'])->name('kiosk.lunch.breakout');
+        Route::post('time-out', [AttendanceController::class, 'kioskTimeOut'])->name('kiosk.timeout');
+    });
+
 // -------------------- Student Routes --------------------
 Route::prefix('student')->group(function () {
     Route::middleware('guest:student')->group(function () {
@@ -107,12 +130,8 @@ Route::prefix('student')->group(function () {
 
     Route::middleware(['auth:student', 'single.session'])->group(function () {
         Route::get('dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
-
-        Route::post('time-in', [AttendanceController::class, 'timeIn'])->name('student.timein');
-        Route::post('lunch-break-out', [AttendanceController::class, 'lunchBreakOut'])->name('student.lunch.breakout');
-        Route::post('time-out', [AttendanceController::class, 'timeOut'])->name('student.timeout');
-        Route::post('verify-face', [AttendanceController::class, 'verifyFaceEncoding'])->name('student.verify.face');
         Route::get('recent-logs', [AttendanceController::class, 'recentLogs'])->name('student.recentlogs');
+        Route::get('recent-logs/download', [AttendanceController::class, 'downloadRecentLogs'])->name('student.recentlogs.download');
         Route::get('attendance/{attendance}/verification-snapshot/{type}', [AttendanceController::class, 'viewVerificationSnapshot'])->where('type', 'morning|afternoon|timeout')->name('student.attendance.verification_snapshot');
         Route::get('settings', [StudentSettingsController::class, 'index'])->name('student.settings');
         Route::post('settings/face-enrollment', [StudentSettingsController::class, 'saveFaceEnrollment'])->name('student.settings.face-enrollment');

@@ -13,18 +13,11 @@
       --login-purple-dark: #5a4bb8;
       --login-muted: #64748b;
       --login-border: #e5e7eb;
-      --login-radius: 6px;
+      --login-radius: 8px;
       --login-radius-lg: 12px;
       --login-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --login-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       --auth-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      --space-1: 0.25rem;
-      --space-2: 0.5rem;
-      --space-3: 0.75rem;
-      --space-4: 1rem;
-      --space-5: 1.25rem;
-      --space-6: 1.5rem;
-      --space-8: 2rem;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { font-size: 16px; }
@@ -36,156 +29,183 @@
       align-items: center;
       justify-content: center;
       font-family: var(--login-font);
-      padding: clamp(var(--space-4), 4vw, var(--space-6));
+      padding: 1rem;
       color: #1e293b;
-      line-height: 1.5;
-      overflow-x: hidden;
+      overflow: auto;
     }
-    @keyframes authPageIn {
-      from { opacity: 0; transform: translateY(12px) scale(0.99); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes authPanelSlide {
-      from { opacity: 0; transform: translateX(10px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes authIllustrationIn {
-      from { opacity: 0; transform: translateX(-10px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
+    @keyframes authPageIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes authPanelSlide { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes authIllustrationIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+
     .login-wrapper {
       width: 100%;
-      max-width: min(720px, calc(100vw - 2rem));
+      max-width: min(1240px, calc(100vw - 1.5rem));
       background: #fff;
       border-radius: var(--login-radius-lg);
-      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.12);
       overflow: hidden;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      min-height: min(440px, 90vh);
-      min-height: min(440px, 90dvh);
-      animation: authPageIn 0.35s var(--auth-ease) forwards;
+      grid-template-columns: minmax(250px, 0.78fr) minmax(0, 1.65fr);
+      min-height: min(700px, 95vh);
+      min-height: min(700px, 95dvh);
+      animation: authPageIn 0.28s var(--auth-ease) forwards;
     }
     .login-illustration {
-      background: #fafafa;
-      padding: var(--space-6) var(--space-5);
+      background: linear-gradient(160deg, #fafafa, #f4f6ff);
+      padding: 0.9rem 0.9rem 1rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      position: relative;
-      animation: authIllustrationIn 0.32s var(--auth-ease) 0.05s both;
+      justify-content: flex-start;
+      animation: authIllustrationIn 0.28s var(--auth-ease) both;
     }
     .login-illustration .brand {
-      position: absolute;
-      top: 1.75rem;
-      left: 1.75rem;
       display: flex;
       align-items: center;
-      gap: 0.625rem;
+      gap: 0.45rem;
+      align-self: stretch;
+      margin-bottom: 0.6rem;
+      padding: 0;
     }
-    .login-illustration .brand img { height: 48px; width: auto; }
+    .login-illustration .brand img { height: 40px; width: auto; }
     .login-illustration .brand span {
       font-weight: 700;
-      font-size: 1.2rem;
-      letter-spacing: 0.04em;
+      font-size: 0.84rem;
+      letter-spacing: 0.03em;
       color: var(--login-purple);
       text-transform: uppercase;
-      line-height: 1.2;
+      line-height: 1.15;
     }
-    .illustration-img { width: 100%; max-width: 200px; height: auto; display: block; object-fit: contain; }
+    .illustration-img { width: 100%; max-width: 178px; height: auto; object-fit: contain; }
+
     .login-form-panel {
-      padding: var(--space-6) var(--space-5);
+      padding: 1rem 1.2rem;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      max-width: 100%;
+      justify-content: flex-start;
       overflow-y: auto;
-      animation: authPanelSlide 0.3s var(--auth-ease) 0.08s both;
+      animation: authPanelSlide 0.28s var(--auth-ease) both;
     }
-    .login-form-panel .form-inner { width: 100%; max-width: min(300px, 100%); margin: 0 auto; }
-    .login-form-panel .welcome { margin-bottom: var(--space-6); }
-    .login-form-panel .welcome h1 {
-      font-size: clamp(1.1rem, 2.2vw + 0.8rem, 1.25rem);
+    .login-form-panel .form-inner { width: 100%; max-width: 100%; margin: 0 auto; }
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 0.55rem;
+      border-radius: var(--login-radius);
+      overflow: hidden;
+      border: 1px solid var(--login-border);
+      background: #f9fafb;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 0.42rem 0.5rem;
+      text-align: center;
+      font-size: 0.76rem;
       font-weight: 600;
+      text-decoration: none;
+      color: var(--login-muted);
+      transition: color var(--login-transition), background var(--login-transition);
+    }
+    .auth-tab.active { background: var(--login-purple); color: #fff; }
+    .auth-tab:not(.active):hover { background: #f3f4f6; color: #374151; }
+
+    .login-form-panel .welcome { margin-bottom: 0.65rem; }
+    .login-form-panel .welcome h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
       color: #111827;
-      margin-bottom: var(--space-1);
-      line-height: 1.35;
-      letter-spacing: -0.01em;
+      margin-bottom: 0.15rem;
+      line-height: 1.28;
     }
     .login-form-panel .welcome h1 span { color: var(--login-purple); }
-    .login-form-panel .welcome p { font-size: 0.8125rem; color: var(--login-muted); line-height: 1.5; }
-    .form-group { margin-bottom: var(--space-5); }
-    .form-label {
-      font-weight: 500;
-      color: #374151;
-      font-size: 0.8125rem;
-      margin-bottom: var(--space-1);
-      display: block;
+    .login-form-panel .welcome p { font-size: 0.75rem; color: var(--login-muted); line-height: 1.3; margin-bottom: 0; }
+
+    .alert {
+      border-radius: var(--login-radius);
+      font-size: 0.72rem;
+      margin-bottom: 0.5rem;
+      border: none;
+      padding: 0.45rem 0.55rem;
     }
-    .form-label i { margin-right: var(--space-2); color: #9ca3af; }
+    .alert ul {
+      margin-bottom: 0;
+      max-height: 90px;
+      overflow: auto;
+      padding-left: 1rem;
+    }
+    .alert-danger { background: #fef2f2; color: #b91c1c; }
+    .alert-success { background: #f0fdf4; color: #166534; }
+
+    #registerForm {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(260px, 1fr));
+      gap: 0.68rem 0.85rem;
+      align-content: start;
+    }
+    .form-group {
+      margin-bottom: 0;
+      min-width: 0;
+    }
+    .form-group.is-hidden {
+      display: none;
+    }
+    .form-label {
+      font-weight: 600;
+      color: #374151;
+      font-size: 0.74rem;
+      margin-bottom: 0.24rem;
+      display: block;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+    .form-label i { margin-right: 0.28rem; color: #94a3b8; }
     .input-wrapper { position: relative; }
     .input-icon {
       position: absolute;
-      left: 0.875rem;
+      left: 0.72rem;
       top: 50%;
       transform: translateY(-50%);
       color: #6b7280;
-      font-size: 1rem;
+      font-size: 0.9rem;
       z-index: 2;
     }
-    .form-control {
+    .form-control,
+    .form-select {
       width: 100%;
-      padding: 0.625rem 1rem 0.625rem 2.5rem;
-      border: 1.5px solid #d1d5db;
+      min-height: 2.25rem;
+      padding: 0.5rem 0.72rem 0.5rem 2.1rem;
+      border: 1.4px solid #d1d5db;
       border-radius: var(--login-radius);
-      font-size: 0.9375rem;
+      font-size: 0.8rem;
       background: #fafafa;
       transition: border-color var(--login-transition), background var(--login-transition), box-shadow var(--login-transition);
     }
-    .form-control:hover {
-      background: #fff;
-      border-color: #9ca3af;
-    }
-    .form-control:focus {
-      border-color: var(--login-purple);
-      background: #fff;
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(109,93,209,0.12);
-    }
-    .form-control::placeholder { color: #6b7280; }
-    .form-select {
-      width: 100%;
-      padding: 0.625rem 1rem 0.625rem 2.5rem;
-      border: 1.5px solid #d1d5db;
-      border-radius: var(--login-radius);
-      font-size: 0.9375rem;
-      background: #fafafa;
-      transition: border-color var(--login-transition), background var(--login-transition);
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right 0.75rem center;
-      background-size: 16px 12px;
-    }
+    .form-control::placeholder { white-space: normal; }
+    .form-control:hover,
     .form-select:hover {
-      background-color: #fff;
+      background: #fff;
       border-color: #9ca3af;
     }
+    .form-control:focus,
     .form-select:focus {
       border-color: var(--login-purple);
-      background-color: #fff;
+      background: #fff;
       outline: none;
-      box-shadow: 0 0 0 3px rgba(109,93,209,0.12);
+      box-shadow: 0 0 0 2px rgba(109,93,209,0.12);
     }
-    .input-wrapper.has-password-toggle .form-control { padding-right: 3rem; }
+    .form-select {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 0.6rem center;
+      background-size: 13px 10px;
+    }
+    .input-wrapper.has-password-toggle .form-control { padding-right: 2.5rem; }
     .password-toggle-btn {
       position: absolute;
-      right: 0.5rem;
+      right: 0.4rem;
       top: 50%;
       transform: translateY(-50%);
-      width: 2.25rem;
-      height: 2.25rem;
-      padding: 0;
+      width: 2rem;
+      height: 2rem;
       border: none;
       background: none;
       color: #94a3b8;
@@ -197,106 +217,180 @@
       transition: color 0.15s ease;
     }
     .password-toggle-btn:hover { color: var(--login-purple); }
-    .form-text { font-size: 0.75rem; color: var(--login-muted); margin-top: var(--space-2); display: block; }
+    .login-hint { display: none !important; }
+    .form-text { font-size: 0.7rem; color: var(--login-muted); margin-top: 0.2rem; }
+    .password-rules {
+      margin-top: 0.24rem;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.2rem 0.45rem;
+      font-size: 0.7rem;
+      color: #64748b;
+    }
+    .password-rule {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      line-height: 1.25;
+      min-width: 0;
+    }
+    .password-rule i {
+      font-size: 0.74rem;
+      color: #94a3b8;
+    }
+    .password-rule.ok {
+      color: #047857;
+      font-weight: 600;
+    }
+    .password-rule.ok i {
+      color: #059669;
+    }
+    .date-range-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.42rem;
+    }
+    .date-range-group .form-control {
+      padding-left: 0.72rem;
+    }
+
+    .consent-grid {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.65rem;
+    }
+    .consent-box {
+      border: 1px solid #dbe2ea;
+      border-radius: 10px;
+      background: #f8fafc;
+      padding: 0.42rem 0.5rem;
+      height: 100%;
+      display: flex;
+      align-items: flex-start;
+    }
+    .consent-box .form-check {
+      margin: 0;
+      font-size: 0.72rem !important;
+      color: var(--login-muted);
+      line-height: 1.25;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.48rem;
+    }
+    .consent-box .form-check-input {
+      margin: 0.1rem 0 0;
+      flex: 0 0 auto;
+      width: 0.92rem;
+      height: 0.92rem;
+      border: 1.5px solid #64748b;
+      background-color: #fff;
+      cursor: pointer;
+    }
+    .consent-box .form-check-input:checked {
+      background-color: var(--login-purple);
+      border-color: var(--login-purple);
+    }
+    .consent-box .form-check-input:focus {
+      box-shadow: 0 0 0 2px rgba(109,93,209,0.2);
+    }
+    .consent-box .form-check-label {
+      margin: 0;
+      flex: 1 1 auto;
+      color: #334155;
+      cursor: pointer;
+      line-height: 1.4;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .register-actions {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(0.45rem, 0.9vw, 0.65rem);
+      align-items: start;
+    }
     .btn-register {
       width: 100%;
-      padding: var(--space-3) var(--space-4);
+      padding: 0.55rem 0.78rem;
       background: var(--login-purple);
       border: none;
       border-radius: var(--login-radius);
       color: #fff;
-      font-weight: 500;
-      font-size: 0.9375rem;
+      font-weight: 600;
+      font-size: 0.82rem;
       cursor: pointer;
       transition: background var(--login-transition);
     }
-    .btn-register:hover {
-      background: var(--login-purple-dark);
-      color: #fff;
-    }
-    .register-alt-action {
-      margin-top: var(--space-3);
-      text-align: center;
-    }
+    .btn-register:hover { background: var(--login-purple-dark); color: #fff; }
+    .register-alt-action { margin-top: 0; text-align: center; }
     .btn-register-alt {
       width: 100%;
-      padding: 0.625rem 0.95rem;
+      padding: 0.55rem 0.75rem;
       border: 1px solid #dbe2ea;
       border-radius: 10px;
       background: #fff;
       color: #334155;
-      font-weight: 500;
-      font-size: 0.875rem;
+      font-weight: 600;
+      font-size: 0.8rem;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.45rem;
-      transition: border-color var(--login-transition), background var(--login-transition), color var(--login-transition), transform var(--login-transition);
+      gap: 0.35rem;
+      transition: border-color var(--login-transition), background var(--login-transition), color var(--login-transition);
     }
-    .btn-register-alt:hover {
-      border-color: #c7d2fe;
-      background: #f8faff;
-      color: #4338ca;
-      transform: translateY(-1px);
-    }
-    .btn-register-alt:focus {
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14);
-      border-color: #6366f1;
-    }
+    .btn-register-alt:hover { border-color: #c7d2fe; background: #f8faff; color: #4338ca; }
     .register-alt-note {
-      margin-top: 0.5rem;
+      margin-top: 0.25rem;
       color: #64748b;
+      font-size: 0.68rem;
+      line-height: 1.2;
+    }
+    .password-match-indicator {
+      margin-top: 0.28rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      color: #64748b;
+      min-height: 1rem;
+    }
+    .password-match-indicator i {
       font-size: 0.75rem;
-      line-height: 1.45;
+      opacity: 0.9;
     }
-    .auth-tabs {
-      display: flex;
-      gap: 0;
-      margin-bottom: var(--space-5);
-      border-radius: var(--login-radius);
-      overflow: hidden;
-      border: 1px solid var(--login-border);
-      background: #f9fafb;
+    .password-match-indicator.match {
+      color: #059669;
     }
-    .auth-tab {
-      flex: 1;
-      padding: var(--space-2) var(--space-3);
+    .password-match-indicator.mismatch {
+      color: #dc2626;
+    }
+    .form-group-confirm-password {
+      grid-column: 2;
+    }
+
+    .login-link,
+    .switch-login {
+      grid-column: 1 / -1;
       text-align: center;
-      font-size: 0.8125rem;
-      font-weight: 500;
-      text-decoration: none;
-      color: var(--login-muted);
-      transition: color var(--login-transition), background var(--login-transition);
-    }
-    .auth-tab.active {
-      background: var(--login-purple);
-      color: #fff;
-    }
-    .auth-tab:not(.active):hover {
-      background: #f3f4f6;
-      color: #374151;
     }
     .login-link {
-      text-align: center;
-      margin-top: var(--space-6);
-      padding-top: var(--space-5);
+      margin-top: 0.6rem;
+      padding-top: 0.55rem;
       border-top: 1px solid var(--login-border);
-      font-size: 0.8125rem;
+      font-size: 0.74rem;
       color: var(--login-muted);
     }
     .login-link p { margin: 0; }
-    .login-link a {
-      color: var(--login-purple);
-      font-weight: 500;
-      text-decoration: none;
-    }
+    .login-link a { color: var(--login-purple); font-weight: 600; text-decoration: none; }
     .login-link a:hover { color: var(--login-purple-dark); }
-    .switch-login { margin-top: var(--space-5); text-align: center; }
+    .switch-login { margin-top: 0.5rem; }
     .divider {
       position: relative;
       text-align: center;
-      margin: var(--space-4) 0;
+      margin: 0.45rem 0;
     }
     .divider::before {
       content: '';
@@ -310,59 +404,79 @@
     .divider span {
       position: relative;
       background: #fff;
-      padding: 0 var(--space-4);
+      padding: 0 0.4rem;
       color: var(--login-muted);
-      font-size: 0.85rem;
+      font-size: 0.72rem;
     }
     .btn-switch {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: var(--space-2) var(--space-4);
+      padding: 0.44rem 0.7rem;
       width: 100%;
       background: #fff;
       border: 1px solid var(--login-border);
       border-radius: var(--login-radius);
       color: #374151;
-      font-weight: 500;
-      font-size: 0.8125rem;
+      font-weight: 600;
+      font-size: 0.74rem;
       text-decoration: none;
       transition: border-color var(--login-transition), background var(--login-transition);
     }
-    .btn-switch:hover {
-      background: #f9fafb;
-      border-color: #d1d5db;
-      color: #111827;
-    }
+    .btn-switch:hover { background: #f9fafb; border-color: #d1d5db; color: #111827; }
     .btn-switch i { color: var(--login-purple); }
-    .alert {
-      border-radius: var(--login-radius);
-      font-size: 0.8125rem;
-      margin-bottom: var(--space-4);
-      border: none;
-      padding: var(--space-3) var(--space-4);
+
+    @media (max-width: 1280px) {
+      .login-wrapper {
+        grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.7fr);
+      }
+      .password-rules {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
-    .alert-danger { background: #fef2f2; color: #b91c1c; }
-    .alert-success { background: #f0fdf4; color: #166534; }
-    @media (max-width: 768px) {
+
+    @media (max-width: 1160px) {
       .login-wrapper {
         grid-template-columns: 1fr;
-        max-width: min(380px, calc(100vw - 1.5rem));
+      }
+      .login-illustration {
+        display: none;
+      }
+      #registerForm,
+      .consent-grid,
+      .register-actions {
+        grid-template-columns: 1fr;
+      }
+      .form-group-confirm-password {
+        grid-column: 1;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .password-rules {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .login-wrapper {
+        grid-template-columns: 1fr;
+        max-width: min(420px, calc(100vw - 1.2rem));
         min-height: auto;
       }
       .login-illustration {
-        padding: clamp(var(--space-4), 4vw, var(--space-5));
-        min-height: clamp(120px, 22vh, 160px);
+        padding: 0.95rem;
+        min-height: 145px;
       }
-      .illustration-img { max-width: min(140px, 38vw); }
-      .login-form-panel { padding: clamp(var(--space-4), 4vw, var(--space-5)); }
-    }
-    @media (max-width: 480px) {
-      body { padding: var(--space-3); }
-      .login-wrapper { max-width: 100%; border-radius: var(--login-radius); }
-      .login-illustration .brand img { height: 40px; }
-      .login-illustration .brand span { font-size: 1rem; letter-spacing: 0.03em; }
-      .login-form-panel .form-inner { max-width: 100%; }
+      .login-illustration .brand {
+        margin-bottom: 0.45rem;
+      }
+      .illustration-img { max-width: 145px; }
+      .login-form-panel { padding: 0.9rem; overflow-y: auto; }
+      #registerForm,
+      .consent-grid,
+      .register-actions { grid-template-columns: 1fr; }
+      body { overflow: auto; padding: 0.75rem; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition-duration: 0.01ms !important; }
@@ -404,6 +518,7 @@
       <form action="{{ route('student.register.submit') }}" method="POST" id="registerForm">
         @csrf
         <input type="hidden" name="face_encoding" id="faceEncodingInput">
+        <input type="hidden" id="oldMajorValue" value="{{ old('major') }}">
         
         <div class="form-group">
           <label class="form-label">
@@ -418,13 +533,47 @@
 
         <div class="form-group">
           <label class="form-label">
-            <i class="bi bi-person"></i>Full Name
+            <i class="bi bi-person"></i>First Name
           </label>
           <div class="input-wrapper">
             <i class="bi bi-person input-icon"></i>
-            <input type="text" name="name" class="form-control" value="{{ old('name') }}" placeholder="Enter full name" required />
+            <input type="text" name="first_name" class="form-control" value="{{ old('first_name') }}" placeholder="Enter first name" required />
           </div>
-          <small class="login-hint d-block mt-1">Enter your complete name as recorded in NORSU (First, Middle, Last).</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-person"></i>Last Name
+          </label>
+          <div class="input-wrapper">
+            <i class="bi bi-person input-icon"></i>
+            <input type="text" name="last_name" class="form-control" value="{{ old('last_name') }}" placeholder="Enter last name" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-person"></i>Middle Name
+          </label>
+          <div class="input-wrapper">
+            <i class="bi bi-person input-icon"></i>
+            <input type="text" name="middle_name" class="form-control" value="{{ old('middle_name') }}" placeholder="Enter middle name (optional)" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-person-badge"></i>Suffix
+          </label>
+          <div class="input-wrapper">
+            <i class="bi bi-person-badge input-icon"></i>
+            <select name="suffix" class="form-select">
+              <option value="">No suffix</option>
+              @foreach(['JR', 'SR', 'II', 'III', 'IV', 'V'] as $suffixOption)
+              <option value="{{ $suffixOption }}" {{ old('suffix') == $suffixOption ? 'selected' : '' }}>{{ $suffixOption }}</option>
+              @endforeach
+            </select>
+          </div>
         </div>
 
         <div class="form-group">
@@ -433,17 +582,30 @@
           </label>
           <div class="input-wrapper">
             <i class="bi bi-mortarboard input-icon"></i>
-            <select name="course" class="form-select" required>
-              <option value="">Select Program</option>
-              <option value="GEOLOGY" {{ old('course') == 'GEOLOGY' ? 'selected' : '' }}>GEOLOGY</option>
-              <option value="PSYCHOLOGY" {{ old('course') == 'PSYCHOLOGY' ? 'selected' : '' }}>PSYCHOLOGY</option>
-              <option value="INFORMATION TECHNOLOGY" {{ old('course') == 'INFORMATION TECHNOLOGY' ? 'selected' : '' }}>INFORMATION TECHNOLOGY</option>
-              <option value="COMPUTER SCIENCE" {{ old('course') == 'COMPUTER SCIENCE' ? 'selected' : '' }}>COMPUTER SCIENCE</option>
-              <option value="HISTORY" {{ old('course') == 'HISTORY' ? 'selected' : '' }}>HISTORY</option>
-              <option value="MATHEMATICS" {{ old('course') == 'MATHEMATICS' ? 'selected' : '' }}>MATHEMATICS</option>
+            <select name="course" id="programSelect" class="form-select" required>
+              @foreach(\App\Models\Student::getProgramCatalog() as $collegeLabel => $programOptions)
+              <optgroup label="{{ $collegeLabel }}">
+                @foreach($programOptions as $programOption)
+                <option value="{{ $programOption }}" {{ old('course') == $programOption ? 'selected' : '' }}>{{ $programOption }}</option>
+                @endforeach
+              </optgroup>
+              @endforeach
             </select>
           </div>
           <small class="login-hint d-block mt-1">Select the program where you are officially enrolled for OJT.</small>
+        </div>
+
+        <div class="form-group" id="majorGroup">
+          <label class="form-label">
+            <i class="bi bi-journal-bookmark"></i>Major
+          </label>
+          <div class="input-wrapper">
+            <i class="bi bi-journal-bookmark input-icon"></i>
+            <select name="major" id="majorSelect" class="form-select">
+              <option value="">Select Major</option>
+            </select>
+          </div>
+          <small class="login-hint d-block mt-1">Major appears only for programs that require specialization.</small>
         </div>
 
         <div class="form-group">
@@ -466,24 +628,27 @@
             <i class="bi bi-journal-text"></i>School Year
           </label>
           <div class="input-wrapper">
-            <i class="bi bi-journal-text input-icon"></i>
-            <input type="text" name="school_year" class="form-control" value="{{ old('school_year') }}" placeholder="Example: 2026-2027" pattern="\d{4}-\d{4}" inputmode="numeric" required />
+            <input type="hidden" name="school_year" id="schoolYearValue" value="{{ old('school_year') }}">
+            <div class="date-range-group">
+              <input type="date" id="schoolYearStart" class="form-control" required aria-label="School year start date">
+              <input type="date" id="schoolYearEnd" class="form-control" required aria-label="School year end date">
+            </div>
           </div>
-          <small class="login-hint d-block mt-1">Use the school year shown on your load slip, for example 2026-2027.</small>
+          <small class="login-hint d-block mt-1">Pick start and end dates. We will store it as YYYY-YYYY.</small>
         </div>
 
         <div class="form-group">
           <label class="form-label">
             <i class="bi bi-grid-3x3-gap"></i>Section
-            <div class="form-text">
-            </div>
           </label>
           <div class="input-wrapper">
             <i class="bi bi-grid-3x3-gap input-icon"></i>
             <select name="section" class="form-select" required>
               <option value="">Select Section</option>
-              @foreach(\App\Models\Student::SECTIONS as $sectionOption)
-              <option value="{{ $sectionOption }}" {{ old('section') == $sectionOption ? 'selected' : '' }}>Section {{ $sectionOption }}</option>
+              @foreach(\App\Models\Student::getSectionOptions() as $sectionOption)
+              <option value="{{ $sectionOption }}" {{ old('section') == $sectionOption ? 'selected' : '' }}>
+                {{ in_array($sectionOption, \App\Models\Student::SECTIONS, true) ? 'Section '.$sectionOption : $sectionOption }}
+              </option>
               @endforeach
             </select>
           </div>
@@ -495,50 +660,60 @@
           </label>
           <div class="input-wrapper has-password-toggle">
             <i class="bi bi-key input-icon"></i>
-            <input type="password" name="password" class="form-control" placeholder="Enter password" minlength="8" required />
+            <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Enter password" minlength="8" required />
             <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password" title="Show password"><i class="bi bi-eye"></i></button>
           </div>
-          <small class="login-hint d-block mt-1">Use at least 8 characters with a mix of letters and numbers for better security.</small>
+          <div class="password-rules" id="passwordRules" aria-live="polite">
+            <span class="password-rule" data-rule="length"><i class="bi bi-circle"></i> 8+ characters</span>
+            <span class="password-rule" data-rule="uppercase"><i class="bi bi-circle"></i> Uppercase (A-Z)</span>
+            <span class="password-rule" data-rule="lowercase"><i class="bi bi-circle"></i> Lowercase (a-z)</span>
+            <span class="password-rule" data-rule="number"><i class="bi bi-circle"></i> Number (0-9)</span>
+            <span class="password-rule" data-rule="symbol"><i class="bi bi-circle"></i> Symbol (! @ # ...)</span>
+          </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group form-group-confirm-password">
           <label class="form-label">
             <i class="bi bi-lock-fill"></i>Confirm Password
           </label>
           <div class="input-wrapper has-password-toggle">
             <i class="bi bi-key-fill input-icon"></i>
-            <input type="password" name="password_confirmation" class="form-control" placeholder="Confirm password" minlength="8" required />
+            <input type="password" name="password_confirmation" id="passwordConfirmationInput" class="form-control" placeholder="Confirm password" minlength="8" required />
             <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password" title="Show password"><i class="bi bi-eye"></i></button>
           </div>
+          <div id="passwordMatchIndicator" class="password-match-indicator" aria-live="polite"></div>
         </div>
 
-        <div class="form-group" style="margin-bottom: var(--space-4);">
-          <div class="form-check text-start" style="font-size: 0.8rem; color: var(--login-muted);">
-            <input class="form-check-input me-2" type="checkbox" value="1" id="privacyConsent" required>
-            <label class="form-check-label" for="privacyConsent">
-              I understand that my personal information and captured facial data will be used for <strong>educational and OJT attendance purposes only</strong>, kept securely inside NORSU's OJT DTR system, and handled in accordance with the Data Privacy Act of 2012 (RA 10173).
-            </label>
+        <div class="consent-grid">
+          <div class="consent-box">
+            <div class="form-check text-start">
+              <input class="form-check-input me-2" type="checkbox" value="1" id="privacyConsent" required>
+              <label class="form-check-label" for="privacyConsent">
+                I understand my personal and facial data will be used only for OJT attendance, in line with RA 10173.
+              </label>
+            </div>
+          </div>
+          <div class="consent-box">
+            <div class="form-check text-start">
+              <input class="form-check-input me-2" type="checkbox" value="1" id="honestyConsent" required>
+              <label class="form-check-label" for="honestyConsent">
+                I will use only my own account and attendance records honestly.
+              </label>
+            </div>
           </div>
         </div>
 
-        <div class="form-group" style="margin-bottom: var(--space-4);">
-          <div class="form-check text-start" style="font-size: 0.8rem; color: var(--login-muted);">
-            <input class="form-check-input me-2" type="checkbox" value="1" id="honestyConsent" required>
-            <label class="form-check-label" for="honestyConsent">
-              I agree to use this system honestly and only for my own attendance and OJT requirements, and I will not allow others to use my account or facial data.
-            </label>
-          </div>
-        </div>
-
-        <button type="button" class="btn btn-register" onclick="openFaceCapture()">
-          <i class="bi bi-camera me-2"></i>Register with Face Recognition
-        </button>
-        <div class="register-alt-action">
-          <button type="button" class="btn-register-alt" onclick="submitWithoutFace()">
-            <i class="bi bi-person-check"></i>
-            <span>Continue without camera</span>
+        <div class="register-actions">
+          <button type="button" class="btn btn-register" onclick="openFaceCapture()">
+            <i class="bi bi-camera me-2"></i>Register with Face
           </button>
-          <p class="register-alt-note">Use only if camera access is unavailable. Your coordinator can still verify your account.</p>
+          <div class="register-alt-action">
+            <button type="button" class="btn-register-alt" onclick="submitWithoutFace()">
+              <i class="bi bi-person-check"></i>
+              <span>Continue without camera</span>
+            </button>
+            <p class="register-alt-note">Use only if camera access is unavailable.</p>
+          </div>
         </div>
       </form>
 
@@ -694,8 +869,68 @@
   <script>window.FACE_API_MODEL_BASE = "{{ asset('vendor/face-api/model') }}";</script>
   <script src="{{ asset('vendor/face-api/face-api.min.js') }}"></script>
   <script src="{{ asset('js/face-recognition.js') }}"></script>
+  <script id="majorsByProgramData" type="application/json">@json(\App\Models\Student::PROGRAM_MAJORS)</script>
 
   <script>
+  function showRegistrationPrompt(options) {
+    var existing = document.getElementById('registerPromptOverlay');
+    if (!existing) {
+      var overlay = document.createElement('div');
+      overlay.id = 'registerPromptOverlay';
+      overlay.style.position = 'fixed';
+      overlay.style.inset = '0';
+      overlay.style.zIndex = '2200';
+      overlay.style.display = 'none';
+      overlay.style.alignItems = 'center';
+      overlay.style.justifyContent = 'center';
+      overlay.style.padding = '1rem';
+      overlay.style.background = 'rgba(2, 6, 23, 0.66)';
+      overlay.innerHTML = ''
+        + '<div style="width:min(92vw,420px);background:#0b1a36;border-radius:12px;border:1px solid #334155;box-shadow:0 32px 80px -36px rgba(2,6,23,.9);overflow:hidden;color:#e2e8f0;">'
+        + '  <div style="display:flex;align-items:center;gap:.55rem;padding:.95rem 1rem .75rem;font-weight:700;color:#f8fafc;border-bottom:1px solid #475569;">'
+        + '    <span style="width:28px;height:28px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:rgba(59,130,246,.2);color:#93c5fd;"><i class="bi bi-bell-fill"></i></span>'
+        + '    <span id="registerPromptTitle">Notice</span>'
+        + '    <button type="button" id="registerPromptClose" aria-label="Close" style="margin-left:auto;width:30px;height:30px;border:none;border-radius:8px;background:transparent;color:#94a3b8;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;"><i class="bi bi-x-lg"></i></button>'
+        + '  </div>'
+        + '  <div id="registerPromptMessage" style="padding:1rem 1rem .85rem;color:#cbd5e1;line-height:1.48;font-size:.94rem;"></div>'
+        + '  <div style="display:flex;justify-content:flex-end;gap:.55rem;padding:.8rem 1rem 1rem;border-top:1px solid #475569;background:#0b1a36;">'
+        + '    <button type="button" id="registerPromptCancel" style="border:1px solid #64748b;border-radius:10px;padding:.52rem 1rem;font-size:.86rem;font-weight:600;background:#64748b;color:#f8fafc;cursor:pointer;">Cancel</button>'
+        + '    <button type="button" id="registerPromptOk" style="border:1px solid #2563eb;border-radius:10px;padding:.52rem 1rem;font-size:.86rem;font-weight:600;background:#2563eb;color:#fff;cursor:pointer;"><i class="bi bi-check-lg me-1"></i> OK</button>'
+        + '  </div>'
+        + '</div>';
+      document.body.appendChild(overlay);
+      existing = overlay;
+    }
+
+    var titleEl = document.getElementById('registerPromptTitle');
+    var msgEl = document.getElementById('registerPromptMessage');
+    var okBtn = document.getElementById('registerPromptOk');
+    var cancelBtn = document.getElementById('registerPromptCancel');
+    var closeBtn = document.getElementById('registerPromptClose');
+    titleEl.textContent = options.title || 'Notice';
+    msgEl.textContent = options.message || '';
+    cancelBtn.style.display = options.confirm ? 'inline-flex' : 'none';
+    existing.style.display = 'flex';
+
+    return new Promise(function (resolve) {
+      function done(result) {
+        existing.style.display = 'none';
+        okBtn.removeEventListener('click', onOk);
+        cancelBtn.removeEventListener('click', onCancel);
+        closeBtn.removeEventListener('click', onCancel);
+        document.removeEventListener('keydown', onEsc);
+        resolve(result);
+      }
+      function onOk() { done(true); }
+      function onCancel() { done(false); }
+      function onEsc(e) { if (e.key === 'Escape') done(false); }
+      okBtn.addEventListener('click', onOk);
+      cancelBtn.addEventListener('click', onCancel);
+      closeBtn.addEventListener('click', onCancel);
+      document.addEventListener('keydown', onEsc);
+    });
+  }
+
   let captureInterval = null;
   let autoCaptureAttempted = false;
   let faceDetectedCount = 0;
@@ -888,13 +1123,17 @@
     stopFaceCapture();
   });
 
-  function submitWithoutFace() {
+  async function submitWithoutFace() {
     const form = document.getElementById('registerForm');
     if (!form.checkValidity()) {
       form.reportValidity();
       return;
     }
-    const ok = confirm('Continue registration without face enrollment? You can still proceed, but camera-based verification may not be available until your device issue is fixed.');
+    const ok = await showRegistrationPrompt({
+      title: 'Please Confirm',
+      message: 'Continue registration without face enrollment? You can still proceed, but camera-based verification may not be available until your device issue is fixed.',
+      confirm: true
+    });
     if (!ok) return;
     document.getElementById('faceEncodingInput').value = '';
     form.submit();
@@ -921,6 +1160,169 @@
       btn.setAttribute('title', 'Show password');
     }
   });
+
+  (function () {
+    var programSelect = document.getElementById('programSelect');
+    var majorGroup = document.getElementById('majorGroup');
+    var majorSelect = document.getElementById('majorSelect');
+    var majorsDataEl = document.getElementById('majorsByProgramData');
+    var majorsByProgram = {};
+    var oldMajor = (document.getElementById('oldMajorValue') || {}).value || '';
+    if (!programSelect || !majorGroup || !majorSelect) return;
+    if (majorsDataEl && majorsDataEl.textContent) {
+      try {
+        majorsByProgram = JSON.parse(majorsDataEl.textContent);
+      } catch (e) {
+        majorsByProgram = {};
+      }
+    }
+
+    function setMajorOptions(programValue) {
+      var majors = majorsByProgram[programValue] || [];
+      majorSelect.innerHTML = '<option value="">Select Major</option>';
+
+      if (!majors.length) {
+        majorGroup.classList.add('is-hidden');
+        majorSelect.required = false;
+        majorSelect.disabled = true;
+        majorSelect.value = '';
+        return;
+      }
+
+      majors.forEach(function (major) {
+        var opt = document.createElement('option');
+        opt.value = major;
+        opt.textContent = major;
+        if (oldMajor && oldMajor === major) {
+          opt.selected = true;
+        }
+        majorSelect.appendChild(opt);
+      });
+
+      majorGroup.classList.remove('is-hidden');
+      majorSelect.disabled = false;
+      majorSelect.required = true;
+    }
+
+    programSelect.addEventListener('change', function () {
+      oldMajor = null;
+      setMajorOptions(programSelect.value || '');
+    });
+
+    setMajorOptions(programSelect.value || '');
+  })();
+
+  (function () {
+    var passwordInput = document.getElementById('passwordInput');
+    var rulesContainer = document.getElementById('passwordRules');
+    if (!passwordInput || !rulesContainer) return;
+
+    var checks = {
+      length: function (v) { return v.length >= 8; },
+      uppercase: function (v) { return /[A-Z]/.test(v); },
+      lowercase: function (v) { return /[a-z]/.test(v); },
+      number: function (v) { return /[0-9]/.test(v); },
+      symbol: function (v) { return /[^A-Za-z0-9]/.test(v); }
+    };
+
+    function setRuleState(ruleEl, passed) {
+      var icon = ruleEl.querySelector('i');
+      if (!icon) return;
+      ruleEl.classList.toggle('ok', passed);
+      icon.classList.remove('bi-circle', 'bi-check-circle-fill');
+      icon.classList.add(passed ? 'bi-check-circle-fill' : 'bi-circle');
+    }
+
+    function updatePasswordRules() {
+      var value = passwordInput.value || '';
+      Object.keys(checks).forEach(function (key) {
+        var el = rulesContainer.querySelector('[data-rule="' + key + '"]');
+        if (!el) return;
+        setRuleState(el, checks[key](value));
+      });
+    }
+
+    passwordInput.addEventListener('input', updatePasswordRules);
+    updatePasswordRules();
+  })();
+
+  (function () {
+    var passwordInput = document.querySelector('input[name="password"]');
+    var confirmInput = document.getElementById('passwordConfirmationInput');
+    var indicator = document.getElementById('passwordMatchIndicator');
+    if (!passwordInput || !confirmInput || !indicator) return;
+
+    function updatePasswordMatchIndicator() {
+      var password = passwordInput.value || '';
+      var confirmation = confirmInput.value || '';
+      indicator.classList.remove('match', 'mismatch');
+
+      if (confirmation.length === 0) {
+        indicator.innerHTML = '';
+        return;
+      }
+
+      if (password === confirmation) {
+        indicator.classList.add('match');
+        indicator.innerHTML = '<i class="bi bi-check-circle-fill"></i><span>Passwords match</span>';
+        return;
+      }
+
+      indicator.classList.add('mismatch');
+      indicator.innerHTML = '<i class="bi bi-x-circle-fill"></i><span>Passwords do not match yet</span>';
+    }
+
+    passwordInput.addEventListener('input', updatePasswordMatchIndicator);
+    confirmInput.addEventListener('input', updatePasswordMatchIndicator);
+    updatePasswordMatchIndicator();
+  })();
+
+  (function () {
+    var startInput = document.getElementById('schoolYearStart');
+    var endInput = document.getElementById('schoolYearEnd');
+    var hiddenSchoolYear = document.getElementById('schoolYearValue');
+    if (!startInput || !endInput || !hiddenSchoolYear) return;
+
+    var now = new Date();
+    var defaultStartYear = now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear() - 1;
+    var defaultStartDate = defaultStartYear + '-06-01';
+    var defaultEndDate = (defaultStartYear + 1) + '-05-31';
+
+    startInput.value = defaultStartDate;
+    endInput.value = defaultEndDate;
+    startInput.max = endInput.value;
+    endInput.min = startInput.value;
+
+    var existing = (hiddenSchoolYear.value || '').trim();
+    var match = existing.match(/^(\d{4})-(\d{4})$/);
+    if (match) {
+      startInput.value = match[1] + '-06-01';
+      endInput.value = match[2] + '-05-31';
+    }
+
+    function syncSchoolYearValue() {
+      if (!startInput.value || !endInput.value) {
+        hiddenSchoolYear.value = '';
+        return;
+      }
+      var startYear = new Date(startInput.value).getFullYear();
+      var endYear = new Date(endInput.value).getFullYear();
+      hiddenSchoolYear.value = startYear + '-' + endYear;
+    }
+
+    function normalizeDateRange() {
+      if (startInput.value && endInput.value && endInput.value < startInput.value) {
+        endInput.value = startInput.value;
+      }
+      startInput.max = endInput.value || '';
+      endInput.min = startInput.value || '';
+      syncSchoolYearValue();
+    }
+
+    normalizeDateRange();
+    startInput.addEventListener('change', normalizeDateRange);
+    endInput.addEventListener('change', normalizeDateRange);
+  })();
   </script>
 </body>
 </html>

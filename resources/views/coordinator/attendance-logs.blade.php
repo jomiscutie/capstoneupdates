@@ -190,7 +190,45 @@
     }
     .dtr-attendance .text-center.py-4.text-muted .fs-2 { color: var(--attendance-muted); opacity: 0.45; }
     .dtr-attendance .text-muted.mb-0 { font-size: 0.9375rem; color: var(--attendance-muted); }
-    .dtr-attendance .invalidate-form textarea { min-width: 220px; }
+    .dtr-attendance .invalidation-trigger-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-weight: 600;
+        border-radius: 10px;
+    }
+    .coordinator-invalidation-modal {
+        background: linear-gradient(180deg, color-mix(in srgb, var(--dtr-card-solid) 94%, white 6%), var(--dtr-card-solid));
+        border: 1px solid var(--dtr-border-soft);
+        border-radius: 18px;
+        box-shadow: var(--dtr-shadow-strong);
+        color: var(--dtr-text);
+    }
+    .coordinator-invalidation-modal .modal-header {
+        border-bottom-color: var(--dtr-border-soft);
+    }
+    .coordinator-invalidation-modal .modal-title {
+        font-weight: 800;
+        color: var(--dtr-heading);
+    }
+    .coordinator-invalidation-modal .form-label {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--dtr-muted);
+        font-weight: 700;
+    }
+    .coordinator-invalidation-modal .form-control {
+        border-radius: 12px;
+        min-height: 46px;
+        border: 1px solid var(--dtr-input-border);
+        background: var(--dtr-input-bg);
+        color: var(--dtr-text);
+    }
+    .coordinator-invalidation-modal .form-control:focus {
+        border-color: rgba(45, 212, 191, 0.72);
+        box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.14);
+    }
     html[data-theme="dark"] .dtr-attendance .stats-box {
         background: #0f172a;
         border-color: #334155;
@@ -399,7 +437,7 @@
                                 </td>
                                 <td>
                                     @php
-                                        $hoursDisplay = $log->hours_rendered ?? null;
+                                        $hoursDisplay = $log->hours_rendered_display ?? $log->hours_rendered ?? null;
                                         if (empty($hoursDisplay)) {
                                             $totalMinutes = 0;
                                             $dateStr = \Carbon\Carbon::parse($log->date)->format('Y-m-d');
@@ -453,15 +491,17 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <form action="{{ route('coordinator.attendance.invalidate', $log) }}" method="POST" class="invalidate-form d-flex flex-column gap-2">
-                                        @csrf
-                                        <textarea name="reason" class="form-control form-control-sm" rows="2" maxlength="1000" placeholder="Reason (fraud/fake record)..." required></textarea>
-                                        <button type="submit"
-                                                class="btn btn-outline-danger btn-sm"
-                                                onclick="return confirm('Submit invalidation request for this attendance record? Admin approval is required before it is excluded from reports.');">
-                                            <i class="bi bi-shield-exclamation"></i> Request invalidation
-                                        </button>
-                                    </form>
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-danger btn-sm invalidation-trigger-btn js-open-invalidation-modal"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#coordinatorInvalidationModal"
+                                        data-action="{{ route('coordinator.attendance.invalidate', $log) }}"
+                                        data-date="{{ \Carbon\Carbon::parse($log->date)->format('M d, Y') }}"
+                                        data-student="{{ $viewStudent->name ?? 'Student' }}"
+                                    >
+                                        <i class="bi bi-shield-exclamation"></i> Request invalidation
+                                    </button>
                                 </td>
                             </tr>
                         @endforeach
@@ -511,6 +551,40 @@
     </div>
 </div>
 
+<div class="modal fade" id="coordinatorInvalidationModal" tabindex="-1" aria-labelledby="coordinatorInvalidationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content coordinator-invalidation-modal">
+            <form method="POST" id="coordinatorInvalidationForm">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="coordinatorInvalidationModalLabel">Request Attendance Invalidation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-2" id="coordinatorInvalidationTarget">You are about to submit an invalidation request.</p>
+                    <label for="coordinatorInvalidationReason" class="form-label">Reason</label>
+                    <textarea
+                        id="coordinatorInvalidationReason"
+                        name="reason"
+                        class="form-control"
+                        rows="4"
+                        maxlength="1000"
+                        placeholder="Reason (fraud/fake record)..."
+                        required
+                    ></textarea>
+                    <p class="text-muted small mt-2 mb-0">Admin approval is required before this record is excluded from reports.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-shield-exclamation me-1"></i> Submit request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 (function() {
@@ -552,6 +626,27 @@
     if (filterMonth) filterMonth.addEventListener('change', updatePanels);
     if (filterWeek) filterWeek.addEventListener('change', updatePanels);
     updatePanels();
+})();
+
+(function () {
+    var modal = document.getElementById('coordinatorInvalidationModal');
+    var form = document.getElementById('coordinatorInvalidationForm');
+    var target = document.getElementById('coordinatorInvalidationTarget');
+    var reasonInput = document.getElementById('coordinatorInvalidationReason');
+    if (!modal || !form || !reasonInput) return;
+
+    document.querySelectorAll('.js-open-invalidation-modal').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            form.setAttribute('action', btn.getAttribute('data-action') || '');
+            var date = btn.getAttribute('data-date') || 'selected date';
+            var student = btn.getAttribute('data-student') || 'Student';
+            if (target) {
+                target.textContent = 'Request invalidation for ' + student + ' on ' + date + '.';
+            }
+            reasonInput.value = '';
+            reasonInput.focus();
+        });
+    });
 })();
 </script>
 @endpush

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Attendance extends Model
 {
@@ -57,6 +58,11 @@ class Attendance extends Model
         return $this->belongsTo(Coordinator::class, 'invalidated_by');
     }
 
+    public function events(): HasMany
+    {
+        return $this->hasMany(AttendanceEvent::class);
+    }
+
     public function scopeValid($query)
     {
         return $query->where('is_invalid', false);
@@ -104,6 +110,30 @@ class Attendance extends Model
         }
 
         return $m.' min';
+    }
+
+    /** Hours rendered normalized for display (handles previously saved negative values). */
+    public function getHoursRenderedDisplayAttribute(): ?string
+    {
+        $raw = trim((string) ($this->hours_rendered ?? ''));
+        if ($raw === '') {
+            return null;
+        }
+
+        if (preg_match('/^\s*(-?\d+)\s*hr\s*(-?\d+)\s*min\s*$/i', $raw, $m)) {
+            $hours = abs((int) $m[1]);
+            $minutes = abs((int) $m[2]);
+
+            return "{$hours} hr {$minutes} min";
+        }
+
+        if (preg_match('/^\s*(-?\d+)\s*hr\s*$/i', $raw, $m)) {
+            $hours = abs((int) $m[1]);
+
+            return "{$hours} hr";
+        }
+
+        return $raw;
     }
 
     /** Morning late duration as "X hr Y min". */

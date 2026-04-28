@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ProgramAlias;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,10 +13,169 @@ class Student extends Authenticatable
     use Notifiable, SoftDeletes;
 
     public const TERMS = StudentTermAssignment::TERMS;
+
     public const ASSIGNMENT_TERMS = StudentTermAssignment::ASSIGNMENT_TERMS;
+
     public const ASSIGNMENT_SEMESTERS = StudentTermAssignment::ASSIGNMENT_TERMS;
+
     public const SECTIONS = StudentTermAssignment::SECTIONS;
+
     public const ASSIGNMENT_SECTIONS = StudentTermAssignment::ASSIGNMENT_SECTIONS;
+
+    public const PROGRAM_CATALOG = [
+        'COLLEGE OF ARTS AND SCIENCES' => [
+            'Bachelor of Arts',
+            'Bachelor of Science in Biology',
+            'Bachelor of Science in Chemistry',
+            'Bachelor of Science in Computer Science',
+            'Bachelor of Science in Geology',
+            'Bachelor of Science in Information Technology',
+            'Bachelor of Science in Mathematics',
+            'Bachelor of Science in Psychology',
+        ],
+        'COLLEGE OF CRIMINAL JUSTICE' => [
+            'Bachelor of Science in Criminology',
+        ],
+        'COLLEGE OF BUSINESS ADMINISTRATION' => [
+            'Associate in Secretarial Education',
+            'Bachelor of Science in Accountancy',
+            'Bachelor of Science in Business Administration',
+            'Bachelor of Science in Office Systems Management',
+            'Associate in Hospitality Management',
+            'Bachelor of Science in Hospitality Management',
+            'Bachelor of Science in Tourism',
+        ],
+        'COLLEGE OF EDUCATION' => [
+            'Bachelor of Elementary Education',
+            'Bachelor of Secondary Education',
+        ],
+    ];
+
+    public const PROGRAMS = [
+        'Bachelor of Arts',
+        'Bachelor of Science in Biology',
+        'Bachelor of Science in Chemistry',
+        'Bachelor of Science in Computer Science',
+        'Bachelor of Science in Geology',
+        'Bachelor of Science in Information Technology',
+        'Bachelor of Science in Mathematics',
+        'Bachelor of Science in Psychology',
+        'Bachelor of Science in Criminology',
+        'Associate in Secretarial Education',
+        'Bachelor of Science in Accountancy',
+        'Bachelor of Science in Business Administration',
+        'Bachelor of Science in Office Systems Management',
+        'Associate in Hospitality Management',
+        'Bachelor of Science in Hospitality Management',
+        'Bachelor of Science in Tourism',
+        'Bachelor of Elementary Education',
+        'Bachelor of Secondary Education',
+    ];
+
+    public const PROGRAM_MAJORS = [
+        'Bachelor of Arts' => [
+            'Mass Communication',
+            'Literature',
+            'Political Science',
+            'English',
+            'Social Science',
+            'History',
+            'Mathematics',
+        ],
+        'Bachelor of Science in Business Administration' => [
+            'Management',
+            'Marketing',
+            'Business Finance Management',
+        ],
+        'Bachelor of Elementary Education' => [
+            'Special Education',
+            'Preschool',
+            'General Curriculum',
+        ],
+        'Bachelor of Secondary Education' => [
+            'English',
+            'Math',
+            'Filipino',
+            'Social Science',
+            'Biological Science',
+            'Physical Science',
+            'TLE',
+            'Values Ed',
+            'MAPEH',
+        ],
+    ];
+
+    public static function majorsForProgram(string $program): array
+    {
+        return self::PROGRAM_MAJORS[$program] ?? [];
+    }
+
+    public static function hasMajorsForProgram(string $program): bool
+    {
+        return ! empty(self::majorsForProgram($program));
+    }
+
+    public static function getProgramOptions(): array
+    {
+        $options = self::PROGRAMS;
+
+        if (Schema::hasTable('dynamic_options')) {
+            $dynamicPrograms = DynamicOption::query()
+                ->active()
+                ->where('type', DynamicOption::TYPE_PROGRAM)
+                ->orderBy('value')
+                ->pluck('value')
+                ->all();
+
+            $options = array_merge($options, $dynamicPrograms);
+        }
+
+        $options = array_values(array_unique(array_map(static fn ($value) => trim((string) $value), $options)));
+        sort($options);
+
+        return $options;
+    }
+
+    public static function getSectionOptions(): array
+    {
+        $options = self::SECTIONS;
+
+        if (Schema::hasTable('dynamic_options')) {
+            $dynamicSections = DynamicOption::query()
+                ->active()
+                ->where('type', DynamicOption::TYPE_SECTION)
+                ->orderBy('value')
+                ->pluck('value')
+                ->all();
+
+            $options = array_merge($options, $dynamicSections);
+        }
+
+        $options = array_values(array_unique(array_map(static fn ($value) => trim((string) $value), $options)));
+        sort($options);
+
+        return $options;
+    }
+
+    public static function getProgramCatalog(): array
+    {
+        $catalog = self::PROGRAM_CATALOG;
+        $catalogPrograms = [];
+
+        foreach ($catalog as $programs) {
+            foreach ($programs as $program) {
+                $catalogPrograms[] = trim((string) $program);
+            }
+        }
+
+        $dynamicOnlyPrograms = array_values(array_diff(self::getProgramOptions(), $catalogPrograms));
+
+        if ($dynamicOnlyPrograms !== []) {
+            $catalog['ADDITIONAL PROGRAMS'] = $dynamicOnlyPrograms;
+        }
+
+        return $catalog;
+    }
 
     public static function hasVerificationColumn(): bool
     {
@@ -25,6 +185,10 @@ class Student extends Authenticatable
     protected $fillable = [
         'student_no',
         'name',
+        'last_name',
+        'first_name',
+        'middle_name',
+        'suffix',
         'department',
         'major',
         'course',
@@ -60,6 +224,21 @@ class Student extends Authenticatable
     public function attendances()
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    public function setCourseAttribute($value): void
+    {
+        $this->attributes['course'] = ProgramAlias::normalizeCourse($value);
+    }
+
+    public function setMajorAttribute($value): void
+    {
+        $this->attributes['major'] = ProgramAlias::normalizeCourse($value);
+    }
+
+    public function manualAttendanceRequests()
+    {
+        return $this->hasMany(ManualAttendanceRequest::class);
     }
 
     public function termAssignments()
@@ -128,7 +307,7 @@ class Student extends Authenticatable
                     foreach ($assignments as $assignment) {
                         $studentQuery->orWhere(function ($matchQuery) use ($assignment) {
                             // Match course - use LIKE for flexible matching (e.g., "INFORMATION TECHNOLOGY" matches "Bachelor of Science in Information Technology")
-                            $matchQuery->where('course', 'like', '%' . $assignment->course . '%');
+                            $matchQuery->where('course', 'like', '%'.$assignment->course.'%');
 
                             // School year matching - if assignment has school_year, match it; otherwise match any
                             if (! empty($assignment->school_year)) {
@@ -153,7 +332,7 @@ class Student extends Authenticatable
             return $query->whereRaw('1 = 0');
         }
 
-        return $query->where('course', 'like', '%' . $coordinator->major . '%');
+        return $query->where('course', 'like', '%'.$coordinator->major.'%');
     }
 
     public function isVisibleToCoordinator($coordinator): bool
@@ -248,7 +427,7 @@ class Student extends Authenticatable
     {
         $assignment ??= $this->activeTermAssignment;
 
-        return (float) ($assignment?->required_ojt_hours ?? $this->required_ojt_hours ?? 120);
+        return (float) ($assignment?->required_ojt_hours ?? $this->required_ojt_hours ?? config('dtr.default_required_hours', 120));
     }
 
     public function hasReachedRequiredHours(?StudentTermAssignment $assignment = null): bool
@@ -269,12 +448,12 @@ class Student extends Authenticatable
             return 0;
         }
 
-        if (preg_match('/^\s*(\d+)\s*hr\s*(\d+)\s*min\s*$/i', $value, $m)) {
-            return (int) $m[1] * 60 + (int) $m[2];
+        if (preg_match('/^\s*(-?\d+)\s*hr\s*(-?\d+)\s*min\s*$/i', $value, $m)) {
+            return abs((int) $m[1]) * 60 + abs((int) $m[2]);
         }
 
-        if (preg_match('/^\s*(\d+)\s*hr\s*$/i', $value, $m)) {
-            return (int) $m[1] * 60;
+        if (preg_match('/^\s*(-?\d+)\s*hr\s*$/i', $value, $m)) {
+            return abs((int) $m[1]) * 60;
         }
 
         return 0;

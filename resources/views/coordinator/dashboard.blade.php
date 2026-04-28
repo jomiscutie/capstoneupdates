@@ -8,6 +8,7 @@
     .page-sub { font-size: 0.9rem; color: var(--dtr-muted); margin: 0 auto 1.5rem; text-align: center; max-width: 720px; }
     .program-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; background: var(--dtr-surface-soft); color: var(--dtr-primary); border-radius: 6px; font-size: 0.8rem; font-weight: 500; margin-top: 0.5rem; }
     .program-badge-wrap { text-align: center; margin-bottom: 0.5rem; }
+    .program-list-inline { margin-top: 0.35rem; font-size: 0.82rem; color: var(--dtr-muted); }
     .info-alert { background: var(--dtr-surface-soft); border-left: 3px solid var(--dtr-primary); border-radius: 6px; padding: 0.9rem 1.1rem; margin-bottom: 1.5rem; font-size: 0.9rem; text-align: center; }
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
     .stat-card { background: var(--dtr-card-bg); padding: 1.2rem; border-radius: 10px; border: 1px solid var(--dtr-border-soft); box-shadow: var(--dtr-shadow-soft); }
@@ -29,28 +30,39 @@
 @endpush
 
 @section('content')
+    @php
+        $programs = ($assignedPrograms ?? collect())->values();
+        $hasPrograms = $programs->isNotEmpty();
+        $isMultiProgram = $programs->count() > 1;
+        $programSummary = $isMultiProgram ? ($programs->count() . ' programs assigned') : ($programs->first() ?? 'All Programs');
+    @endphp
     <h1 class="page-title">Dashboard</h1>
-    <p class="page-sub">Welcome back, {{ auth()->guard('coordinator')->user()->name }}</p>
-    @if(auth()->guard('coordinator')->user()->major)
+    <p class="page-sub">Welcome, {{ auth()->guard('coordinator')->user()->name }}</p>
+    @if($hasPrograms)
         <div class="program-badge-wrap">
-        <div class="program-badge">
-            <i class="bi bi-mortarboard"></i>
-            <span>{{ auth()->guard('coordinator')->user()->major }}</span>
-        </div>
+            <div class="program-badge">
+                <i class="bi bi-mortarboard"></i>
+                <span>{{ $programSummary }}</span>
+            </div>
+            @if($isMultiProgram)
+                <div class="program-list-inline">{{ $programs->implode(' • ') }}</div>
+            @endif
         </div>
     @endif
 
-    @if(auth()->guard('coordinator')->user()->major)
-    <div class="info-alert">
-        <strong></strong> Data shown is for <strong>{{ auth()->guard('coordinator')->user()->major }}</strong> students.
-    </div>
+    @if($hasPrograms)
+        <div class="info-alert">
+            Data shown is for
+            <strong>{{ $isMultiProgram ? 'assigned programs' : ($programs->first() ?? 'assigned program') }}</strong>
+            students.
+        </div>
     @endif
 
     <div class="stats-grid">
         <div class="stat-card primary">
             <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
             <div class="label">Total Students</div>
-            <div class="sub-label">{{ auth()->guard('coordinator')->user()->major ?? 'All Programs' }}</div>
+            <div class="sub-label">{{ $programSummary }}</div>
             <div class="number">{{ $totalStudents }}</div>
         </div>
         <div class="stat-card success">

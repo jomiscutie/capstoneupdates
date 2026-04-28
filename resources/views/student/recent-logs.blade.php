@@ -345,6 +345,14 @@
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary btn-sm">Apply</button>
                 </div>
+                <div class="col-auto">
+                    <a
+                        href="{{ route('student.recentlogs.download', ['filter' => $filter ?? 'month', 'month' => $selectedMonth ?? now()->format('Y-m'), 'week_start' => $weekStartInput ?? null, 'week_end' => $weekEndInput ?? null, 'week' => $weekInput ?? null]) }}"
+                        class="btn btn-primary btn-sm"
+                    >
+                        <i class="bi bi-download me-1"></i> Download logs
+                    </a>
+                </div>
             </form>
             @if(($filter ?? '') === 'week' && !empty($weekLabel))
             <p class="text-muted small mb-3"><i class="bi bi-calendar3 me-1"></i>{{ $weekLabel }}</p>
@@ -393,7 +401,7 @@
                                     <td class="dtr-time">@if($utM !== null){{ $utM }}@else<span class="text-muted">—</span>@endif</td>
                                     <td class="dtr-time">
                                         @if($log->hours_rendered)
-                                            {{ $log->hours_rendered }}
+                                            {{ $log->hours_rendered_display ?? $log->hours_rendered }}
                                         @else
                                             <span class="text-muted" title="Recorded when you time out for the day.">—</span>
                                         @endif

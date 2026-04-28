@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Support\Services\FaceEncodingService;
-use Illuminate\Http\Request;
 use App\Models\Student;
 use App\Models\StudentTermAssignment;
+use App\Support\Services\FaceEncodingService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -34,16 +34,19 @@ class StudentAuthController extends Controller
 
             if ($student->isPendingVerification()) {
                 Auth::guard('student')->logout();
+
                 return back()->withErrors(['student_no' => 'Your account is pending verification by your coordinator. Please contact your OJT coordinator to verify that you belong to their class before you can log in.'])->withInput();
             }
             if ($student->isRejected()) {
                 Auth::guard('student')->logout();
+
                 return back()->withErrors(['student_no' => 'Your registration was not approved by your coordinator. Please contact your OJT coordinator if you believe this is an error.'])->withInput();
             }
 
             $request->session()->regenerate();
             $student->current_session_id = $request->session()->getId();
             $student->save();
+
             return redirect()->route('student.dashboard')->with('success', 'Welcome student!');
         }
 
@@ -65,7 +68,20 @@ class StudentAuthController extends Controller
     {
         // Normalize for duplicate checks
         $studentNo = trim($request->student_no);
-        $name = trim(preg_replace('/\s+/', ' ', $request->name ?? ''));
+        $lastName = trim(preg_replace('/\s+/', ' ', (string) ($request->last_name ?? '')));
+        $firstName = trim(preg_replace('/\s+/', ' ', (string) ($request->first_name ?? '')));
+        $middleName = trim(preg_replace('/\s+/', ' ', (string) ($request->middle_name ?? '')));
+        $suffix = strtoupper(trim((string) ($request->suffix ?? '')));
+        $selectedProgram = trim((string) ($request->course ?? ''));
+        $selectedMajor = trim((string) ($request->major ?? ''));
+        $programOptions = Student::getProgramOptions();
+        $sectionOptions = Student::getSectionOptions();
+        $fullName = trim(preg_replace('/\s+/', ' ', implode(' ', array_filter([
+            $firstName,
+            $middleName,
+            $lastName,
+            $suffix,
+        ]))));
 
         $request->validate([
             'student_no' => [
@@ -74,12 +90,16 @@ class StudentAuthController extends Controller
                 'max:50',
                 Rule::unique('students', 'student_no'),
             ],
-            'name' => 'required|string|max:255',
-            'course' => 'required|string|max:100',
+            'last_name' => 'required|string|max:100',
+            'first_name' => 'required|string|max:100',
+            'middle_name' => 'nullable|string|max:100',
+            'suffix' => 'nullable|string|max:20',
+            'course' => ['required', 'string', 'max:100', Rule::in($programOptions)],
+            'major' => 'nullable|string|max:100',
             'school_year' => ['required', 'string', 'max:20', 'regex:/^\d{4}-\d{4}$/'],
             'term' => ['required', Rule::in(Student::TERMS)],
-            'section' => ['required', Rule::in(Student::SECTIONS)],
-            'password' => ['required', 'string', 'confirmed', Password::min(8)],
+            'section' => ['required', Rule::in($sectionOptions)],
+            'password' => ['required', 'string', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
             'face_encoding' => 'nullable|string',
         ], [
             'student_no.unique' => 'This student number is already registered. Please log in instead.',
@@ -88,6 +108,20 @@ class StudentAuthController extends Controller
 
         if (Student::where('student_no', $studentNo)->exists()) {
             return back()->withErrors(['student_no' => 'This student number is already registered. Please log in instead.'])->withInput();
+        }
+
+        $allowedMajors = Student::majorsForProgram($selectedProgram);
+
+        if ($allowedMajors !== []) {
+            if ($selectedMajor === '') {
+                return back()->withErrors(['major' => 'Please select a major for the selected program.'])->withInput();
+            }
+
+            if (! in_array($selectedMajor, $allowedMajors, true)) {
+                return back()->withErrors(['major' => 'The selected major is not valid for the chosen program.'])->withInput();
+            }
+        } elseif ($selectedMajor !== '') {
+            return back()->withErrors(['major' => 'This program does not require a major.'])->withInput();
         }
 
         // Reject if this face is already registered to another account (same face, different name/ID)
@@ -109,11 +143,16 @@ class StudentAuthController extends Controller
 
         $student = null;
 
-        DB::transaction(function () use ($request, $studentNo, $name, $faceEncoding, &$student) {
+        DB::transaction(function () use ($request, $studentNo, $fullName, $lastName, $firstName, $middleName, $suffix, $selectedMajor, $faceEncoding, &$student) {
             $student = Student::create([
                 'student_no' => $studentNo,
-                'name' => $name,
+                'name' => $fullName,
+                'last_name' => $lastName,
+                'first_name' => $firstName,
+                'middle_name' => $middleName !== '' ? $middleName : null,
+                'suffix' => $suffix !== '' ? $suffix : null,
                 'course' => $request->course,
+                'major' => $selectedMajor !== '' ? $selectedMajor : null,
                 'section' => $request->section,
                 'password' => Hash::make($request->password),
                 'face_encoding' => $faceEncoding !== '' ? $faceEncoding : null,
@@ -124,7 +163,7 @@ class StudentAuthController extends Controller
                 'school_year' => $request->school_year,
                 'term' => $request->term,
                 'section' => $request->section,
-                'required_ojt_hours' => 120,
+                'required_ojt_hours' => (float) config('dtr.default_required_hours', 120),
                 'status' => StudentTermAssignment::STATUS_ACTIVE,
                 'started_at' => now(),
             ]);
@@ -149,6 +188,7 @@ class StudentAuthController extends Controller
         Auth::guard('student')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect('/')->with('success', 'Logged out successfully.');
     }
 
@@ -169,7 +209,7 @@ class StudentAuthController extends Controller
 
         $request->validate([
             'current_password' => 'required',
-            'password' => ['required', 'string', 'confirmed', Password::min(8)],
+            'password' => ['required', 'string', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
         ], [
             'current_password.required' => 'Please enter your current password.',
             'password.required' => 'Please enter a new password.',
@@ -187,4 +227,3 @@ class StudentAuthController extends Controller
         return redirect()->route('student.settings')->with('success', 'Your password has been updated.');
     }
 }
-

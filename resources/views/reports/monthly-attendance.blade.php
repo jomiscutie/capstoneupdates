@@ -67,7 +67,9 @@
             text-align: center;
             vertical-align: middle;
             padding: 1px 1px;
-            word-wrap: break-word;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: clip;
         }
         .dtr-table thead th {
             font-weight: bold;
@@ -75,7 +77,11 @@
         }
         .col-day { width: 6%; }
         .col-time { width: 11%; }
-        .dtr-table tbody td { height: 11px; }
+        .dtr-table tbody td {
+            height: 11px;
+            max-height: 11px;
+            line-height: 1;
+        }
         .dtr-table tbody tr.dim td {
             color: #999;
         }

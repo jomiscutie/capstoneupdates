@@ -52,5 +52,19 @@ class Kernel extends HttpKernel
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'single.session' => \App\Http\Middleware\EnsureSingleSession::class,
+        'kiosk.access' => \App\Http\Middleware\EnsureKioskAccess::class,
+    ];
+
+    /**
+     * Laravel 10/11-compatible middleware aliases.
+     */
+    protected $middlewareAliases = [
+        'auth' => \App\Http\Middleware\Authenticate::class,
+        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'single.session' => \App\Http\Middleware\EnsureSingleSession::class,
+        'kiosk.access' => \App\Http\Middleware\EnsureKioskAccess::class,
     ];
 }

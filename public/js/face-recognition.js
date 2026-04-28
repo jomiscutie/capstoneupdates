@@ -313,9 +313,12 @@ class FaceRecognition {
                 current = Array.from(detection.descriptor);
             }
             const distance = this.calculateDistance(stored, current);
-            const threshold = 0.6;
+            const rawT = (typeof window !== 'undefined' && window.FACE_SAME_PERSON_THRESHOLD != null)
+                ? Number(window.FACE_SAME_PERSON_THRESHOLD)
+                : 0.5;
+            const threshold = Number.isFinite(rawT) && rawT > 0.05 && rawT < 1.5 ? rawT : 0.5;
             const confidence = Math.max(0, Math.min(100, (1 - (distance / threshold)) * 100));
-            const verified = distance < threshold;
+            const verified = distance <= threshold;
 
             return {
                 verified: verified,
@@ -364,7 +367,7 @@ class FaceRecognition {
     }
 
     checkLiveness(detection = null) {
-        const hasBlink = this.blinkCount >= 1;
+        const hasBlink = this.blinkCount >= 2;
         const isStable = detection ? this.checkFaceStability(detection) : false;
 
         if (detection) {

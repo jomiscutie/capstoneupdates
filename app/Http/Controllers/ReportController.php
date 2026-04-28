@@ -265,7 +265,8 @@ class ReportController extends Controller
     {
         try {
             $pdf = Pdf::loadView('reports.monthly-attendance', $data);
-            $pdf->setPaper('A4', 'portrait');
+            // 3.5in x 8.5in custom DTR slip size (width x height), in points.
+            $pdf->setPaper([0, 0, 252, 612], 'portrait');
 
             return $pdf->output();
         } catch (\Throwable $e) {
@@ -280,7 +281,7 @@ class ReportController extends Controller
             try {
                 $data['logoDataUri'] = null;
                 $pdf = Pdf::loadView('reports.monthly-attendance', $data);
-                $pdf->setPaper('A4', 'portrait');
+                $pdf->setPaper([0, 0, 252, 612], 'portrait');
 
                 return $pdf->output();
             } catch (\Throwable $e2) {

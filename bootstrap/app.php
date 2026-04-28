@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'single.session' => \App\Http\Middleware\EnsureSingleSession::class,
+            'kiosk.access' => \App\Http\Middleware\EnsureKioskAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
