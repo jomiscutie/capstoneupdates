@@ -32,6 +32,9 @@
         --attendance-surface-soft: var(--dtr-surface-soft);
         --attendance-hover: var(--dtr-hover-bg);
     }
+    html[data-theme="dark"] .dtr-attendance-history {
+        --attendance-hover: rgba(59, 130, 246, 0.1);
+    }
     .dtr-attendance-history .page-title { text-align: center; }
     .dtr-attendance-history .page-sub { text-align: center; max-width: 720px; margin-left: auto; margin-right: auto; }
     .dtr-attendance-history .card {
@@ -98,7 +101,17 @@
         border: 1px solid var(--attendance-border);
         background: var(--attendance-surface);
     }
-    .dtr-attendance-history .table-responsive .table { min-width: 920px; margin-bottom: 0; }
+    .dtr-attendance-history .table-responsive .table {
+        min-width: 920px;
+        margin-bottom: 0;
+        --bs-table-bg: var(--attendance-surface);
+        --bs-table-color: var(--attendance-text);
+        --bs-table-border-color: var(--attendance-border);
+        --bs-table-hover-bg: var(--attendance-hover);
+        --bs-table-hover-color: var(--attendance-text);
+        --bs-table-striped-bg: var(--attendance-surface);
+        --bs-table-striped-color: var(--attendance-text);
+    }
     .dtr-attendance-history .table-dtr-layout thead th {
         text-align: center;
         vertical-align: middle;
@@ -124,9 +137,72 @@
         border-bottom: 1px solid var(--attendance-border);
         font-size: 0.875rem;
         color: var(--attendance-text);
+        background: var(--attendance-surface) !important;
+    }
+    .dtr-attendance-history .table tbody tr {
+        background: var(--attendance-surface) !important;
     }
     .dtr-attendance-history .table tbody tr:last-child td { border-bottom: none; }
-    .dtr-attendance-history .table tbody tr:hover { background: var(--attendance-hover); }
+    .dtr-attendance-history .table tbody tr:hover {
+        background: var(--attendance-hover) !important;
+    }
+    .dtr-attendance-history .table tbody tr:hover > td,
+    .dtr-attendance-history .table tbody tr:hover > th {
+        background: var(--attendance-hover) !important;
+        color: var(--attendance-text) !important;
+    }
+    .dtr-attendance-history .table .btn-outline-primary {
+        --bs-btn-color: #60a5fa;
+        --bs-btn-border-color: rgba(96, 165, 250, 0.42);
+        --bs-btn-hover-color: #bfdbfe;
+        --bs-btn-hover-bg: rgba(59, 130, 246, 0.18);
+        --bs-btn-hover-border-color: rgba(96, 165, 250, 0.55);
+        --bs-btn-active-color: #e0f2fe;
+        --bs-btn-active-bg: rgba(59, 130, 246, 0.26);
+        --bs-btn-active-border-color: rgba(96, 165, 250, 0.65);
+        --bs-btn-focus-shadow-rgb: 96, 165, 250;
+    }
+    .dtr-attendance-history .table .btn-outline-primary,
+    .dtr-attendance-history .table .btn-outline-primary:hover,
+    .dtr-attendance-history .table .btn-outline-primary:focus,
+    .dtr-attendance-history .table .btn-outline-primary:active {
+        box-shadow: none !important;
+    }
+    .dtr-attendance-history .table tbody .btn-outline-primary {
+        color: #2563eb !important;
+        border-color: rgba(37, 99, 235, 0.45) !important;
+        background: rgba(37, 99, 235, 0.08) !important;
+    }
+    .dtr-attendance-history .table tbody .btn-outline-primary i {
+        color: inherit !important;
+    }
+    .dtr-attendance-history .table tbody tr:hover .btn-outline-primary {
+        color: #1d4ed8 !important;
+        border-color: rgba(29, 78, 216, 0.55) !important;
+        background: rgba(29, 78, 216, 0.14) !important;
+    }
+    html[data-theme="dark"] .dtr-attendance-history .table tbody .btn-outline-primary {
+        color: #93c5fd !important;
+        border-color: rgba(147, 197, 253, 0.48) !important;
+        background: rgba(59, 130, 246, 0.15) !important;
+    }
+    html[data-theme="dark"] .dtr-attendance-history .table tbody tr:hover .btn-outline-primary {
+        color: #dbeafe !important;
+        border-color: rgba(147, 197, 253, 0.62) !important;
+        background: rgba(59, 130, 246, 0.25) !important;
+    }
+    html[data-theme="dark"] .dtr-attendance-history .table-dtr-layout tbody td {
+        background: #0f1a2d !important;
+        color: #e5edf7 !important;
+    }
+    html[data-theme="dark"] .dtr-attendance-history .table-dtr-layout tbody tr:hover > td {
+        background: #1b2538 !important;
+        color: #f8fbff !important;
+    }
+    html[data-theme="dark"] .dtr-attendance-history .table-dtr-layout tbody tr:hover > td .text-muted,
+    html[data-theme="dark"] .dtr-attendance-history .table-dtr-layout tbody tr:hover > td .small {
+        color: #c9d5e7 !important;
+    }
     .dtr-attendance-history .table-dtr-layout tbody td.dtr-time {
         text-align: center;
         font-variant-numeric: tabular-nums;
@@ -413,7 +489,7 @@
                                                 $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'morning'])) . '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 mb-1"><i class="bi bi-camera-fill"></i> Morning</a>';
                                             }
                                             if ($log->afternoon_verification_snapshot) {
-                                                $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'afternoon'])) . '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 mb-1"><i class="bi bi-camera-fill"></i> Afternoon</a>';
+                                                $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'afternoon'])) . '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 mb-1"><i class="bi bi-camera-fill"></i> Break</a>';
                                             }
                                             if ($log->timeout_verification_snapshot) {
                                                 $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'timeout'])) . '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 mb-1"><i class="bi bi-camera-fill"></i> Time out</a>';

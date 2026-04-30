@@ -319,12 +319,6 @@
         </div>
     </div>
 
-    @if($major)
-    <div class="alert alert-info py-2 mb-3">
-        <i class="bi bi-info-circle me-2"></i>Showing logs for <strong>{{ $major }}</strong> only.
-    </div>
-    @endif
-
     @if(!empty($viewStudent))
     <div class="view-student-bar">
         <span class="view-student-label"><i class="bi bi-person-video2 me-1"></i>Showing attendance for</span>

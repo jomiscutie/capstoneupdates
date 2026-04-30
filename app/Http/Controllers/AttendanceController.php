@@ -61,8 +61,8 @@ class AttendanceController extends Controller
         if (! $match || ! isset($match['student'])) {
             return response()->json([
                 'matched' => false,
-                'message' => 'Face not recognized.',
-            ], 404);
+                'message' => (string) ($match['message'] ?? 'Face not recognized.'),
+            ], 200);
         }
 
         $student = $match['student'];
@@ -344,10 +344,16 @@ class AttendanceController extends Controller
                 ->where('date', $today)
                 ->first();
 
-            // Check if student has at least one time-in (morning or afternoon)
-            if (! $attendance || (! $attendance->time_in && ! $attendance->afternoon_time_in)) {
-                return back()->with('error', 'You must record a time-in (morning or afternoon) before you can time out. No time-in on file for today.')
+            // Strict old flow: a day must start with morning time-in before allowing time-out.
+            if (! $attendance || ! $attendance->time_in) {
+                return back()->with('error', 'You must record your morning time-in first before you can time out.')
                     ->with('error_type', 'no_time_in');
+            }
+
+            // If lunch / break out exists, require afternoon return before time-out.
+            if ($attendance->lunch_break_out && ! $attendance->afternoon_time_in) {
+                return back()->with('error', 'Please record your afternoon time-in first before time-out.')
+                    ->with('error_type', 'no_afternoon_time_in');
             }
 
             if ($attendance->time_out) {
@@ -990,7 +996,14 @@ class AttendanceController extends Controller
         $match = $this->resolveKioskFaceMatch($request);
         $kioskStudent = $match['student'] ?? null;
         if (! $kioskStudent) {
-            return back()->with('error', 'Face not recognized. Please try again or contact coordinator/admin.');
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => (string) ($match['message'] ?? 'Face not recognized. Please try again or contact coordinator/admin.'),
+                ], 422);
+            }
+
+            return back()->with('error', (string) ($match['message'] ?? 'Face not recognized. Please try again or contact coordinator/admin.'));
         }
 
         $request->merge([
@@ -1002,23 +1015,60 @@ class AttendanceController extends Controller
 
         Auth::guard('student')->onceUsingId((int) $kioskStudent->id);
 
-        return $action();
+        $response = $action();
+        if (! $request->expectsJson()) {
+            return $response;
+        }
+
+        $success = (string) $request->session()->get('success', '');
+        $error = (string) $request->session()->get('error', '');
+        $warning = (string) $request->session()->get('warning', '');
+
+        if ($success !== '') {
+            return response()->json([
+                'ok' => true,
+                'message' => $success,
+            ]);
+        }
+
+        if ($error !== '') {
+            return response()->json([
+                'ok' => false,
+                'message' => $error,
+            ], 422);
+        }
+
+        if ($warning !== '') {
+            return response()->json([
+                'ok' => true,
+                'message' => $warning,
+                'warning' => true,
+            ]);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Attendance processed.',
+        ]);
     }
 
     private function resolveKioskFaceMatch(Request $request): ?array
     {
         if (! $request->filled('face_encoding')) {
-            return null;
+            return ['message' => 'Face data missing. Please retry capture.'];
         }
 
         $provided = json_decode((string) $request->input('face_encoding'), true);
         if (! is_array($provided) || count($provided) !== FaceEncodingService::ENCODING_LENGTH) {
-            return null;
+            return ['message' => 'Invalid face capture. Please face the camera and retry.'];
         }
 
         $bestStudentId = null;
         $bestDistance = INF;
+        $secondBestDistance = INF;
         $threshold = (float) (config('services.face_same_person_threshold') ?? FaceEncodingService::SAME_PERSON_THRESHOLD);
+        // Margin to avoid nearest-neighbor confusion across lookalike profiles.
+        $ambiguityMargin = 0.015;
 
         $candidates = \App\Models\Student::query()
             ->verified()
@@ -1033,18 +1083,27 @@ class AttendanceController extends Controller
 
             $distance = FaceEncodingService::distance($stored, $provided);
             if ($distance <= $threshold && $distance < $bestDistance) {
+                $secondBestDistance = $bestDistance;
                 $bestDistance = $distance;
                 $bestStudentId = (int) $candidate->id;
+                continue;
+            }
+            if ($distance <= $threshold && $distance < $secondBestDistance) {
+                $secondBestDistance = $distance;
             }
         }
 
         if (! $bestStudentId) {
-            return null;
+            return ['message' => 'Face not recognized. Please align your face and try again.'];
+        }
+
+        if ($secondBestDistance < INF && ($secondBestDistance - $bestDistance) < $ambiguityMargin) {
+            return ['message' => 'Face match is ambiguous. Please face the camera directly and retry.'];
         }
 
         $student = \App\Models\Student::find($bestStudentId);
         if (! $student) {
-            return null;
+            return ['message' => 'Matched profile is unavailable. Please contact administrator.'];
         }
 
         $confidence = max(0, min(100, (1 - ($bestDistance / $threshold)) * 100));
@@ -1145,19 +1204,11 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Optional suffix for success message: " - 94% match" when verification_confidence is sent.
+     * Confidence percentage is intentionally hidden from user-facing success text.
      */
     private function confidenceSuffix(Request $request): string
     {
-        if (! $request->filled('verification_confidence')) {
-            return '';
-        }
-        $pct = (int) round((float) $request->verification_confidence);
-        if ($pct < 0 || $pct > 100) {
-            return '';
-        }
-
-        return " - {$pct}% match";
+        return '';
     }
 
     /**

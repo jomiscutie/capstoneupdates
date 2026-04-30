@@ -74,8 +74,17 @@ class StudentAuthController extends Controller
         $suffix = strtoupper(trim((string) ($request->suffix ?? '')));
         $selectedProgram = trim((string) ($request->course ?? ''));
         $selectedMajor = trim((string) ($request->major ?? ''));
+        $selectedOffice = trim((string) ($request->assigned_office ?? ''));
         $programOptions = Student::getProgramOptions();
-        $sectionOptions = Student::getSectionOptions();
+        $officeOptions = Student::getOfficeOptions();
+        $sectionOptions = array_values(array_filter(
+            Student::getSectionOptions(),
+            static function ($value): bool {
+                $section = trim((string) $value);
+                return strcasecmp($section, 'All') !== 0
+                    && strcasecmp($section, 'Section All') !== 0;
+            }
+        ));
         $fullName = trim(preg_replace('/\s+/', ' ', implode(' ', array_filter([
             $firstName,
             $middleName,
@@ -99,6 +108,7 @@ class StudentAuthController extends Controller
             'school_year' => ['required', 'string', 'max:20', 'regex:/^\d{4}-\d{4}$/'],
             'term' => ['required', Rule::in(Student::TERMS)],
             'section' => ['required', Rule::in($sectionOptions)],
+            'assigned_office' => ['required', Rule::in($officeOptions)],
             'password' => ['required', 'string', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
             'face_encoding' => 'nullable|string',
         ], [
@@ -143,7 +153,7 @@ class StudentAuthController extends Controller
 
         $student = null;
 
-        DB::transaction(function () use ($request, $studentNo, $fullName, $lastName, $firstName, $middleName, $suffix, $selectedMajor, $faceEncoding, &$student) {
+        DB::transaction(function () use ($request, $studentNo, $fullName, $lastName, $firstName, $middleName, $suffix, $selectedMajor, $selectedOffice, $faceEncoding, &$student) {
             $student = Student::create([
                 'student_no' => $studentNo,
                 'name' => $fullName,
@@ -154,6 +164,7 @@ class StudentAuthController extends Controller
                 'course' => $request->course,
                 'major' => $selectedMajor !== '' ? $selectedMajor : null,
                 'section' => $request->section,
+                'assigned_office' => $selectedOffice !== '' ? $selectedOffice : null,
                 'password' => Hash::make($request->password),
                 'face_encoding' => $faceEncoding !== '' ? $faceEncoding : null,
             ]);

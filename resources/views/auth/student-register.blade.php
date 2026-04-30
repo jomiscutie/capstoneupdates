@@ -39,47 +39,19 @@
 
     .login-wrapper {
       width: 100%;
-      max-width: min(1240px, calc(100vw - 1.5rem));
+      max-width: min(1480px, calc(100vw - 1.5rem));
       background: #fff;
       border-radius: var(--login-radius-lg);
       box-shadow: 0 12px 36px rgba(0,0,0,0.12);
       overflow: hidden;
-      display: grid;
-      grid-template-columns: minmax(250px, 0.78fr) minmax(0, 1.65fr);
+      display: block;
       min-height: min(700px, 95vh);
       min-height: min(700px, 95dvh);
       animation: authPageIn 0.28s var(--auth-ease) forwards;
     }
-    .login-illustration {
-      background: linear-gradient(160deg, #fafafa, #f4f6ff);
-      padding: 0.9rem 0.9rem 1rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      animation: authIllustrationIn 0.28s var(--auth-ease) both;
-    }
-    .login-illustration .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      align-self: stretch;
-      margin-bottom: 0.6rem;
-      padding: 0;
-    }
-    .login-illustration .brand img { height: 40px; width: auto; }
-    .login-illustration .brand span {
-      font-weight: 700;
-      font-size: 0.84rem;
-      letter-spacing: 0.03em;
-      color: var(--login-purple);
-      text-transform: uppercase;
-      line-height: 1.15;
-    }
-    .illustration-img { width: 100%; max-width: 178px; height: auto; object-fit: contain; }
 
     .login-form-panel {
-      padding: 1rem 1.2rem;
+      padding: 1rem 1.35rem;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
@@ -252,6 +224,10 @@
     }
     .date-range-group .form-control {
       padding-left: 0.72rem;
+      cursor: pointer;
+      pointer-events: auto;
+      position: relative;
+      z-index: 1;
     }
 
     .consent-grid {
@@ -302,6 +278,31 @@
       line-height: 1.4;
       word-break: break-word;
       overflow-wrap: anywhere;
+    }
+    .consent-label-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+    .consent-see-more-btn {
+      border: 1px solid rgba(109, 93, 209, 0.28);
+      background: rgba(109, 93, 209, 0.08);
+      color: var(--login-purple);
+      border-radius: 999px;
+      padding: 0.12rem 0.52rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      line-height: 1.1;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      cursor: pointer;
+    }
+    .consent-see-more-btn:hover {
+      background: rgba(109, 93, 209, 0.14);
+      border-color: rgba(109, 93, 209, 0.38);
+      color: var(--login-purple-dark);
     }
 
     .register-actions {
@@ -427,21 +428,14 @@
     .btn-switch i { color: var(--login-purple); }
 
     @media (max-width: 1280px) {
-      .login-wrapper {
-        grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.7fr);
-      }
+      .login-wrapper { max-width: min(1380px, calc(100vw - 1.25rem)); }
       .password-rules {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 1160px) {
-      .login-wrapper {
-        grid-template-columns: 1fr;
-      }
-      .login-illustration {
-        display: none;
-      }
+      .login-wrapper { max-width: min(1180px, calc(100vw - 1.1rem)); }
       #registerForm,
       .consent-grid,
       .register-actions {
@@ -460,18 +454,9 @@
 
     @media (max-width: 900px) {
       .login-wrapper {
-        grid-template-columns: 1fr;
-        max-width: min(420px, calc(100vw - 1.2rem));
+        max-width: min(980px, calc(100vw - 1rem));
         min-height: auto;
       }
-      .login-illustration {
-        padding: 0.95rem;
-        min-height: 145px;
-      }
-      .login-illustration .brand {
-        margin-bottom: 0.45rem;
-      }
-      .illustration-img { max-width: 145px; }
       .login-form-panel { padding: 0.9rem; overflow-y: auto; }
       #registerForm,
       .consent-grid,
@@ -486,13 +471,6 @@
 </head>
 <body>
   <div class="login-wrapper">
-    <div class="login-illustration">
-      <div class="brand">
-        <img src="{{ asset('images/norsu-seal.png') }}" alt="NORSU" />
-        <span>NORSU OJT DTR</span>
-      </div>
-      <img src="{{ asset('images/registration-illustration.png') }}" alt="Create your account" class="illustration-img" width="200" height="auto" />
-    </div>
     <div class="login-form-panel">
       <div class="form-inner">
       <div class="auth-tabs" role="tablist" aria-label="Authentication tabs">
@@ -526,7 +504,7 @@
           </label>
           <div class="input-wrapper">
             <i class="bi bi-card-text input-icon"></i>
-            <input type="text" name="student_no" class="form-control" value="{{ old('student_no') }}" placeholder="Enter student number (e.g. 202212345)" required />
+            <input type="text" name="student_no" class="form-control" value="{{ old('student_no') }}" placeholder="Enter student number (e.g. 202212345)" inputmode="numeric" pattern="[0-9]*" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'')" required />
           </div>
           <small class="login-hint d-block mt-1">Use your official student number exactly as it appears on your ID (e.g. 202212345).</small>
         </div>
@@ -646,12 +624,31 @@
             <select name="section" class="form-select" required>
               <option value="">Select Section</option>
               @foreach(\App\Models\Student::getSectionOptions() as $sectionOption)
+              @continue(strcasecmp(trim((string) $sectionOption), 'All') === 0 || strcasecmp(trim((string) $sectionOption), 'Section All') === 0)
               <option value="{{ $sectionOption }}" {{ old('section') == $sectionOption ? 'selected' : '' }}>
                 {{ in_array($sectionOption, \App\Models\Student::SECTIONS, true) ? 'Section '.$sectionOption : $sectionOption }}
               </option>
               @endforeach
             </select>
           </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <i class="bi bi-building"></i>Assigned Office
+          </label>
+          <div class="input-wrapper">
+            <i class="bi bi-building input-icon"></i>
+            <select name="assigned_office" class="form-select" required>
+              <option value="">Select Assigned Office</option>
+              @foreach(\App\Models\Student::getOfficeOptions() as $officeOption)
+              <option value="{{ $officeOption }}" {{ old('assigned_office') === $officeOption ? 'selected' : '' }}>
+                {{ $officeOption }}
+              </option>
+              @endforeach
+            </select>
+          </div>
+          <small class="login-hint d-block mt-1">Choose the office where you are currently assigned for OJT.</small>
         </div>
 
         <div class="form-group">
@@ -689,8 +686,13 @@
             <div class="form-check text-start">
               <input class="form-check-input me-2" type="checkbox" value="1" id="privacyConsent" required>
               <label class="form-check-label" for="privacyConsent">
-                I understand my personal and facial data will be used only for OJT attendance, in line with RA 10173.
+                <span class="consent-label-row">
+                  <span>I understand my personal and facial data will be used only for OJT attendance, in line with RA 10173.</span>
+                </span>
               </label>
+              <button type="button" class="consent-see-more-btn" id="privacyConsentSeeMoreBtn">
+                <i class="bi bi-info-circle"></i> See more
+              </button>
             </div>
           </div>
           <div class="consent-box">
@@ -996,7 +998,7 @@
     document.getElementById('captureStatus').innerHTML = '<p class="text-info"><i class="bi bi-search me-2"></i>Detecting face... Please look directly at the camera.</p>';
     
     captureInterval = setInterval(async () => {
-      const detection = await faceRecognition.detectFace();
+      const detection = await faceRecognition.detectFace(false, { drawLandmarks: true, detectorProfile: 'fast' });
       
       if (detection) {
         faceDetectedCount++;
@@ -1061,7 +1063,13 @@
     document.getElementById('cancelBtn').disabled = true;
     
     try {
-      const encoding = await faceRecognition.captureFaceEncoding();
+      const encoding = await faceRecognition.captureFaceEncoding({
+        sampleCount: 3,
+        intervalMs: 200,
+        useCacheMs: 1200,
+        drawLandmarks: false,
+        detectorProfile: 'normal'
+      });
       document.getElementById('faceEncodingInput').value = encoding;
       
       // Show success
@@ -1160,6 +1168,17 @@
       btn.setAttribute('title', 'Show password');
     }
   });
+
+  (function () {
+    var privacySeeMoreBtn = document.getElementById('privacyConsentSeeMoreBtn');
+    if (!privacySeeMoreBtn) return;
+    privacySeeMoreBtn.addEventListener('click', async function () {
+      await showRegistrationPrompt({
+        title: 'Educational Purpose Notice',
+        message: 'This system is intended for educational purposes only. Your personal and facial data are used strictly for OJT attendance processing in line with RA 10173.'
+      });
+    });
+  })();
 
   (function () {
     var programSelect = document.getElementById('programSelect');
@@ -1282,16 +1301,29 @@
     var endInput = document.getElementById('schoolYearEnd');
     var hiddenSchoolYear = document.getElementById('schoolYearValue');
     if (!startInput || !endInput || !hiddenSchoolYear) return;
-
     var now = new Date();
-    var defaultStartYear = now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear() - 1;
+    var currentYear = now.getFullYear();
+    var minAllowedDate = currentYear + '-01-01';
+
+    function attachDatePickerFocus(inputEl) {
+      if (!inputEl) return;
+      inputEl.addEventListener('pointerdown', function () {
+        if (typeof inputEl.showPicker === 'function') {
+          try { inputEl.showPicker(); } catch (e) {}
+        }
+      });
+    }
+    attachDatePickerFocus(startInput);
+    attachDatePickerFocus(endInput);
+    startInput.min = minAllowedDate;
+    endInput.min = minAllowedDate;
+
+    var defaultStartYear = now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear();
     var defaultStartDate = defaultStartYear + '-06-01';
     var defaultEndDate = (defaultStartYear + 1) + '-05-31';
 
     startInput.value = defaultStartDate;
     endInput.value = defaultEndDate;
-    startInput.max = endInput.value;
-    endInput.min = startInput.value;
 
     var existing = (hiddenSchoolYear.value || '').trim();
     var match = existing.match(/^(\d{4})-(\d{4})$/);
@@ -1311,11 +1343,15 @@
     }
 
     function normalizeDateRange() {
+      if (startInput.value && startInput.value < minAllowedDate) {
+        startInput.value = minAllowedDate;
+      }
+      if (endInput.value && endInput.value < minAllowedDate) {
+        endInput.value = minAllowedDate;
+      }
       if (startInput.value && endInput.value && endInput.value < startInput.value) {
         endInput.value = startInput.value;
       }
-      startInput.max = endInput.value || '';
-      endInput.min = startInput.value || '';
       syncSchoolYearValue();
     }
 

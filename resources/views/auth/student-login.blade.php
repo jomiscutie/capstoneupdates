@@ -316,12 +316,6 @@
       </div>
       @endif
 
-      @if(session('error'))
-      <div class="alert alert-warning">
-        <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
-      </div>
-      @endif
-
       @if($errors->any())
       <div class="alert alert-danger">
         <i class="bi bi-exclamation-triangle me-2"></i>
@@ -341,7 +335,7 @@
           </label>
           <div class="input-wrapper">
             <i class="bi bi-card-text input-icon"></i>
-            <input type="text" name="student_no" class="form-control" value="{{ old('student_no') }}" placeholder="Enter your student number" required />
+            <input type="text" name="student_no" class="form-control" value="{{ old('student_no') }}" placeholder="Enter your student number" inputmode="numeric" pattern="[0-9]*" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'')" required />
           </div>
         </div>
 

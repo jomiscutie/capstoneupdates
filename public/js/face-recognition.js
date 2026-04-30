@@ -16,6 +16,8 @@ class FaceRecognition {
         this.lastFacePosition = null;
         this.faceDetectedCount = 0;
         this.lastDescriptorCache = null;
+        this.lastDrawSize = { width: 0, height: 0 };
+        this.pendingDetectionPromise = null;
     }
 
     async loadModels() {
@@ -120,44 +122,69 @@ class FaceRecognition {
         return 'Camera is unavailable right now. Check permission/device availability and try again.';
     }
 
-    async detectFace(includeDescriptor = true) {
+    getDetectorOptions(options = {}) {
+        const profile = options.detectorProfile || 'normal';
+        const customInput = Number(options.inputSize);
+        const customThreshold = Number(options.scoreThreshold);
+        const presets = {
+            fast: { inputSize: 96, scoreThreshold: 0.45 },
+            normal: { inputSize: 128, scoreThreshold: 0.5 },
+            strict: { inputSize: 160, scoreThreshold: 0.55 }
+        };
+        const base = presets[profile] || presets.normal;
+
+        const inputSize = Number.isFinite(customInput) && customInput >= 64 && customInput <= 416
+            ? customInput
+            : base.inputSize;
+        const scoreThreshold = Number.isFinite(customThreshold) && customThreshold >= 0.1 && customThreshold <= 0.99
+            ? customThreshold
+            : base.scoreThreshold;
+
+        return new faceapi.TinyFaceDetectorOptions({ inputSize, scoreThreshold });
+    }
+
+    async detectFace(includeDescriptor = true, options = {}) {
         if (!this.modelsLoaded || !this.video || this.video.readyState !== 4) {
             return null;
         }
+        if (this.pendingDetectionPromise) {
+            return this.pendingDetectionPromise;
+        }
 
         try {
-            // inputSize 128 = faster, less lag (224/416 = slower). Skip expressions to speed up.
-            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
-            let detectionTask = faceapi
-                .detectSingleFace(this.video, options)
+            const drawLandmarks = options.drawLandmarks !== false;
+            const detectorOptions = this.getDetectorOptions(options);
+            const detectionTask = faceapi
+                .detectSingleFace(this.video, detectorOptions)
                 .withFaceLandmarks();
+            this.pendingDetectionPromise = includeDescriptor
+                ? detectionTask.withFaceDescriptor()
+                : detectionTask;
+            const detection = await this.pendingDetectionPromise;
 
-            if (includeDescriptor) {
-                detectionTask = detectionTask.withFaceDescriptor();
+            if (!detection) {
+                return null;
             }
 
-            const detection = await detectionTask;
+            // Draw face detection box
+            this.drawDetection(detection, drawLandmarks);
 
-            if (detection) {
-                // Draw face detection box
-                this.drawDetection(detection);
-                
-                // Check for liveness (blink detection)
-                this.detectBlink(detection);
+            // Check for liveness (blink detection)
+            this.detectBlink(detection);
 
-                if (includeDescriptor && detection.descriptor) {
-                    this.lastDescriptorCache = {
-                        descriptor: Array.from(detection.descriptor),
-                        capturedAt: Date.now()
-                    };
-                }
-                
-                return detection;
+            if (includeDescriptor && detection.descriptor) {
+                this.lastDescriptorCache = {
+                    descriptor: Array.from(detection.descriptor),
+                    capturedAt: Date.now()
+                };
             }
-            return null;
+
+            return detection;
         } catch (error) {
             console.error('Error detecting face:', error);
             return null;
+        } finally {
+            this.pendingDetectionPromise = null;
         }
     }
 
@@ -167,7 +194,7 @@ class FaceRecognition {
         return this.lastDescriptorCache.descriptor;
     }
 
-    drawDetection(detection) {
+    drawDetection(detection, drawLandmarks = true) {
         if (!this.canvas || !this.ctx) return;
 
         const displaySize = {
@@ -175,13 +202,18 @@ class FaceRecognition {
             height: this.video.videoHeight
         };
 
-        faceapi.matchDimensions(this.canvas, displaySize);
+        if (displaySize.width !== this.lastDrawSize.width || displaySize.height !== this.lastDrawSize.height) {
+            faceapi.matchDimensions(this.canvas, displaySize);
+            this.lastDrawSize = displaySize;
+        }
 
         const resizedDetection = faceapi.resizeResults(detection, displaySize);
         
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         faceapi.draw.drawDetections(this.canvas, resizedDetection);
-        faceapi.draw.drawFaceLandmarks(this.canvas, resizedDetection);
+        if (drawLandmarks) {
+            faceapi.draw.drawFaceLandmarks(this.canvas, resizedDetection);
+        }
     }
 
     detectBlink(detection) {
@@ -259,19 +291,31 @@ class FaceRecognition {
         return (vertical1 + vertical2) / (2 * horizontal);
     }
 
-    async captureFaceEncoding() {
+    async captureFaceEncoding(config = {}) {
+        const sampleCount = Math.max(1, Number(config.sampleCount || 3));
+        const intervalMs = Math.max(70, Number(config.intervalMs || 220));
+        const cacheMs = Number(config.useCacheMs || 0);
+        const drawLandmarks = config.drawLandmarks !== false;
+        const detectorProfile = config.detectorProfile || 'normal';
+
+        if (cacheMs > 0) {
+            const cached = this.getCachedDescriptor(cacheMs);
+            if (cached) {
+                return JSON.stringify(cached);
+            }
+        }
+
         // Capture multiple samples for stable encoding (reduces false positives)
         this.faceDescriptors = [];
-        const captureCount = 5;
-        const captureInterval = 400;
 
-        for (let i = 0; i < captureCount; i++) {
-            const detection = await this.detectFace();
+        const maxAttempts = Math.max(sampleCount, sampleCount + 3);
+        for (let i = 0; i < maxAttempts && this.faceDescriptors.length < sampleCount; i++) {
+            const detection = await this.detectFace(true, { drawLandmarks, detectorProfile });
             if (detection && detection.descriptor) {
                 this.faceDescriptors.push(Array.from(detection.descriptor));
             }
-            if (i < captureCount - 1) {
-                await new Promise(resolve => setTimeout(resolve, captureInterval));
+            if (i < maxAttempts - 1) {
+                await new Promise(resolve => setTimeout(resolve, intervalMs));
             }
         }
 
@@ -306,17 +350,41 @@ class FaceRecognition {
 
             let current = this.getCachedDescriptor(1800);
             if (!current) {
-                const detection = await this.detectFace(true);
+                const detection = await this.detectFace(true, { drawLandmarks: false, detectorProfile: 'fast' });
                 if (!detection || !detection.descriptor) {
                     return { verified: false, message: 'No face detected', confidence: 0, distance: 1, matchRatio: 0, attempts: 0, encoding: null };
                 }
                 current = Array.from(detection.descriptor);
             }
-            const distance = this.calculateDistance(stored, current);
             const rawT = (typeof window !== 'undefined' && window.FACE_SAME_PERSON_THRESHOLD != null)
                 ? Number(window.FACE_SAME_PERSON_THRESHOLD)
                 : 0.5;
             const threshold = Number.isFinite(rawT) && rawT > 0.05 && rawT < 1.5 ? rawT : 0.5;
+            let distance = this.calculateDistance(stored, current);
+            let attempts = 1;
+
+            // Borderline distances get a stricter second pass to preserve accuracy without slowing all checks.
+            const borderlineLow = threshold * 0.88;
+            const borderlineHigh = threshold * 1.12;
+            if (distance > borderlineLow && distance < borderlineHigh) {
+                const confirmDetection = await this.detectFace(true, {
+                    drawLandmarks: false,
+                    detectorProfile: 'strict',
+                    inputSize: 160,
+                    scoreThreshold: 0.55
+                });
+                if (confirmDetection && confirmDetection.descriptor) {
+                    attempts = 2;
+                    const confirmDescriptor = Array.from(confirmDetection.descriptor);
+                    const mergedCurrent = this.averageDescriptors([current, confirmDescriptor]);
+                    const confirmDistance = this.calculateDistance(stored, confirmDescriptor);
+                    distance = Math.min(
+                        this.calculateDistance(stored, mergedCurrent),
+                        confirmDistance
+                    );
+                    current = mergedCurrent;
+                }
+            }
             const confidence = Math.max(0, Math.min(100, (1 - (distance / threshold)) * 100));
             const verified = distance <= threshold;
 
@@ -326,7 +394,7 @@ class FaceRecognition {
                 minDistance: distance,
                 confidence: Math.round(confidence),
                 matchRatio: verified ? 1 : 0,
-                attempts: 1,
+                attempts: attempts,
                 encoding: JSON.stringify(current),
                 message: verified ? 'Face verified' : 'Face verification failed'
             };
@@ -355,6 +423,8 @@ class FaceRecognition {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
         this.lastDescriptorCache = null;
+        this.lastDrawSize = { width: 0, height: 0 };
+        this.pendingDetectionPromise = null;
     }
 
     resetLiveness() {

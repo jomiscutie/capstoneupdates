@@ -105,6 +105,16 @@ class Student extends Authenticatable
         ],
     ];
 
+    public const ASSIGNED_OFFICES = [
+        'President’s Office',
+        'CICTSO',
+        'ALUMNI',
+        'Registrar',
+        'Scholarship Office',
+        'VP Administration',
+        'CSIT',
+    ];
+
     public static function majorsForProgram(string $program): array
     {
         return self::PROGRAM_MAJORS[$program] ?? [];
@@ -182,6 +192,11 @@ class Student extends Authenticatable
         return Schema::hasColumn((new static)->getTable(), 'verification_status');
     }
 
+    public static function getOfficeOptions(): array
+    {
+        return self::ASSIGNED_OFFICES;
+    }
+
     protected $fillable = [
         'student_no',
         'name',
@@ -194,6 +209,7 @@ class Student extends Authenticatable
         'course',
         'semester',
         'section',
+        'assigned_office',
         'password',
         'face_encoding',
         'verification_status',
@@ -244,6 +260,11 @@ class Student extends Authenticatable
     public function termAssignments()
     {
         return $this->hasMany(StudentTermAssignment::class);
+    }
+
+    public function officeAssignmentRequests()
+    {
+        return $this->hasMany(OfficeAssignmentRequest::class);
     }
 
     public function activeTermAssignment()

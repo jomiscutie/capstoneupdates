@@ -304,12 +304,6 @@
       </div>
       @endif
 
-      @if(session('error'))
-      <div class="alert alert-warning">
-        <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
-      </div>
-      @endif
-
       @if($errors->any())
       <div class="alert alert-danger">
         <i class="bi bi-exclamation-triangle me-2"></i>

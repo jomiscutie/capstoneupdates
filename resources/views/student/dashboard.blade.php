@@ -135,6 +135,105 @@
         vertical-align: top;
         font-size: 0.84rem;
     }
+    .manual-request-history .table {
+        --bs-table-hover-bg: var(--dtr-hover-bg);
+        --bs-table-hover-color: var(--dtr-text);
+    }
+    .manual-request-history .table tbody tr:hover > td,
+    .manual-request-history .table tbody tr:hover > th {
+        background: var(--dtr-hover-bg) !important;
+        color: var(--dtr-text) !important;
+    }
+    html[data-theme="dark"] .manual-request-history .table tbody tr:hover > td,
+    html[data-theme="dark"] .manual-request-history .table tbody tr:hover > th {
+        background: #1b2538 !important;
+        color: #f8fbff !important;
+    }
+    html[data-theme="dark"] .manual-request-history .table tbody tr:hover > td .text-muted,
+    html[data-theme="dark"] .manual-request-history .table tbody tr:hover > td .small {
+        color: #c9d5e7 !important;
+    }
+    .manual-request-history .reviewer-meta {
+        color: color-mix(in srgb, var(--dtr-text) 78%, var(--dtr-muted) 22%) !important;
+        font-weight: 600;
+    }
+    .manual-request-history .table tbody tr:hover .reviewer-meta {
+        color: var(--dtr-heading) !important;
+    }
+    html[data-theme="dark"] .manual-request-history .reviewer-meta {
+        color: color-mix(in srgb, var(--dtr-text) 84%, var(--dtr-muted) 16%) !important;
+    }
+    .manual-request-tools {
+        margin-top: 0.6rem;
+    }
+    .manual-request-tools .btn-view-requests {
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        padding: 0.38rem 0.74rem;
+        border-color: color-mix(in srgb, var(--dtr-primary) 44%, var(--dtr-border-soft) 56%);
+        color: var(--dtr-primary);
+        background: color-mix(in srgb, var(--dtr-primary) 9%, transparent 91%);
+    }
+    .manual-request-tools .btn-view-requests:hover {
+        background: color-mix(in srgb, var(--dtr-primary) 18%, transparent 82%);
+        color: var(--dtr-primary);
+        border-color: color-mix(in srgb, var(--dtr-primary) 64%, var(--dtr-border-soft) 36%);
+    }
+    .manual-request-modal .modal-content {
+        border-radius: 16px;
+        border: 1px solid var(--dtr-border-soft);
+        background: var(--dtr-card-bg);
+        box-shadow: var(--dtr-shadow-soft);
+    }
+    .manual-request-filter {
+        display: flex;
+        align-items: end;
+        gap: 0.65rem;
+        margin-bottom: 0.8rem;
+    }
+    .manual-request-filter .form-label {
+        color: var(--dtr-muted);
+        margin-bottom: 0.3rem;
+    }
+    .manual-request-filter .form-select {
+        min-width: 200px;
+    }
+    .manual-request-filter .form-control[type="month"] {
+        min-width: 200px;
+    }
+    .manual-request-filter .btn {
+        font-size: 0.8rem;
+        font-weight: 500;
+        padding: 0.36rem 0.72rem;
+        border-radius: 10px;
+    }
+    .manual-request-empty {
+        border: 1px dashed var(--dtr-border-soft);
+        border-radius: 12px;
+        padding: 0.9rem;
+        color: var(--dtr-muted);
+        text-align: center;
+        font-size: 0.88rem;
+    }
+    @media (max-width: 576px) {
+        .manual-request-filter {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .manual-request-filter .form-select {
+            min-width: 0;
+        }
+        .manual-request-filter .form-control[type="month"] {
+            min-width: 0;
+        }
+        .manual-request-tools {
+            margin-top: 0.7rem;
+        }
+        .manual-request-tools .btn-view-requests {
+            width: 100%;
+        }
+    }
     /* Face verification: modal must sit above Bootstrap backdrop (backdrop is 1050) */
     #faceVerificationModal.modal { z-index: 1060 !important; }
     #faceVerificationModal .modal-dialog { z-index: 1061; }
@@ -428,62 +527,142 @@
                 </div>
             </div>
 
-            <div class="alert alert-info mb-0">
-                <i class="bi bi-info-circle me-2"></i>
-                Attendance capture is now kiosk-only. Please proceed to your designated kiosk station for
-                <strong>Time In</strong>, <strong>Lunch / break out</strong>, and <strong>Time Out</strong>.
-                This dashboard is for tracking and records viewing only.
-            </div>
         </div>
 
         <div class="card-section">
             <div class="card-header">
                 <i class="bi bi-journal-medical"></i>
-                <h4>Manual Attendance Handling</h4>
+                <h4>Manual Attendance Request</h4>
             </div>
             <p class="text-muted small mt-0 mb-3">
-                Students can no longer submit manual attendance from this page. For corrections, coordinate directly
-                with your assigned coordinator or admin for override/invalidation workflow.
+                If you used the physical logbook due to power outage or device failure, submit the date and logbook times here.
+                Your attendance will only appear after your coordinator approves and verifies your reason.
             </p>
-            @if(isset($manualRequests) && $manualRequests->count() > 0)
-                <div class="table-container mt-3 manual-request-history">
-                    <table class="table mb-0">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Reason</th>
-                                <th>Coordinator/Admin note</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($manualRequests as $requestRow)
-                                <tr>
-                                    <td>{{ $requestRow->attendance_date?->format('M d, Y') }}</td>
-                                    <td>
-                                        <span class="manual-request-status status-{{ $requestRow->status }}">
-                                            {{ ucfirst($requestRow->status) }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $requestRow->reason }}</td>
-                                    <td>
-                                        @if($requestRow->coordinator_note)
-                                            <div>{{ $requestRow->coordinator_note }}</div>
-                                            @if($requestRow->reviewed_at)
-                                                <div class="small text-muted mt-1">
-                                                    {{ $requestRow->reviewer?->name ? 'Coordinator: '.$requestRow->reviewer->name : 'Reviewed by admin' }}
-                                                </div>
-                                            @endif
-                                        @else
-                                            -
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+            <form method="POST" action="{{ route('student.manual.request') }}">
+                @csrf
+                <div class="manual-request-grid">
+                    <div>
+                        <label class="form-label small" for="manual_attendance_date">Attendance date</label>
+                        <input type="date" class="form-control form-control-sm" id="manual_attendance_date" name="attendance_date" value="{{ old('attendance_date') }}" min="{{ now('Asia/Manila')->year }}-01-01" required>
+                    </div>
+                    <div>
+                        <label class="form-label small" for="manual_time_in">Morning Time In</label>
+                        <input type="time" class="form-control form-control-sm" id="manual_time_in" name="time_in" value="{{ old('time_in') }}" max="21:00">
+                    </div>
+                    <div>
+                        <label class="form-label small" for="manual_lunch_out">Lunch / break out</label>
+                        <input type="time" class="form-control form-control-sm" id="manual_lunch_out" name="lunch_break_out" value="{{ old('lunch_break_out') }}" max="21:00">
+                    </div>
+                    <div>
+                        <label class="form-label small" for="manual_afternoon_in">Afternoon Time In</label>
+                        <input type="time" class="form-control form-control-sm" id="manual_afternoon_in" name="afternoon_time_in" value="{{ old('afternoon_time_in') }}" max="21:00">
+                    </div>
+                    <div>
+                        <label class="form-label small" for="manual_time_out">Time Out</label>
+                        <input type="time" class="form-control form-control-sm" id="manual_time_out" name="time_out" value="{{ old('time_out') }}" max="21:00">
+                    </div>
                 </div>
-            @endif
+                <div class="mb-3">
+                    <label class="form-label small" for="manual_reason">Reason (required)</label>
+                    <textarea class="form-control form-control-sm" id="manual_reason" name="reason" rows="2" maxlength="1500" placeholder="Example: Power interruption in our area from 8:00 AM to 4:00 PM; attendance was recorded in the company logbook and validated by the coordinator/admin." required>{{ old('reason') }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-action btn-timein">
+                    <i class="bi bi-send-check"></i> Submit request for coordinator/admin approval
+                </button>
+                <div class="manual-request-tools">
+                    <button type="button" class="btn btn-sm btn-outline-primary btn-view-requests" data-bs-toggle="modal" data-bs-target="#manualRequestsModal">
+                        <i class="bi bi-calendar2-week me-1"></i> View Manual Requests
+                    </button>
+                </div>
+            </form>
+            
+        </div>
+
+        <div class="modal fade manual-request-modal" id="manualRequestsModal" tabindex="-1" aria-labelledby="manualRequestsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="manualRequestsModalLabel">
+                            <i class="bi bi-journal-text me-2"></i>Manual Attendance Requests
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="GET" action="{{ route('student.dashboard') }}" class="manual-request-filter">
+                            <input type="hidden" name="filter" value="{{ $filter ?? 'month' }}">
+                            <input type="hidden" name="month" value="{{ $selectedMonth ?? now('Asia/Manila')->format('Y-m') }}">
+                            <input type="hidden" name="week_start" value="{{ $weekStartInput ?? '' }}">
+                            <input type="hidden" name="week_end" value="{{ $weekEndInput ?? '' }}">
+                            <div>
+                                <label class="form-label small" for="manual_month">Filter month</label>
+                                <input
+                                    class="form-control form-control-sm"
+                                    type="month"
+                                    id="manual_month"
+                                    name="manual_month"
+                                    value="{{ $manualSelectedMonth ?? now('Asia/Manila')->format('Y-m') }}"
+                                    min="{{ now('Asia/Manila')->year }}-01"
+                                >
+                                {{-- Keep options list fallback for legacy browsers that may not support type=month --}}
+                                <select class="form-select form-select-sm d-none" aria-hidden="true" tabindex="-1">
+                                    @foreach(($manualMonthOptions ?? collect()) as $monthOption)
+                                        <option value="{{ $monthOption['value'] }}" {{ ($manualSelectedMonth ?? now('Asia/Manila')->format('Y-m')) === $monthOption['value'] ? 'selected' : '' }}>
+                                            {{ $monthOption['label'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="bi bi-funnel me-1"></i> Apply
+                            </button>
+                        </form>
+
+                        @if(isset($manualRequests) && $manualRequests->count() > 0)
+                            <div class="table-container manual-request-history">
+                                <table class="table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Reason</th>
+                                            <th>Coordinator/Admin note</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($manualRequests as $requestRow)
+                                            <tr>
+                                                <td>{{ $requestRow->attendance_date?->format('M d, Y') }}</td>
+                                                <td>
+                                                    <span class="manual-request-status status-{{ $requestRow->status }}">
+                                                        {{ ucfirst($requestRow->status) }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ $requestRow->reason }}</td>
+                                                <td>
+                                                    @if($requestRow->coordinator_note)
+                                                        <div>{{ $requestRow->coordinator_note }}</div>
+                                                        @if($requestRow->reviewed_at)
+                                                            <div class="small text-muted mt-1 reviewer-meta">
+                                                                {{ $requestRow->reviewer?->name ? 'Coordinator: '.$requestRow->reviewer->name : 'Reviewed by admin' }}
+                                                            </div>
+                                                        @endif
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="manual-request-empty">
+                                No manual attendance requests found for this month.
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Today's Attendance Summary -->
@@ -592,6 +771,38 @@ function scheduleMidnightReload() {
     setTimeout(() => location.reload(), midnight - now);
 }
 scheduleMidnightReload();
+
+(() => {
+    const shouldOpenManualModal = "{{ request()->has('manual_month') ? '1' : '0' }}" === '1';
+    const manualModalEl = document.getElementById('manualRequestsModal');
+    if (!shouldOpenManualModal || !manualModalEl || typeof bootstrap === 'undefined') {
+        return;
+    }
+    const manualModal = new bootstrap.Modal(manualModalEl);
+    manualModal.show();
+})();
+
+(() => {
+    const monthPicker = document.getElementById('manual_month');
+    if (!monthPicker) {
+        return;
+    }
+    const minMonth = monthPicker.getAttribute('min');
+    if (!minMonth) {
+        return;
+    }
+    const normalizeMonth = (value) => (/^\d{4}-\d{2}$/.test(value) ? value : '');
+    const currentValue = normalizeMonth(monthPicker.value);
+    if (currentValue && currentValue < minMonth) {
+        monthPicker.value = minMonth;
+    }
+    monthPicker.addEventListener('change', () => {
+        const picked = normalizeMonth(monthPicker.value);
+        if (picked && picked < minMonth) {
+            monthPicker.value = minMonth;
+        }
+    });
+})();
 
 </script>
 @endpush

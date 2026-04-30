@@ -41,6 +41,7 @@ Route::prefix('admin')->group(function () {
         Route::post('options/sections', [AdminManagementController::class, 'storeSectionOption'])->name('admin.options.sections.store');
         Route::post('options/{option}/deactivate', [AdminManagementController::class, 'deactivateOption'])->name('admin.options.deactivate');
         Route::get('students', [AdminManagementController::class, 'students'])->name('admin.students');
+        Route::get('office-requests', [AdminManagementController::class, 'officeRequests'])->name('admin.office-requests');
         Route::get('students/archived', [AdminManagementController::class, 'archivedStudents'])->name('admin.students.archived');
         Route::post('students/restore/{id}', [AdminManagementController::class, 'restoreStudent'])->name('admin.students.restore')->middleware('throttle:30,1');
         Route::post('students/archived/{id}/remove', [AdminManagementController::class, 'forceRemoveArchivedStudent'])->name('admin.students.archived.remove')->middleware('throttle:20,1');
@@ -59,6 +60,7 @@ Route::prefix('admin')->group(function () {
         Route::post('students/terms/batch', [AdminManagementController::class, 'batchStoreStudentTermAssignments'])->name('admin.students.terms.batch');
         Route::post('students/{student}/terms', [AdminManagementController::class, 'storeStudentTermAssignment'])->name('admin.students.terms.store');
         Route::post('students/terms/{assignment}/complete', [AdminManagementController::class, 'completeStudentTermAssignment'])->name('admin.students.terms.complete');
+        Route::post('office-requests/{officeRequest}/review', [AdminManagementController::class, 'reviewOfficeAssignmentRequest'])->name('admin.office-requests.review');
         Route::get('settings', [AdminManagementController::class, 'settings'])->name('admin.settings');
         Route::post('settings/password', [AdminManagementController::class, 'updatePassword'])->name('admin.settings.password')->middleware('throttle:5,1');
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
@@ -130,11 +132,13 @@ Route::prefix('student')->group(function () {
 
     Route::middleware(['auth:student', 'single.session'])->group(function () {
         Route::get('dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+        Route::post('manual-attendance-request', [AttendanceController::class, 'submitManualRequest'])->name('student.manual.request')->middleware('throttle:10,1');
         Route::get('recent-logs', [AttendanceController::class, 'recentLogs'])->name('student.recentlogs');
         Route::get('recent-logs/download', [AttendanceController::class, 'downloadRecentLogs'])->name('student.recentlogs.download');
         Route::get('attendance/{attendance}/verification-snapshot/{type}', [AttendanceController::class, 'viewVerificationSnapshot'])->where('type', 'morning|afternoon|timeout')->name('student.attendance.verification_snapshot');
         Route::get('settings', [StudentSettingsController::class, 'index'])->name('student.settings');
         Route::post('settings/face-enrollment', [StudentSettingsController::class, 'saveFaceEnrollment'])->name('student.settings.face-enrollment');
+        Route::post('settings/office-request', [StudentSettingsController::class, 'submitOfficeAssignmentRequest'])->name('student.settings.office-request');
         Route::get('password/change', fn () => redirect()->route('student.settings'))->name('student.password.change');
         Route::post('password/change', [StudentAuthController::class, 'changePassword'])->name('student.password.change.submit')->middleware('throttle:5,1');
         Route::post('logout', [StudentAuthController::class, 'logout'])->name('student.logout');
