@@ -6,15 +6,7 @@
   <title>Student Login - NORSU OJT DTR</title>
   <link rel="stylesheet" href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" />
   <link rel="stylesheet" href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.css') }}" />
-  <link rel="stylesheet" href="{{ asset('css/norsu-dtr-system.css') }}" />
   <link rel="stylesheet" href="{{ asset('css/hide-native-password-reveal.css') }}" />
-  <script>
-    (function () {
-      var storedTheme = localStorage.getItem('norsu-theme');
-      var preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', storedTheme || preferredTheme);
-    })();
-  </script>
   <style>
     :root {
       --dtr-primary: #4f46e5;
@@ -250,41 +242,6 @@
       transition: color 0.15s ease, background 0.15s ease;
     }
     .password-toggle-btn:hover { color: var(--dtr-primary); background: rgba(79,70,229,0.08); }
-    html[data-theme="dark"] body {
-      color: var(--dtr-text);
-    }
-    html[data-theme="dark"] body::before {
-      background: radial-gradient(ellipse 100% 70% at 30% 20%, rgba(79,70,229,0.18) 0%, transparent 50%),
-        linear-gradient(165deg, rgba(4,10,22,0.92) 0%, rgba(7,14,30,0.94) 100%);
-    }
-    html[data-theme="dark"] .login-card {
-      background: rgba(9,18,36,0.82);
-      border: 1px solid rgba(148,163,184,0.26);
-      box-shadow: 0 18px 44px -30px rgba(0,0,0,0.82);
-    }
-    html[data-theme="dark"] .login-header h1,
-    html[data-theme="dark"] .form-label,
-    html[data-theme="dark"] .btn-switch {
-      color: var(--dtr-text);
-    }
-    html[data-theme="dark"] .login-header p,
-    html[data-theme="dark"] .register-link p,
-    html[data-theme="dark"] .form-text {
-      color: var(--dtr-muted);
-    }
-    html[data-theme="dark"] .form-control,
-    html[data-theme="dark"] .form-select,
-    html[data-theme="dark"] .btn-switch {
-      background: var(--dtr-input-bg);
-      border-color: var(--dtr-input-border);
-      color: var(--dtr-text);
-    }
-    html[data-theme="dark"] .form-control::placeholder {
-      color: var(--dtr-muted);
-    }
-    html[data-theme="dark"] .register-link {
-      border-top-color: var(--dtr-border-soft);
-    }
   </style>
 </head>
 <body>
@@ -316,6 +273,12 @@
       </div>
       @endif
 
+      @if(session('error'))
+      <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
+      </div>
+      @endif
+
       @if($errors->any())
       <div class="alert alert-danger">
         <i class="bi bi-exclamation-triangle me-2"></i>
@@ -335,7 +298,7 @@
           </label>
           <div class="input-wrapper">
             <i class="bi bi-card-text input-icon"></i>
-            <input type="text" name="student_no" class="form-control" value="{{ old('student_no') }}" placeholder="Enter your student number" inputmode="numeric" pattern="[0-9]*" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'')" required />
+            <input type="text" name="student_no" class="form-control" value="{{ old('student_no') }}" placeholder="Enter your student number" required />
           </div>
         </div>
 

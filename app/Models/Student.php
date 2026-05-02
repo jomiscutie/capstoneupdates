@@ -106,14 +106,20 @@ class Student extends Authenticatable
     ];
 
     public const ASSIGNED_OFFICES = [
-        'President’s Office',
+        'President\'s Office',
         'CICTSO',
         'ALUMNI',
         'Registrar',
         'Scholarship Office',
         'VP Administration',
         'CSIT',
+        'MIS EDP',
     ];
+
+    public static function getOfficeOptions(): array
+    {
+        return self::ASSIGNED_OFFICES;
+    }
 
     public static function majorsForProgram(string $program): array
     {
@@ -167,6 +173,47 @@ class Student extends Authenticatable
         return $options;
     }
 
+    /**
+     * Human-readable label for section dropdowns (e.g. built-in "A" → "Section A",
+     * manual/dynamic "E" → "Section E", already-prefixed values unchanged).
+     */
+    public static function sectionOptionLabel(string $value): string
+    {
+        $v = trim((string) $value);
+        if ($v === '') {
+            return $v;
+        }
+        if (strcasecmp($v, 'All') === 0 || strcasecmp($v, 'Section All') === 0) {
+            return $v;
+        }
+        if (preg_match('/^section\s+/iu', $v)) {
+            return $v;
+        }
+
+        return 'Section '.$v;
+    }
+
+    /**
+     * Normalize text entered on Admin → Options → Sections into stored form (e.g. "E" → "Section E").
+     */
+    public static function normalizeDynamicSectionValue(string $value): string
+    {
+        $v = trim(preg_replace('/\s+/u', ' ', (string) $value));
+        if ($v === '') {
+            return '';
+        }
+        if (preg_match('/^section\s+/iu', $v)) {
+            $suffix = trim((string) preg_replace('/^section\s+/iu', '', $v));
+            if ($suffix === '') {
+                return '';
+            }
+
+            return 'Section '.$suffix;
+        }
+
+        return 'Section '.$v;
+    }
+
     public static function getProgramCatalog(): array
     {
         $catalog = self::PROGRAM_CATALOG;
@@ -190,11 +237,6 @@ class Student extends Authenticatable
     public static function hasVerificationColumn(): bool
     {
         return Schema::hasColumn((new static)->getTable(), 'verification_status');
-    }
-
-    public static function getOfficeOptions(): array
-    {
-        return self::ASSIGNED_OFFICES;
     }
 
     protected $fillable = [
@@ -323,28 +365,24 @@ class Student extends Authenticatable
             : collect();
 
         if ($assignments->isNotEmpty()) {
-            return $query->whereHas('activeTermAssignment', function ($termQuery) use ($assignments) {
-                $termQuery->where(function ($studentQuery) use ($assignments) {
-                    foreach ($assignments as $assignment) {
-                        $studentQuery->orWhere(function ($matchQuery) use ($assignment) {
-                            // Match course - use LIKE for flexible matching (e.g., "INFORMATION TECHNOLOGY" matches "Bachelor of Science in Information Technology")
-                            $matchQuery->where('course', 'like', '%'.$assignment->course.'%');
-
-                            // School year matching - if assignment has school_year, match it; otherwise match any
-                            if (! empty($assignment->school_year)) {
-                                $matchQuery->where('school_year', $assignment->school_year);
-                            }
-                            // If school_year is NULL/empty in assignment, don't filter by school_year (match all)
-
-                            if ($assignment->semester !== 'All') {
-                                $matchQuery->where('term', $assignment->semester);
-                            }
-
-                            if ($assignment->section !== 'All') {
-                                $matchQuery->where('section', $assignment->section);
+            return $query->where(function ($outer) use ($assignments) {
+                $outer->whereHas('activeTermAssignment', function ($termQuery) use ($assignments) {
+                    $termQuery->where(function ($inner) use ($assignments) {
+                        foreach ($assignments as $assignment) {
+                            $inner->orWhere(function ($matchQuery) use ($assignment) {
+                                self::applyCoordinatorAssignmentToTermRelation($matchQuery, $assignment);
+                            });
+                        }
+                    });
+                })->orWhere(function ($fallback) use ($assignments) {
+                    $fallback->whereDoesntHave('activeTermAssignment')
+                        ->where(function ($inner) use ($assignments) {
+                            foreach ($assignments as $assignment) {
+                                $inner->orWhere(function ($profileQuery) use ($assignment) {
+                                    self::applyCoordinatorAssignmentToStudentProfile($profileQuery, $assignment);
+                                });
                             }
                         });
-                    }
                 });
             });
         }
@@ -354,6 +392,68 @@ class Student extends Authenticatable
         }
 
         return $query->where('course', 'like', '%'.$coordinator->major.'%');
+    }
+
+    /**
+     * Section values that may appear on students or student_term_assignments relative to roster assignment rows.
+     *
+     * @return array<int, string>
+     */
+    private static function coordinatorAssignmentSectionCandidates(string $section): array
+    {
+        $normalized = preg_replace('/^section\s+/i', '', trim($section)) ?? trim($section);
+        $normalized = trim((string) $normalized);
+
+        if ($normalized === '' || strcasecmp($normalized, 'All') === 0) {
+            return [];
+        }
+
+        return collect([
+            trim($section),
+            $normalized,
+            'Section '.$normalized,
+        ])->map(fn ($value) => trim((string) $value))
+            ->filter(fn ($value) => $value !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private static function applyCoordinatorAssignmentToTermRelation($relationQuery, $assignment): void
+    {
+        $relationQuery->where('course', 'like', '%'.$assignment->course.'%');
+
+        if (! empty($assignment->school_year)) {
+            $relationQuery->where('school_year', $assignment->school_year);
+        }
+
+        if ($assignment->semester !== 'All') {
+            $relationQuery->where('term', $assignment->semester);
+        }
+
+        if ($assignment->section !== 'All') {
+            $relationQuery->whereIn('section', self::coordinatorAssignmentSectionCandidates((string) $assignment->section));
+        }
+    }
+
+    private static function applyCoordinatorAssignmentToStudentProfile($query, $assignment): void
+    {
+        $query->where('course', 'like', '%'.$assignment->course.'%');
+
+        if (
+            ! empty($assignment->school_year)
+            && Schema::hasColumn((new static)->getTable(), 'school_year')
+        ) {
+            $query->where('school_year', $assignment->school_year);
+        }
+
+        if ($assignment->semester !== 'All') {
+            $query->where('semester', $assignment->semester);
+        }
+
+        if ($assignment->section !== 'All') {
+            $query->whereIn('section', self::coordinatorAssignmentSectionCandidates((string) $assignment->section));
+        }
     }
 
     public function isVisibleToCoordinator($coordinator): bool

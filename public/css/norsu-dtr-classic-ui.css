@@ -1,0 +1,532 @@
+/**
+ * Classic / “old-school” shell: neutral layout surface, solids instead of gradients and glass blur.
+ * Load after norsu-dtr-system.css on authenticated app layouts (student/coordinator/admin).
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Tables: never pair dark-theme text with hard-coded white row backgrounds */
+/* -------------------------------------------------------------------------- */
+.layout-wrap .main-content .table {
+    --bs-table-bg: var(--dtr-card-bg);
+    --bs-table-color: var(--dtr-text);
+    --bs-table-border-color: var(--dtr-border-soft);
+    background-color: transparent !important;
+    color: var(--dtr-text) !important;
+}
+
+.layout-wrap .main-content .table > :not(caption) > * > * {
+    background-color: var(--dtr-card-bg) !important;
+    color: var(--dtr-text) !important;
+    border-color: var(--dtr-border-soft) !important;
+}
+
+.layout-wrap .main-content .table thead th {
+    background: var(--dtr-surface-2, var(--dtr-surface-soft)) !important;
+    color: var(--dtr-heading) !important;
+}
+
+.layout-wrap .main-content .table tbody td {
+    background-color: var(--dtr-card-bg) !important;
+    color: var(--dtr-text) !important;
+}
+
+.layout-wrap .main-content .table tbody tr:hover td,
+.layout-wrap .main-content .table-hover > tbody > tr:hover > * {
+    background-color: var(--dtr-hover-bg) !important;
+    color: var(--dtr-text) !important;
+}
+
+.layout-wrap .main-content .table .text-muted,
+.layout-wrap .main-content .table .small {
+    color: var(--dtr-muted) !important;
+}
+
+.layout-wrap .main-content .table .fw-semibold,
+.layout-wrap .main-content .table .fw-bold {
+    color: var(--dtr-heading) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Dashboard action strips (anchors styled as CTAs — must not rely on per-page CSS) */
+/* -------------------------------------------------------------------------- */
+.layout-wrap .main-content .action-card .btn-minimal {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border-radius: var(--dtr-radius, 8px);
+    padding: 0.6rem 1.15rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border: none;
+    text-decoration: none;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, filter 0.2s ease;
+    background: var(--dtr-primary);
+    color: #fff !important;
+}
+
+.layout-wrap .main-content .action-card .btn-minimal:hover,
+.layout-wrap .main-content .action-card .btn-minimal:focus {
+    background: var(--dtr-primary-dark, var(--dtr-primary));
+    color: #fff !important;
+    text-decoration: none;
+}
+
+.layout-wrap .main-content .action-card .btn-minimal.btn-warning {
+    background: #d97706;
+    color: #fff !important;
+}
+
+.layout-wrap .main-content .action-card .btn-minimal.btn-warning:hover,
+.layout-wrap .main-content .action-card .btn-minimal.btn-warning:focus {
+    background: #b45309;
+}
+
+.layout-wrap .main-content .action-card .btn-minimal.btn-success {
+    background: #059669;
+    color: #fff !important;
+}
+
+.layout-wrap .main-content .action-card .btn-minimal.btn-success:hover,
+.layout-wrap .main-content .action-card .btn-minimal.btn-success:focus {
+    background: #047857;
+}
+
+.layout-wrap .main-content .action-card .btn-minimal.btn-danger {
+    background: #dc2626;
+    color: #fff !important;
+}
+
+.layout-wrap .main-content .action-card .btn-minimal.btn-danger:hover,
+.layout-wrap .main-content .action-card .btn-minimal.btn-danger:focus {
+    background: #b91c1c;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Bootstrap buttons inside main shell (fixes missing / washed-out fills) */
+/* -------------------------------------------------------------------------- */
+.layout-wrap .main-content .btn-primary {
+    background-color: var(--dtr-primary) !important;
+    border-color: var(--dtr-primary-dark, var(--dtr-primary)) !important;
+    color: #fff !important;
+}
+
+.layout-wrap .main-content .btn-primary:hover,
+.layout-wrap .main-content .btn-primary:focus {
+    background-color: var(--dtr-primary-dark, var(--dtr-primary)) !important;
+    border-color: var(--dtr-primary-dark, var(--dtr-primary)) !important;
+    color: #fff !important;
+}
+
+.layout-wrap .main-content .btn-secondary {
+    background-color: var(--dtr-muted) !important;
+    border-color: var(--dtr-muted) !important;
+    color: #fff !important;
+}
+
+.layout-wrap .main-content .btn-outline-primary {
+    color: var(--dtr-primary) !important;
+    border-color: var(--dtr-primary) !important;
+    background-color: transparent !important;
+}
+
+.layout-wrap .main-content .btn-outline-primary:hover,
+.layout-wrap .main-content .btn-outline-primary:focus {
+    background-color: color-mix(in srgb, var(--dtr-primary) 18%, transparent) !important;
+    color: var(--dtr-primary-dark, var(--dtr-primary)) !important;
+}
+
+.layout-wrap .main-content .btn-outline-secondary {
+    color: var(--dtr-text) !important;
+    border-color: var(--dtr-input-border, var(--dtr-border-strong)) !important;
+    background-color: transparent !important;
+}
+
+.layout-wrap .main-content .btn-outline-secondary:hover,
+.layout-wrap .main-content .btn-outline-secondary:focus {
+    background-color: var(--dtr-hover-bg) !important;
+    color: var(--dtr-heading) !important;
+}
+
+/* Kill marketing-style backdrop from system.css wherever the sidebar layout exists */
+body:has(.layout-wrap) {
+    background: var(--dtr-main-bg, #f5f5f5) !important;
+}
+body:has(.layout-wrap)::before {
+    display: none !important;
+    content: none !important;
+}
+
+/* Sidebar shells */
+.layout-wrap > .sidebar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Core cards inside main column */
+.layout-wrap .main-content .card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-radius: var(--dtr-radius, 8px) !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+}
+
+.layout-wrap .main-content .table-responsive {
+    border-radius: var(--dtr-radius, 8px) !important;
+}
+
+/* Modals: drop glass blur (settings, password, etc.) */
+.admin-modal {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.12) !important;
+}
+
+.admin-modal .btn.btn-primary {
+    background: var(--dtr-primary) !important;
+    border-color: var(--dtr-primary-dark, var(--dtr-primary)) !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Administrator → Coordinators roster & modals */
+.create-coordinator-modal {
+    background: var(--dtr-card-solid, #fff) !important;
+}
+
+.create-coordinator-header-icon,
+.identity-avatar,
+.coord-empty-icon,
+.coord-modal-head-icon {
+    background: var(--dtr-primary-soft) !important;
+    border-color: var(--dtr-border-soft) !important;
+}
+
+.coordinator-form-section {
+    background: var(--dtr-surface-soft) !important;
+    box-shadow: none !important;
+}
+
+.btn-create-submit {
+    background: var(--dtr-primary) !important;
+    border: 1px solid var(--dtr-primary-dark, var(--dtr-primary)) !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Manual attendance filters (were forced “dark neon” even in light mode) */
+.manual-requests .toolbar .form-select {
+    background: var(--dtr-input-bg) !important;
+    color: var(--dtr-text) !important;
+    border: 1px solid var(--dtr-input-border) !important;
+    box-shadow: none !important;
+}
+
+.manual-requests .toolbar .form-select option {
+    background: var(--dtr-card-bg);
+    color: var(--dtr-text);
+}
+
+/* Students roster tool card & term modal */
+.bulk-assign-card {
+    background: var(--dtr-card-solid) !important;
+}
+
+.student-term-modal,
+html[data-theme="dark"] .student-term-modal {
+    background: var(--dtr-card-bg) !important;
+}
+
+html[data-theme="light"] .student-term-modal {
+    background: var(--dtr-card-solid, #fff) !important;
+}
+
+/* Invalidations review modal */
+.admin-invalidation-modal {
+    background: var(--dtr-card-solid) !important;
+}
+
+/* Office requests callout strip */
+.review-reason-box {
+    background: rgba(34, 197, 94, 0.12) !important;
+}
+
+html[data-theme="dark"] .review-reason-box {
+    background: rgba(34, 197, 94, 0.18) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* App shell — aligned toolbars, unified search controls, roster readability   */
+/* (Student / Coordinator / Admin — load order: after norsu-dtr-system.css)    */
+/* -------------------------------------------------------------------------- */
+
+:root {
+    --dtr-search-h: 40px;
+    --dtr-search-radius: 10px;
+}
+
+/* Same visual height as search fields — avoids oversized Bootstrap .btn padding */
+.layout-wrap .main-content .btn.btn-search,
+.layout-wrap .main-content a.btn.btn-search {
+    box-sizing: border-box !important;
+    min-height: var(--dtr-search-h) !important;
+    height: var(--dtr-search-h) !important;
+    padding: 0 0.75rem !important;
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+    line-height: 1.15 !important;
+    border-radius: var(--dtr-search-radius) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.25rem !important;
+}
+
+.layout-wrap .main-content .btn.btn-search .bi,
+.layout-wrap .main-content a.btn.btn-search .bi {
+    font-size: 1rem !important;
+    line-height: 1 !important;
+}
+
+.layout-wrap .main-content .btn.btn-search i.me-1,
+.layout-wrap .main-content a.btn.btn-search i.me-1 {
+    margin-inline-end: 0 !important;
+}
+
+.layout-wrap .main-content .students-page .btn.filter-apply-btn,
+.layout-wrap .main-content .students-page .btn.filter-reset-btn,
+.layout-wrap .main-content .students-page a.filter-reset-btn {
+    box-sizing: border-box !important;
+    min-height: var(--dtr-search-h) !important;
+    height: var(--dtr-search-h) !important;
+    padding: 0 0.75rem !important;
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+    line-height: 1.15 !important;
+    border-radius: var(--dtr-search-radius) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none !important;
+}
+
+.layout-wrap .main-content .dtr-attendance .search-input {
+    min-height: var(--dtr-search-h) !important;
+}
+
+.layout-wrap .main-content .dtr-attendance .btn-search {
+    min-height: var(--dtr-search-h) !important;
+    height: var(--dtr-search-h) !important;
+    padding: 0 0.75rem !important;
+    font-size: 0.8125rem !important;
+}
+
+.layout-wrap .main-content .dtr-attendance-history .filter-form .btn.btn-primary,
+.layout-wrap .main-content .dtr-attendance-history .filter-form .btn.btn-sm {
+    box-sizing: border-box !important;
+    min-height: var(--dtr-search-h) !important;
+    height: var(--dtr-search-h) !important;
+    padding: 0 0.75rem !important;
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+    line-height: 1.15 !important;
+    border-radius: var(--dtr-search-radius) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.layout-wrap .main-content .coordinator-search .btn-search,
+.layout-wrap .main-content .coordinator-search a.btn-search {
+    min-height: var(--dtr-search-h) !important;
+    height: var(--dtr-search-h) !important;
+    padding: 0 0.75rem !important;
+    font-size: 0.8125rem !important;
+}
+
+.layout-wrap .main-content .toolbar,
+.layout-wrap .main-content .coord-admin-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.85rem 1rem;
+    width: 100%;
+    min-width: 0;
+}
+
+.layout-wrap .main-content .card-body > .toolbar {
+    justify-content: space-between;
+}
+
+.layout-wrap .main-content .coord-admin-toolbar-intro {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.layout-wrap .main-content .coord-admin-toolbar-actions {
+    flex: 1 1 260px;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+.layout-wrap .main-content .coordinator-search {
+    flex: 1 1 280px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.layout-wrap .main-content .student-filter-form {
+    align-items: flex-end !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.layout-wrap .main-content .search-inner {
+    position: relative;
+    min-width: 0;
+    width: 100%;
+}
+
+.layout-wrap .main-content .search-inner .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--dtr-muted);
+    font-size: 1rem;
+    pointer-events: none;
+    z-index: 1;
+    line-height: 1;
+}
+
+.layout-wrap .main-content .search-inner .search-clear,
+.layout-wrap .main-content .search-form .search-clear {
+    position: absolute;
+    right: 0.35rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--dtr-muted);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.layout-wrap .main-content .search-inner .search-clear:hover,
+.layout-wrap .main-content .search-form .search-clear:hover {
+    background: var(--dtr-hover-bg);
+    color: var(--dtr-text);
+}
+
+.layout-wrap .main-content input.search-input,
+.layout-wrap .main-content .search-inner input[type="text"],
+.layout-wrap .main-content .search-inner input[type="search"],
+.layout-wrap .main-content .search-inner input[type="text"].form-control {
+    width: 100%;
+    min-height: var(--dtr-search-h);
+    padding: 0.5rem 2.5rem 0.5rem 2.75rem;
+    font-size: 0.9rem;
+    line-height: 1.35;
+    border: 1.5px solid var(--dtr-input-border);
+    border-radius: var(--dtr-search-radius);
+    background: var(--dtr-input-bg);
+    color: var(--dtr-text);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.layout-wrap .main-content input.search-input::placeholder,
+.layout-wrap .main-content .search-inner input::placeholder {
+    color: var(--dtr-muted);
+}
+
+.layout-wrap .main-content input.search-input:focus,
+.layout-wrap .main-content .search-inner input[type="text"]:focus,
+.layout-wrap .main-content .search-inner input[type="search"]:focus {
+    outline: none;
+    border-color: var(--dtr-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--dtr-primary) 22%, transparent);
+}
+
+.layout-wrap .main-content .filter-search-row .form-select,
+.layout-wrap .main-content .filter-search-row .form-control,
+.layout-wrap .main-content .student-filter-form .form-select,
+.layout-wrap .main-content .student-filter-form .filter-select {
+    min-height: var(--dtr-search-h);
+    border-radius: var(--dtr-search-radius);
+}
+
+.layout-wrap .main-content .office-filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end !important;
+    justify-content: flex-start !important;
+    gap: 0.65rem 0.75rem;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.layout-wrap .main-content .office-filter-form .form-select,
+.layout-wrap .main-content .office-filter-form .filter-select {
+    min-height: var(--dtr-search-h);
+    border-radius: var(--dtr-search-radius);
+}
+
+.layout-wrap .main-content .settings-page .search-row {
+    max-width: 100%;
+    width: 100%;
+}
+
+.layout-wrap .main-content .settings-page .search-row .search-inner {
+    flex: 1 1 min(100%, 360px);
+}
+
+.layout-wrap .main-content .settings-page .search-input {
+    min-height: var(--dtr-search-h);
+    border-radius: var(--dtr-search-radius);
+}
+
+.layout-wrap .main-content .dtr-attendance-history .filter-form .form-control,
+.layout-wrap .main-content .dtr-attendance-history .filter-form select {
+    min-height: var(--dtr-search-h);
+}
+
+.layout-wrap .main-content .dtr-report .report-student-search {
+    min-height: var(--dtr-search-h);
+    border-radius: var(--dtr-search-radius);
+}
+
+.layout-wrap .main-content .table-responsive {
+    min-width: 0;
+}
+
+.layout-wrap .main-content .table thead th {
+    vertical-align: middle !important;
+    hyphens: auto;
+}
+
+.layout-wrap .main-content .table tbody td {
+    vertical-align: middle !important;
+    overflow-wrap: break-word;
+}
+
+.layout-wrap .main-content td.min-w-0,
+.layout-wrap .main-content .coord-roster-name,
+.layout-wrap .main-content .coord-roster-program,
+.layout-wrap .main-content td[data-label] {
+    min-width: 0;
+}

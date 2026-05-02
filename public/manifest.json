@@ -1,0 +1,18 @@
+{
+  "name": "NORSU OJT DTR",
+  "short_name": "OJT DTR",
+  "description": "NORSU OJT Daily Time Record - Student attendance with face verification",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/app-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

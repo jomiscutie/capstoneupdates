@@ -1,0 +1,204 @@
+/**
+ * Bootstrap-powered app dialogs — theme-aware (html[data-theme]), works outside .main-content.
+ */
+
+.norsu-dtr-dialog.modal {
+    --norsu-dialog-accent: var(--dtr-primary, #2563eb);
+    --norsu-dialog-surface: var(--dtr-card-bg, #fff);
+    --norsu-dialog-text: var(--dtr-text, #111827);
+    --norsu-dialog-muted: var(--dtr-muted, #64748b);
+    --norsu-dialog-border: var(--dtr-border-soft, rgba(15, 23, 42, 0.12));
+    --norsu-dialog-radius: 14px;
+    z-index: 10990 !important;
+}
+
+.norsu-dtr-dialog .modal-dialog {
+    max-width: min(440px, calc(100% - 1.5rem));
+    margin-inline: auto;
+}
+
+.norsu-dtr-dialog .modal-content {
+    background: var(--norsu-dialog-surface);
+    color: var(--norsu-dialog-text);
+    border: 1px solid var(--norsu-dialog-border);
+    border-radius: var(--norsu-dialog-radius);
+    box-shadow:
+        0 4px 6px rgba(15, 23, 42, 0.04),
+        0 22px 50px rgba(15, 23, 42, 0.16);
+    overflow: hidden;
+}
+
+html[data-theme="dark"] .norsu-dtr-dialog .modal-content {
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.55),
+        0 2px 0 rgba(255, 255, 255, 0.04) inset;
+}
+
+.norsu-dtr-dialog .modal-header {
+    border-bottom: none;
+    padding: 1.15rem 1.25rem 0;
+    gap: 0.85rem;
+    align-items: flex-start;
+}
+
+.norsu-dtr-dialog .norsu-dtr-dialog__icon-area {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--norsu-dialog-accent) 14%, transparent);
+    color: var(--norsu-dialog-accent);
+}
+
+.norsu-dtr-dialog.norsu-dtr-dialog--warning .norsu-dtr-dialog__icon-area {
+    --local-warn: #d97706;
+    background: color-mix(in srgb, var(--local-warn) 16%, transparent);
+    color: #d97706;
+}
+
+.norsu-dtr-dialog.norsu-dtr-dialog--danger .norsu-dtr-dialog__icon-area {
+    --local-danger: #dc2626;
+    background: color-mix(in srgb, var(--local-danger) 16%, transparent);
+    color: #dc2626;
+}
+
+.norsu-dtr-dialog .modal-title.norsu-dtr-dialog__title {
+    font-size: 1.0825rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--dtr-heading, var(--norsu-dialog-text));
+}
+
+.norsu-dtr-dialog .btn-close-norsu {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    margin: 0 -0.15rem 0 auto;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--norsu-dialog-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.85;
+    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.norsu-dtr-dialog .btn-close-norsu:hover {
+    opacity: 1;
+    background: var(--dtr-hover-bg, rgba(15, 23, 42, 0.06));
+    color: var(--norsu-dialog-text);
+}
+
+.norsu-dtr-dialog .modal-body {
+    padding: 0.75rem 1.25rem 1rem;
+}
+
+.norsu-dtr-dialog__body {
+    color: var(--norsu-dialog-text);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.55;
+    white-space: pre-wrap;
+}
+
+.norsu-dtr-dialog__body p.norsu-dtr-dialog__line:last-child {
+    margin-bottom: 0;
+}
+
+.norsu-dtr-dialog .modal-footer {
+    border-top: none;
+    padding: 0 1.25rem 1.15rem;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.norsu-dtr-dialog .norsu-dtr-dialog-btn {
+    min-height: 42px;
+    padding-inline: 1.1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.42rem;
+    transition: transform 0.08s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+.norsu-dtr-dialog .norsu-dtr-dialog-btn:active {
+    transform: scale(0.98);
+}
+
+.norsu-dtr-dialog-btn--cancel {
+    background: transparent;
+    border: 1px solid var(--dtr-input-border, var(--norsu-dialog-border)) !important;
+    color: var(--norsu-dialog-text) !important;
+}
+
+.norsu-dtr-dialog-btn--cancel:hover {
+    background: var(--dtr-hover-bg, rgba(15, 23, 42, 0.06)) !important;
+    filter: brightness(1.03);
+}
+
+.norsu-dtr-dialog-btn--ok,
+.norsu-dtr-dialog-btn--confirm-neutral {
+    background: var(--dtr-primary, #2563eb) !important;
+    border-color: var(--dtr-primary-dark, var(--dtr-primary)) !important;
+    color: #fff !important;
+}
+
+.norsu-dtr-dialog-btn--ok:hover,
+.norsu-dtr-dialog-btn--confirm-neutral:hover {
+    filter: brightness(1.06);
+}
+
+.norsu-dtr-dialog-btn--confirm-danger {
+    background: #dc2626 !important;
+    border-color: #b91c1c !important;
+    color: #fff !important;
+}
+
+.norsu-dtr-dialog-btn--confirm-danger:hover {
+    filter: brightness(1.05);
+}
+
+.norsu-dtr-dialog-btn--confirm-warning {
+    background: #d97706 !important;
+    border-color: #b45309 !important;
+    color: #fff !important;
+}
+
+.norsu-dtr-dialog-btn--confirm-warning:hover {
+    filter: brightness(1.05);
+}
+
+body.modal-open .norsu-dtr-dialog.modal ~ .modal-backdrop {
+    z-index: 10980 !important;
+}
+
+/* Stand-alone pages without norsu-dtr-system.css still pick up dark palettes */
+html[data-theme="dark"] .norsu-dtr-dialog .modal-content {
+    background: var(--dtr-card-bg, #111827) !important;
+    color: var(--dtr-text, #e5edf7) !important;
+    border-color: var(--dtr-border-soft, rgba(148, 163, 184, 0.28)) !important;
+}
+
+html[data-theme="dark"] .norsu-dtr-dialog .norsu-dtr-dialog__body {
+    color: var(--dtr-text, #e5edf7) !important;
+}
+
+html[data-theme="dark"] .norsu-dtr-dialog .modal-title.norsu-dtr-dialog__title {
+    color: var(--dtr-heading, #f8fafc) !important;
+}
+
+html[data-theme="dark"] .norsu-dtr-dialog-btn--cancel {
+    color: var(--dtr-text, #e5edf7) !important;
+    border-color: var(--dtr-input-border, #475569) !important;
+}

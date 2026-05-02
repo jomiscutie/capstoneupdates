@@ -1,0 +1,151 @@
+from pathlib import Path
+import textwrap
+
+from fpdf import FPDF
+
+
+FLOWCHART_TEXT = """NORSU OJT DTR - Full System Flow Chart
+
+Mermaid Source (copy to Mermaid Live Editor if you want a rendered diagram):
+
+flowchart TD
+    A[User opens system] --> B{Role?}
+    B -->|Student| S1[Student login/register]
+    B -->|Coordinator| C1[Coordinator login]
+    B -->|Admin| A1[Admin login]
+
+    S1 --> S2{Has account?}
+    S2 -->|No| S3[Register student info + password + optional face]
+    S3 --> S4[Create student record]
+    S4 --> S5[Status: Pending verification]
+    S5 --> S6[Redirect to login / wait for coordinator]
+    S2 -->|Yes| S7[Submit student_no + password]
+    S7 --> S8{Credentials valid?}
+    S8 -->|No| S9[Show auth error]
+    S8 -->|Yes| S10{Verification status}
+    S10 -->|Pending/Rejected| S11[Block dashboard + show message]
+    S10 -->|Verified| S12[Open student dashboard]
+
+    S12 --> SF1[Student Settings]
+    SF1 --> SF2[Open Face Enrollment modal]
+    SF2 --> SF3[Load face-api models + open camera]
+    SF3 --> SF4[Liveness checks blink + stability]
+    SF4 --> SF5{Live face verified?}
+    SF5 -->|No| SF4
+    SF5 -->|Yes| SF6[Auto-capture face encoding]
+    SF6 --> SF7[POST settings/face-enrollment]
+    SF7 --> SF8{Existing face on account?}
+    SF8 -->|Yes| SF9[Must match current enrolled face]
+    SF8 -->|No| SF10[Skip self-match gate]
+    SF9 --> SF11{Self-match passed?}
+    SF11 -->|No| SF12[Reject re-enroll + mismatch message + log]
+    SF11 -->|Yes| SF10
+    SF10 --> SF13[Check duplicate face vs other students]
+    SF13 --> SF14{Duplicate found?}
+    SF14 -->|Yes| SF15[Reject enrollment]
+    SF14 -->|No| SF16[Save new encoding + audit log + success]
+
+    S12 --> T0[Choose attendance action]
+    T0 --> T1{Action}
+    T1 -->|Time In| TI1[Open verification modal]
+    T1 -->|Lunch Break Out| TL1[Open verification modal]
+    T1 -->|Time Out| TO1[Open verification modal]
+
+    TI1 --> V1
+    TL1 --> V1
+    TO1 --> V1
+
+    V1[Face verification process] --> V2[Load models + camera]
+    V2 --> V3[Liveness loop + blink/stability]
+    V3 --> V4{Face matched?}
+    V4 -->|No| V5[Show mismatch flashing message]
+    V5 --> V3
+    V4 -->|Yes| V6[Capture encoding + snapshot + confidence]
+    V6 --> V7{Online?}
+    V7 -->|No| V8[Store offline queue item]
+    V7 -->|Yes| V9[POST attendance endpoint]
+
+    V9 --> BV1[Backend verify student is verified]
+    BV1 --> BV2{verification_method=password?}
+    BV2 -->|Yes| BV3[Validate password + reason]
+    BV2 -->|No| BV4[Require face_encoding]
+    BV4 --> BV5[Decode + validate 128D encoding]
+    BV5 --> BV6[Compare with enrolled face using threshold]
+    BV6 --> BV7{Match?}
+    BV7 -->|No| BV8[Reject request + mismatch error + log]
+    BV7 -->|Yes| BV9[Continue attendance logic]
+    BV3 --> BV9
+
+    BV9 --> R1{Endpoint called}
+    R1 -->|Time In| TI2[Resolve recorded time]
+    TI2 --> TI3[Determine morning vs afternoon slot]
+    TI3 --> TI4[Apply duplicate/slot validations]
+    TI4 --> TI5[Set late flags + minutes]
+    TI5 --> TI6[Save attendance + snapshot path]
+    TI6 --> TI7[Return success/warning]
+
+    R1 -->|Lunch Break Out| TL2[Find today's attendance]
+    TL2 --> TL3[Validate morning time_in exists]
+    TL3 --> TL4[Ensure not already lunch out / not timed out]
+    TL4 --> TL5[Ensure lunch out after morning in]
+    TL5 --> TL6[Save lunch_break_out + snapshot]
+    TL6 --> TL7[Return success]
+
+    R1 -->|Time Out| TO2[Find today's attendance]
+    TO2 --> TO3[Require at least one time_in]
+    TO3 --> TO4[Prevent duplicate time_out]
+    TO4 --> TO5[Apply cooldown/business checks]
+    TO5 --> TO6[Set morning/afternoon time_out]
+    TO6 --> TO7[Compute total/rendered hours]
+    TO7 --> TO8[Save + snapshot + return success]
+
+    V8 --> O1[Wait for internet restored]
+    O1 --> O2[Replay queued attendance posts]
+    O2 --> O3{Replay success?}
+    O3 -->|Yes| O4[Remove queue item]
+    O3 -->|No| O5[Keep item for retry]
+
+    C1 --> C2[Coordinator dashboard]
+    C2 --> C3[Review pending student verification]
+    C3 --> C4{Approve/Reject}
+    C4 -->|Approve| C5[Student status -> Verified]
+    C4 -->|Reject| C6[Student status -> Rejected]
+    C2 --> C7[Manage assigned students + required hours]
+    C2 --> C8[View attendance analytics/logs]
+    C2 --> C9[Handle OJT completion]
+    C2 --> C10[Generate reports]
+
+    A1 --> A2[Admin dashboard]
+    A2 --> A3[Manage coordinators/admins]
+    A2 --> A4[View all students + archived]
+    A2 --> A5[Session oversight + audit logs]
+    A2 --> A6[Invalidation queue approvals/rejections]
+    A2 --> A7[System settings + face enrollment oversight]
+    A2 --> A8[Global reports / exports]
+
+    C5 --> Z1[Audit log entries]
+    C6 --> Z1
+    SF16 --> Z1
+    TI7 --> Z1
+    TL7 --> Z1
+    TO8 --> Z1
+    A6 --> Z1
+"""
+
+
+def main() -> None:
+    out = Path(__file__).resolve().parents[1] / "NORSU_DTR_Full_System_Flowchart.pdf"
+    pdf = FPDF(orientation="P", unit="mm", format="A4")
+    pdf.set_auto_page_break(auto=True, margin=12)
+    pdf.add_page()
+    pdf.set_font("Courier", size=8)
+    for line in FLOWCHART_TEXT.splitlines():
+        wrapped = textwrap.wrap(line, width=105, break_long_words=True, break_on_hyphens=False) or [""]
+        for segment in wrapped:
+            pdf.cell(0, 4.2, segment, ln=1)
+    pdf.output(str(out))
+    print(out)
+
+
+if __name__ == "__main__":
+    main()

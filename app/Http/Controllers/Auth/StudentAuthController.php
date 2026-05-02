@@ -74,13 +74,13 @@ class StudentAuthController extends Controller
         $suffix = strtoupper(trim((string) ($request->suffix ?? '')));
         $selectedProgram = trim((string) ($request->course ?? ''));
         $selectedMajor = trim((string) ($request->major ?? ''));
-        $selectedOffice = trim((string) ($request->assigned_office ?? ''));
         $programOptions = Student::getProgramOptions();
         $officeOptions = Student::getOfficeOptions();
         $sectionOptions = array_values(array_filter(
             Student::getSectionOptions(),
             static function ($value): bool {
                 $section = trim((string) $value);
+
                 return strcasecmp($section, 'All') !== 0
                     && strcasecmp($section, 'Section All') !== 0;
             }
@@ -90,7 +90,12 @@ class StudentAuthController extends Controller
             $middleName,
             $lastName,
             $suffix,
-        ]))));
+        ]        ))));
+
+        $rawOfficeSelection = trim((string) $request->input('assigned_office', ''));
+        $request->merge([
+            'assigned_office' => $rawOfficeSelection === '' ? null : $rawOfficeSelection,
+        ]);
 
         $request->validate([
             'student_no' => [
@@ -99,21 +104,25 @@ class StudentAuthController extends Controller
                 'max:50',
                 Rule::unique('students', 'student_no'),
             ],
-            'last_name' => 'required|string|max:100',
-            'first_name' => 'required|string|max:100',
-            'middle_name' => 'nullable|string|max:100',
+            // Names: no digits (Unicode-aware with /u). Middle name may be empty.
+            'last_name' => ['required', 'string', 'max:100', 'regex:/^\D+$/u'],
+            'first_name' => ['required', 'string', 'max:100', 'regex:/^\D+$/u'],
+            'middle_name' => ['nullable', 'string', 'max:100', 'regex:/^\D*$/u'],
             'suffix' => 'nullable|string|max:20',
             'course' => ['required', 'string', 'max:100', Rule::in($programOptions)],
             'major' => 'nullable|string|max:100',
             'school_year' => ['required', 'string', 'max:20', 'regex:/^\d{4}-\d{4}$/'],
             'term' => ['required', Rule::in(Student::TERMS)],
             'section' => ['required', Rule::in($sectionOptions)],
-            'assigned_office' => ['required', Rule::in($officeOptions)],
+            'assigned_office' => ['nullable', Rule::in($officeOptions)],
             'password' => ['required', 'string', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
             'face_encoding' => 'nullable|string',
         ], [
             'student_no.unique' => 'This student number is already registered. Please log in instead.',
             'school_year.regex' => 'School year must be in the format YYYY-YYYY, like 2026-2027.',
+            'first_name.regex' => 'First name cannot contain numbers.',
+            'middle_name.regex' => 'Middle name cannot contain numbers.',
+            'last_name.regex' => 'Last name cannot contain numbers.',
         ]);
 
         if (Student::where('student_no', $studentNo)->exists()) {
@@ -153,7 +162,7 @@ class StudentAuthController extends Controller
 
         $student = null;
 
-        DB::transaction(function () use ($request, $studentNo, $fullName, $lastName, $firstName, $middleName, $suffix, $selectedMajor, $selectedOffice, $faceEncoding, &$student) {
+        DB::transaction(function () use ($request, $studentNo, $fullName, $lastName, $firstName, $middleName, $suffix, $selectedMajor, $faceEncoding, &$student) {
             $student = Student::create([
                 'student_no' => $studentNo,
                 'name' => $fullName,
@@ -164,7 +173,7 @@ class StudentAuthController extends Controller
                 'course' => $request->course,
                 'major' => $selectedMajor !== '' ? $selectedMajor : null,
                 'section' => $request->section,
-                'assigned_office' => $selectedOffice !== '' ? $selectedOffice : null,
+                'assigned_office' => $request->assigned_office,
                 'password' => Hash::make($request->password),
                 'face_encoding' => $faceEncoding !== '' ? $faceEncoding : null,
             ]);

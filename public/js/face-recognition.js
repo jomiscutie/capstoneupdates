@@ -12,12 +12,23 @@ class FaceRecognition {
         this.blinkCount = 0;
         this.lastBlinkTime = 0;
         this.headMovements = [];
+        this.headMotionScore = 0;
+        this.lastHeadDirection = null;
+        this.lastHeadMovementAt = 0;
         this.faceStableTime = 0;
         this.lastFacePosition = null;
         this.faceDetectedCount = 0;
         this.lastDescriptorCache = null;
         this.lastDrawSize = { width: 0, height: 0 };
         this.pendingDetectionPromise = null;
+        this.cameraStorageKey = 'norsuPreferredCameraDeviceId';
+        this.frameSkipCounter = 0;
+        this.skipRate = 1;
+        this.blinkState = 'open';
+        this.blinkStartTime = 0;
+        this.lastEAR = 1.0;
+        this.earHistory = [];
+        this.debugMode = false;
     }
 
     async loadModels() {
@@ -26,7 +37,7 @@ class FaceRecognition {
         try {
             const MODEL_URL = (typeof window !== 'undefined' && window.FACE_API_MODEL_BASE) ? window.FACE_API_MODEL_BASE : '/vendor/face-api/model';
 
-            // Load only models needed for detection + descriptor (skip faceExpressionNet to reduce lag)
+            // Load models needed for detection + descriptor
             await Promise.all([
                 faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
                 faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
@@ -42,7 +53,7 @@ class FaceRecognition {
         }
     }
 
-    async initializeCamera(videoElement, canvasElement) {
+    async initializeCamera(videoElement, canvasElement, options = {}) {
         this.video = videoElement;
         this.canvas = canvasElement;
         this.ctx = canvasElement.getContext('2d');
@@ -55,26 +66,72 @@ class FaceRecognition {
             };
         }
 
-        // Multi-step fallback to improve compatibility across devices/browsers.
-        const constraintsToTry = [
+        // CPU-first camera profiles (no GPU systems benefit from lower live processing load).
+        const cameraProfile = (options.cameraProfile || 'speed').toLowerCase();
+        const requestedDeviceId = typeof options.cameraDeviceId === 'string' ? options.cameraDeviceId.trim() : '';
+        const rememberedDeviceId = requestedDeviceId || this.getRememberedCameraDeviceId();
+
+        // For high-res cameras (1080p), downscale for processing but keep quality for capture
+        const isHighResCamera = options.forceDownscale || false;
+        this.processingScale = isHighResCamera ? 0.33 : 1.0;
+
+        const speedConstraints = [
             {
                 video: {
-                    width: { ideal: 320, max: 480 },
-                    height: { ideal: 240, max: 360 },
+                    width: { ideal: 640, max: 640 },
+                    height: { ideal: 480, max: 480 },
+                    frameRate: { ideal: 30, max: 30 },
                     facingMode: 'user'
                 }
             },
             {
                 video: {
-                    width: { ideal: 640 },
-                    height: { ideal: 480 },
+                    width: { ideal: 640, max: 1280 },
+                    height: { ideal: 480, max: 720 },
+                    frameRate: { ideal: 24, max: 30 },
                     facingMode: { ideal: 'user' }
                 }
             },
             {
-                video: true
-            }
+                video: {
+                    width: { ideal: 480, max: 640 },
+                    height: { ideal: 360, max: 480 },
+                    frameRate: { ideal: 20, max: 24 },
+                    facingMode: { ideal: 'user' }
+                }
+            },
+            {
+                video: {
+                    width: { ideal: 320, max: 480 },
+                    height: { ideal: 240, max: 360 },
+                    frameRate: { ideal: 15, max: 20 },
+                    facingMode: { ideal: 'user' }
+                }
+            },
+            { video: true }
         ];
+        const qualityConstraints = [
+            {
+                video: {
+                    width: { ideal: 1920, max: 1920 },
+                    height: { ideal: 1080, max: 1080 },
+                    frameRate: { ideal: 30, max: 30 },
+                    facingMode: 'user'
+                }
+            },
+            {
+                video: {
+                    width: { ideal: 1280, max: 1920 },
+                    height: { ideal: 720, max: 1080 },
+                    frameRate: { ideal: 24, max: 30 },
+                    facingMode: 'user'
+                }
+            },
+            ...speedConstraints
+        ];
+        const profileConstraints = cameraProfile === 'quality' ? qualityConstraints : speedConstraints;
+        const preferredDeviceConstraints = this.buildPreferredDeviceConstraints(cameraProfile, rememberedDeviceId);
+        const constraintsToTry = [...preferredDeviceConstraints, ...profileConstraints];
 
         try {
             let stream = null;
@@ -93,6 +150,8 @@ class FaceRecognition {
                 throw lastError || new Error('Unable to access camera');
             }
 
+            this.optimizeVideoTrack(stream, cameraProfile);
+            this.rememberCameraFromStream(stream);
             this.video.srcObject = stream;
             return { ok: true };
         } catch (error) {
@@ -102,6 +161,102 @@ class FaceRecognition {
                 code: error && error.name ? error.name : 'CAMERA_ERROR',
                 message: this.getCameraErrorMessage(error)
             };
+        }
+    }
+
+    optimizeVideoTrack(stream, cameraProfile = 'speed') {
+        try {
+            if (!stream || typeof stream.getVideoTracks !== 'function') return;
+            const track = stream.getVideoTracks()[0];
+            if (!track || typeof track.getCapabilities !== 'function' || typeof track.applyConstraints !== 'function') {
+                return;
+            }
+
+            const capabilities = track.getCapabilities() || {};
+            const advanced = {};
+
+            // Prefer continuous auto controls for unstable/low-light environments.
+            if (Array.isArray(capabilities.focusMode) && capabilities.focusMode.includes('continuous')) {
+                advanced.focusMode = 'continuous';
+            }
+            if (Array.isArray(capabilities.exposureMode) && capabilities.exposureMode.includes('continuous')) {
+                advanced.exposureMode = 'continuous';
+            }
+            if (Array.isArray(capabilities.whiteBalanceMode) && capabilities.whiteBalanceMode.includes('continuous')) {
+                advanced.whiteBalanceMode = 'continuous';
+            }
+
+            // Avoid forcing brightness/contrast/sharpness values in low-light scenes,
+            // because manual boosts can amplify sensor noise on some webcams.
+
+            if (Object.keys(advanced).length > 0) {
+                track.applyConstraints({ advanced: [advanced] }).catch(() => {});
+            }
+        } catch (error) {
+            // Best-effort only; unsupported controls should not block camera startup.
+            console.debug('Video track optimization skipped:', error);
+        }
+    }
+
+    buildPreferredDeviceConstraints(cameraProfile, deviceId) {
+        if (!deviceId) return [];
+
+        const isQuality = cameraProfile === 'quality';
+        const preferred = isQuality
+            ? [
+                { width: { ideal: 1920, max: 1920 }, height: { ideal: 1080, max: 1080 }, frameRate: { ideal: 30, max: 30 } },
+                { width: { ideal: 1280, max: 1920 }, height: { ideal: 720, max: 1080 }, frameRate: { ideal: 24, max: 30 } },
+                { width: { ideal: 640, max: 1280 }, height: { ideal: 480, max: 720 }, frameRate: { ideal: 20, max: 30 } }
+            ]
+            : [
+                { width: { ideal: 640, max: 640 }, height: { ideal: 480, max: 480 }, frameRate: { ideal: 24, max: 30 } },
+                { width: { ideal: 480, max: 640 }, height: { ideal: 360, max: 480 }, frameRate: { ideal: 20, max: 24 } },
+                { width: { ideal: 320, max: 480 }, height: { ideal: 240, max: 360 }, frameRate: { ideal: 15, max: 20 } }
+            ];
+
+        return preferred.map((video) => ({
+            video: {
+                ...video,
+                deviceId: { exact: deviceId }
+            }
+        }));
+    }
+
+    rememberCameraFromStream(stream) {
+        try {
+            const track = stream && typeof stream.getVideoTracks === 'function'
+                ? stream.getVideoTracks()[0]
+                : null;
+            const settings = track && typeof track.getSettings === 'function'
+                ? track.getSettings()
+                : null;
+            const deviceId = settings && typeof settings.deviceId === 'string'
+                ? settings.deviceId.trim()
+                : '';
+            if (deviceId) {
+                this.rememberCameraDeviceId(deviceId);
+            }
+        } catch (error) {
+            // Ignore storage/camera metadata failures.
+        }
+    }
+
+    rememberCameraDeviceId(deviceId) {
+        try {
+            if (typeof window === 'undefined' || !window.localStorage) return;
+            window.localStorage.setItem(this.cameraStorageKey, deviceId);
+        } catch (error) {
+            // Ignore localStorage failures.
+        }
+    }
+
+    getRememberedCameraDeviceId() {
+        try {
+            if (typeof window === 'undefined' || !window.localStorage) return '';
+            const stored = window.localStorage.getItem(this.cameraStorageKey);
+            return typeof stored === 'string' ? stored.trim() : '';
+        } catch (error) {
+            return '';
         }
     }
 
@@ -151,8 +306,12 @@ class FaceRecognition {
             return this.pendingDetectionPromise;
         }
 
+        // Always process frames - no skipping for liveness detection
+        this.frameSkipCounter++;
+
         try {
-            const drawLandmarks = options.drawLandmarks !== false;
+            // Always draw landmarks during liveness detection for visual feedback
+            const drawLandmarks = true;
             const detectorOptions = this.getDetectorOptions(options);
             const detectionTask = faceapi
                 .detectSingleFace(this.video, detectorOptions)
@@ -166,11 +325,14 @@ class FaceRecognition {
                 return null;
             }
 
-            // Draw face detection box
-            this.drawDetection(detection, drawLandmarks);
+            // Draw face detection box (always show for user feedback)
+            this.drawDetection(detection, true);
 
-            // Check for liveness (blink detection)
-            this.detectBlink(detection);
+            // Check for liveness (blink detection) - only if we have landmarks
+            if (detection.landmarks) {
+                this.detectBlink(detection);
+                this.trackHeadMovement(detection);
+            }
 
             if (includeDescriptor && detection.descriptor) {
                 this.lastDescriptorCache = {
@@ -229,21 +391,86 @@ class FaceRecognition {
             landmarks[45], landmarks[46], landmarks[47]
         ];
 
-        // Calculate eye aspect ratio (simplified)
+        // Calculate eye aspect ratio
         const leftEAR = this.calculateEAR(leftEye);
         const rightEAR = this.calculateEAR(rightEye);
         const avgEAR = (leftEAR + rightEAR) / 2;
 
-        // Blink detection threshold (0.25 is standard, keeping it for accuracy)
-        // Lower threshold = more sensitive to blinks
-        if (avgEAR < 0.25) {
-            const now = Date.now();
-            // Debounce time: 300ms to prevent false blink detection
-            if (now - this.lastBlinkTime > 300) {
+        // Fixed threshold: 0.25 works for most cameras
+        // Eyes open: ~0.30, Eyes closed: ~0.15
+        const BLINK_THRESHOLD = 0.23;
+        const now = Date.now();
+        const isBlinking = avgEAR < BLINK_THRESHOLD;
+
+        // Debug logging every 500ms
+        if (this.debugMode && now % 500 < 100) {
+            console.log(`EAR: ${avgEAR.toFixed(3)}, threshold: ${BLINK_THRESHOLD}, blinking: ${isBlinking}, state: ${this.blinkState}, blinks: ${this.blinkCount}`);
+        }
+
+        // Simple state machine: open -> closing -> open
+        if (isBlinking && this.blinkState === 'open') {
+            this.blinkState = 'closing';
+            this.blinkStartTime = now;
+            if (this.debugMode) console.log('Eyes closing...');
+        } else if (!isBlinking && this.blinkState === 'closing') {
+            const blinkDuration = now - this.blinkStartTime;
+            if (blinkDuration >= 80 && blinkDuration <= 600) {
+                // Valid blink detected
                 this.blinkCount++;
                 this.lastBlinkTime = now;
+                if (this.debugMode) console.log('BLINK DETECTED! Total:', this.blinkCount, 'Duration:', blinkDuration + 'ms');
             }
+            this.blinkState = 'open';
+        } else if (!isBlinking) {
+            this.blinkState = 'open';
         }
+    }
+
+    trackHeadMovement(detection) {
+        if (!detection || !detection.detection || !detection.detection.box) return;
+        const box = detection.detection.box;
+        if (!box.width || !box.height) return;
+
+        const now = Date.now();
+        const center = {
+            x: box.x + (box.width / 2),
+            y: box.y + (box.height / 2),
+            width: box.width,
+            height: box.height,
+            at: now
+        };
+
+        this.headMovements.push(center);
+        if (this.headMovements.length > 12) {
+            this.headMovements.shift();
+        }
+        if (this.headMovements.length < 2) {
+            return;
+        }
+
+        const prev = this.headMovements[this.headMovements.length - 2];
+        const dxNorm = (center.x - prev.x) / Math.max(1, center.width);
+        const dyNorm = (center.y - prev.y) / Math.max(1, center.height);
+        const moveThreshold = 0.03;
+
+        if (Math.abs(dxNorm) < moveThreshold && Math.abs(dyNorm) < moveThreshold) {
+            return;
+        }
+
+        const direction = Math.abs(dxNorm) >= Math.abs(dyNorm)
+            ? (dxNorm > 0 ? 'right' : 'left')
+            : (dyNorm > 0 ? 'down' : 'up');
+
+        if (this.lastHeadDirection && this.lastHeadDirection !== direction) {
+            if (now - this.lastHeadMovementAt > 180) {
+                this.headMotionScore = Math.min(6, this.headMotionScore + 1);
+                this.lastHeadMovementAt = now;
+            }
+        } else if (!this.lastHeadDirection) {
+            this.lastHeadMovementAt = now;
+        }
+
+        this.lastHeadDirection = direction;
     }
 
     checkFaceStability(detection) {
@@ -271,8 +498,8 @@ class FaceRecognition {
                 if (this.faceStableTime === 0) {
                     this.faceStableTime = now;
                 }
-                // Face has been stable for at least 2 seconds (increased for better security)
-                return (now - this.faceStableTime) >= 2000;
+                // Slightly shorter stable window to reduce false liveness failures on kiosk.
+                return (now - this.faceStableTime) >= 1200;
             } else {
                 // Face moved, reset stability timer
                 this.faceStableTime = 0;
@@ -297,6 +524,13 @@ class FaceRecognition {
         const cacheMs = Number(config.useCacheMs || 0);
         const drawLandmarks = config.drawLandmarks !== false;
         const detectorProfile = config.detectorProfile || 'normal';
+        const minFaceCoverage = Number.isFinite(Number(config.minFaceCoverage))
+            ? Number(config.minFaceCoverage)
+            : 0.06;
+        const minDetectionScore = Number.isFinite(Number(config.minDetectionScore))
+            ? Number(config.minDetectionScore)
+            : 0.5;
+        const minAcceptedSamples = Math.max(1, Number(config.minAcceptedSamples || Math.min(2, sampleCount)));
 
         if (cacheMs > 0) {
             const cached = this.getCachedDescriptor(cacheMs);
@@ -308,10 +542,13 @@ class FaceRecognition {
         // Capture multiple samples for stable encoding (reduces false positives)
         this.faceDescriptors = [];
 
-        const maxAttempts = Math.max(sampleCount, sampleCount + 3);
+        const maxAttempts = Math.max(sampleCount + 2, sampleCount + 4);
         for (let i = 0; i < maxAttempts && this.faceDescriptors.length < sampleCount; i++) {
             const detection = await this.detectFace(true, { drawLandmarks, detectorProfile });
-            if (detection && detection.descriptor) {
+            if (detection && detection.descriptor && this.isDetectionQualityAcceptable(detection, {
+                minFaceCoverage,
+                minDetectionScore
+            })) {
                 this.faceDescriptors.push(Array.from(detection.descriptor));
             }
             if (i < maxAttempts - 1) {
@@ -319,8 +556,8 @@ class FaceRecognition {
             }
         }
 
-        if (this.faceDescriptors.length < 2) {
-            throw new Error('No face detected. Please ensure your face is clearly visible and well lit.');
+        if (this.faceDescriptors.length < minAcceptedSamples) {
+            throw new Error('Face quality is too low. Move closer to the camera and improve lighting, then try again.');
         }
 
         // Average the descriptors for better accuracy and fewer false matches
@@ -336,6 +573,21 @@ class FaceRecognition {
             });
         });
         return avg.map(val => val / descriptors.length);
+    }
+
+    isDetectionQualityAcceptable(detection, options = {}) {
+        if (!detection || !detection.detection || !detection.detection.box) return false;
+        if (!this.video || !this.video.videoWidth || !this.video.videoHeight) return true;
+
+        const minFaceCoverage = Number(options.minFaceCoverage || 0.06);
+        const minDetectionScore = Number(options.minDetectionScore || 0.5);
+        const box = detection.detection.box;
+        const faceArea = Math.max(0, box.width) * Math.max(0, box.height);
+        const frameArea = Math.max(1, this.video.videoWidth * this.video.videoHeight);
+        const coverage = faceArea / frameArea;
+        const score = Number.isFinite(Number(detection.detection.score)) ? Number(detection.detection.score) : 1;
+
+        return coverage >= minFaceCoverage && score >= minDetectionScore;
     }
 
     async verifyFace(storedEncoding) {
@@ -431,32 +683,35 @@ class FaceRecognition {
         this.blinkCount = 0;
         this.lastBlinkTime = 0;
         this.headMovements = [];
+        this.headMotionScore = 0;
+        this.lastHeadDirection = null;
+        this.lastHeadMovementAt = 0;
         this.faceStableTime = 0;
         this.lastFacePosition = null;
         this.faceDetectedCount = 0;
+        this.frameSkipCounter = 0;
+        this.blinkState = 'open';
+        this.blinkStartTime = 0;
+        this.lastEAR = 1.0;
+        this.earHistory = [];
     }
 
-    checkLiveness(detection = null) {
-        const hasBlink = this.blinkCount >= 2;
+    checkLiveness(detection = null, options = {}) {
+        const minBlinks = options.minBlinks || 1;
+        const hasBlink = this.blinkCount >= minBlinks;
+        const strongBlink = this.blinkCount >= 2;
         const isStable = detection ? this.checkFaceStability(detection) : false;
+        const hasHeadMotion = this.headMotionScore >= 2;
 
         if (detection) {
             this.faceDetectedCount++;
         }
 
-        // Strict liveness: requires both blink AND stability
-        const strictLiveness = hasBlink && isStable;
-        
-        // Moderate liveness: requires blink OR stability plus more detections
-        const hasEnoughDetections = this.faceDetectedCount >= 8;
-        const moderateLiveness = hasEnoughDetections && (hasBlink || isStable);
-        
-        // Note: The pure detection count fallback (canProceed) was removed
-        // as it was too lenient and could allow photo-based bypass attempts.
-        // Server-side verification still runs as an additional layer of security.
-        // If users have issues with liveness, they can use password verification as fallback.
+        const strictLiveness = strongBlink && (isStable || hasHeadMotion);
+        const motionBlinkLiveness = hasBlink && hasHeadMotion;
+        const fastLiveness = hasBlink && isStable;
 
-        return strictLiveness || moderateLiveness;
+        return strictLiveness || motionBlinkLiveness || fastLiveness || (hasBlink && this.faceDetectedCount >= 3);
     }
 }
 

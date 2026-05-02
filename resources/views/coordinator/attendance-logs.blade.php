@@ -65,7 +65,7 @@
     .dtr-attendance .table-responsive .table { min-width: 700px; margin-bottom: 0; }
     .dtr-attendance .table thead th {
         background: var(--attendance-surface-soft);
-        color: var(--attendance-muted);
+        color: var(--dtr-heading);
         font-weight: 600;
         font-size: 0.6875rem;
         text-transform: uppercase;
@@ -92,7 +92,14 @@
         color: var(--dtr-primary);
     }
     .dtr-attendance .search-wrap { margin-bottom: 1rem; }
-    .dtr-attendance .search-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; max-width: 320px; }
+    .dtr-attendance .search-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.625rem;
+        max-width: min(100%, 520px);
+        width: 100%;
+    }
     .dtr-attendance .search-inner { position: relative; flex: 1; min-width: 160px; }
     .dtr-attendance .search-input {
         width: 100%; padding: 0.4rem 2rem 0.4rem 2rem;
@@ -122,11 +129,6 @@
         cursor: pointer; transition: color 0.2s; text-decoration: none; font-size: 0.8125rem;
     }
     .dtr-attendance .search-clear:hover { background: transparent; color: var(--attendance-text); }
-    .dtr-attendance .btn-search {
-        padding: 0.45rem 0.9rem; font-size: 0.8125rem; font-weight: 600;
-        border-radius: 8px; white-space: nowrap; flex-shrink: 0;
-        letter-spacing: 0.02em;
-    }
     .dtr-attendance .search-hint { font-size: 0.8125rem; color: var(--attendance-muted); margin-top: 0.5rem; }
     .dtr-attendance .filter-tabs {
         display: flex; gap: 0; border-radius: 10px; overflow: hidden;
@@ -144,11 +146,16 @@
     }
     .dtr-attendance .filter-panel { display: none; }
     .dtr-attendance .filter-panel.active { display: block; }
-    .dtr-attendance .card-body form.row { align-items: center; }
-    .dtr-attendance .card-body form .btn-primary.btn-sm { min-height: 31px; display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.75rem; font-weight: 600; font-size: 0.875rem; border-radius: 10px; letter-spacing: 0.02em; }
-    .dtr-attendance .search-row { align-items: center; }
-    .dtr-attendance .search-input { min-height: 34px; }
-    .dtr-attendance .btn-search { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; }
+    .dtr-attendance .card-body form.row { align-items: flex-end; }
+    .dtr-attendance .card-body form.row.g-3 > .col-auto > .btn-primary.btn-sm { box-sizing: border-box; min-height: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; padding: 0 0.75rem; font-weight: 600; font-size: 0.8125rem; border-radius: 10px; letter-spacing: 0.01em; }
+    .dtr-attendance .search-input {
+        min-height: 40px;
+        align-self: stretch;
+        box-sizing: border-box;
+    }
+    .dtr-attendance .btn-search {
+        letter-spacing: 0.01em;
+    }
     .dtr-attendance .view-student-bar {
         display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem;
         padding: 0.75rem 1.25rem; margin-bottom: 1.25rem;
@@ -190,58 +197,153 @@
     }
     .dtr-attendance .text-center.py-4.text-muted .fs-2 { color: var(--attendance-muted); opacity: 0.45; }
     .dtr-attendance .text-muted.mb-0 { font-size: 0.9375rem; color: var(--attendance-muted); }
-    .dtr-attendance .invalidation-trigger-btn {
+    /* Invalidation modal + trigger — theme tokens (light / dark) */
+    .invalidate-attendance-modal .modal-content {
+        border-radius: 14px;
+        border: 1px solid var(--dtr-border-soft);
+        background: var(--dtr-card-bg);
+        color: var(--dtr-text);
+        box-shadow: var(--dtr-shadow-strong, 0 18px 50px rgba(15, 23, 42, 0.2));
+        overflow: hidden;
+    }
+    .invalidate-attendance-modal .modal-header {
+        border-bottom: 1px solid var(--dtr-border-soft);
+        padding: 1rem 1.15rem;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+    .invalidate-attendance-modal .invalidate-modal-head {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        flex: 1;
+        min-width: 0;
+    }
+    .invalidate-attendance-modal .invalidate-modal-icon {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #dc2626;
+        background: color-mix(in srgb, #dc2626 14%, transparent);
+        border: 1px solid color-mix(in srgb, #dc2626 28%, var(--dtr-border-soft));
+    }
+    html[data-theme="dark"] .invalidate-attendance-modal .invalidate-modal-icon {
+        color: #fca5a5;
+        background: rgba(248, 113, 113, 0.12);
+        border-color: rgba(248, 113, 113, 0.35);
+    }
+    .invalidate-attendance-modal .invalidate-modal-head .modal-title {
+        color: var(--dtr-heading);
+        font-weight: 700;
+        font-size: 1.0625rem;
+        letter-spacing: -0.02em;
+        line-height: 1.3;
+    }
+    .invalidate-attendance-modal .invalidate-modal-sub {
+        color: var(--dtr-muted) !important;
+        font-size: 0.835rem !important;
+        line-height: 1.45;
+        margin-top: 0.2rem !important;
+    }
+    .invalidate-attendance-modal .modal-body .form-label {
+        color: var(--dtr-heading);
+        font-weight: 600;
+        font-size: 0.82rem;
+    }
+    .invalidate-attendance-modal .modal-body textarea.form-control {
+        background: var(--dtr-input-bg);
+        border-color: var(--dtr-input-border);
+        color: var(--dtr-text);
+        border-radius: 10px;
+        min-height: 120px;
+        font-size: 0.9rem;
+    }
+    .invalidate-attendance-modal .modal-body textarea.form-control::placeholder {
+        color: var(--dtr-muted);
+    }
+    .invalidate-attendance-modal .modal-body textarea:focus {
+        border-color: color-mix(in srgb, var(--dtr-primary) 55%, var(--dtr-input-border));
+        box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--dtr-primary) 22%, transparent);
+        color: var(--dtr-text);
+        background: var(--dtr-input-bg);
+    }
+    .invalidate-attendance-modal .modal-footer {
+        border-top: 1px solid var(--dtr-border-soft);
+        padding: 0.85rem 1rem 1rem;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .invalidate-attendance-modal .btn-invalidate-cancel {
+        min-height: 42px;
+        border-radius: 10px;
+        font-weight: 600;
+        border-color: var(--dtr-input-border) !important;
+        color: var(--dtr-text) !important;
+        background: transparent !important;
+    }
+    .invalidate-attendance-modal .btn-invalidate-cancel:hover {
+        background: var(--dtr-hover-bg) !important;
+    }
+    .invalidate-attendance-modal .btn-invalidate-submit {
+        min-height: 42px;
+        border-radius: 10px;
+        font-weight: 700;
         display: inline-flex;
         align-items: center;
         gap: 0.35rem;
+    }
+    .dtr-attendance .btn-invalidate-open {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
         font-weight: 600;
+        font-size: 0.8125rem;
+        padding: 0.5rem 0.9rem;
         border-radius: 10px;
+        border: 1px solid color-mix(in srgb, #dc2626 42%, var(--dtr-border-soft));
+        background: color-mix(in srgb, #dc2626 10%, var(--dtr-card-bg));
+        color: #b91c1c !important;
+        white-space: nowrap;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
-    .coordinator-invalidation-modal {
-        background: linear-gradient(180deg, color-mix(in srgb, var(--dtr-card-solid) 94%, white 6%), var(--dtr-card-solid));
-        border: 1px solid var(--dtr-border-soft);
-        border-radius: 18px;
-        box-shadow: var(--dtr-shadow-strong);
-        color: var(--dtr-text);
+    .dtr-attendance .btn-invalidate-open:hover {
+        background: color-mix(in srgb, #dc2626 18%, var(--dtr-card-bg));
+        border-color: color-mix(in srgb, #dc2626 55%, var(--dtr-border-soft));
+        color: #991b1b !important;
     }
-    .coordinator-invalidation-modal .modal-header {
-        border-bottom-color: var(--dtr-border-soft);
+    html[data-theme="dark"] .dtr-attendance .btn-invalidate-open {
+        color: #fecaca !important;
+        border-color: rgba(248, 113, 113, 0.45);
+        background: rgba(248, 113, 113, 0.1);
     }
-    .coordinator-invalidation-modal .modal-title {
-        font-weight: 800;
-        color: var(--dtr-heading);
+    html[data-theme="dark"] .dtr-attendance .btn-invalidate-open:hover {
+        background: rgba(248, 113, 113, 0.16);
+        border-color: rgba(252, 165, 165, 0.55);
+        color: #fecaca !important;
     }
-    .coordinator-invalidation-modal .form-label {
-        font-size: 0.78rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--dtr-muted);
-        font-weight: 700;
-    }
-    .coordinator-invalidation-modal .form-control {
-        border-radius: 12px;
-        min-height: 46px;
-        border: 1px solid var(--dtr-input-border);
-        background: var(--dtr-input-bg);
-        color: var(--dtr-text);
-    }
-    .coordinator-invalidation-modal .form-control:focus {
-        border-color: rgba(45, 212, 191, 0.72);
-        box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.14);
+    html[data-theme="dark"] .invalidate-attendance-modal .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
     }
     html[data-theme="dark"] .dtr-attendance .stats-box {
-        background: #0f172a;
-        border-color: #334155;
+        background: var(--dtr-card-bg);
+        border-color: var(--dtr-border-soft);
     }
     html[data-theme="dark"] .dtr-attendance .card {
-        background: #0f172a;
-        border-color: #334155;
+        background: var(--dtr-card-bg);
+        border-color: var(--dtr-border-soft);
     }
     html[data-theme="dark"] .dtr-attendance .table thead th {
-        background: #1e293b;
+        background: var(--dtr-surface-soft);
+        color: var(--dtr-heading);
     }
     html[data-theme="dark"] .dtr-attendance .table tbody tr:hover {
-        background: rgba(148, 163, 184, 0.12);
+        background: var(--dtr-hover-bg);
     }
 </style>
 @endpush
@@ -249,7 +351,9 @@
 @section('content')
 @php
     $coordinator = auth()->guard('coordinator')->user();
-    $major = $coordinator->major ?? null;
+    $assignedProgramsList = isset($assignedPrograms) ? collect($assignedPrograms) : collect();
+    $major = $assignedProgramsList->implode(' · ');
+    $major = $major !== '' ? $major : ($coordinator->major ?? null);
 @endphp
 <div class="dtr-attendance">
     <h1 class="page-title">Attendance Logs</h1>
@@ -318,6 +422,26 @@
             </form>
         </div>
     </div>
+
+    @if($assignedProgramsList->isNotEmpty())
+    <div class="alert alert-info py-2 mb-3">
+        <i class="bi bi-info-circle me-2"></i>
+        Showing logs for
+        @foreach($assignedProgramsList as $i => $prog)
+            @if($i > 0), @endif
+            <strong>{{ $prog }}</strong>
+        @endforeach
+        @if($assignedProgramsList->count() > 1)
+            (students rostered across your assigned programs).
+        @else
+            only.
+        @endif
+    </div>
+    @elseif($major)
+    <div class="alert alert-info py-2 mb-3">
+        <i class="bi bi-info-circle me-2"></i>Showing logs for <strong>{{ $major }}</strong> only.
+    </div>
+    @endif
 
     @if(!empty($viewStudent))
     <div class="view-student-bar">
@@ -431,7 +555,7 @@
                                 </td>
                                 <td>
                                     @php
-                                        $hoursDisplay = $log->hours_rendered_display ?? $log->hours_rendered ?? null;
+                                        $hoursDisplay = $log->hours_rendered ?? null;
                                         if (empty($hoursDisplay)) {
                                             $totalMinutes = 0;
                                             $dateStr = \Carbon\Carbon::parse($log->date)->format('Y-m-d');
@@ -484,17 +608,16 @@
                                         <span class="text-muted small">—</span>
                                     @endif
                                 </td>
-                                <td>
-                                    <button
-                                        type="button"
-                                        class="btn btn-outline-danger btn-sm invalidation-trigger-btn js-open-invalidation-modal"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#coordinatorInvalidationModal"
-                                        data-action="{{ route('coordinator.attendance.invalidate', $log) }}"
-                                        data-date="{{ \Carbon\Carbon::parse($log->date)->format('M d, Y') }}"
-                                        data-student="{{ $viewStudent->name ?? 'Student' }}"
-                                    >
-                                        <i class="bi bi-shield-exclamation"></i> Request invalidation
+                                <td class="align-middle">
+                                    <button type="button"
+                                            class="btn btn-sm btn-invalidate-open"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#invalidateAttendanceModal"
+                                            data-invalidate-action="{{ route('coordinator.attendance.invalidate', $log) }}"
+                                            title="Request admin review to exclude this record from reports">
+                                        <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
+                                        <span class="d-none d-md-inline">Request invalidation</span>
+                                        <span class="d-inline d-md-none">Invalidate</span>
                                     </button>
                                 </td>
                             </tr>
@@ -543,44 +666,66 @@
         @endif
         </div>
     </div>
-</div>
 
-<div class="modal fade" id="coordinatorInvalidationModal" tabindex="-1" aria-labelledby="coordinatorInvalidationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content coordinator-invalidation-modal">
-            <form method="POST" id="coordinatorInvalidationForm">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title" id="coordinatorInvalidationModalLabel">Request Attendance Invalidation</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-muted small mb-2" id="coordinatorInvalidationTarget">You are about to submit an invalidation request.</p>
-                    <label for="coordinatorInvalidationReason" class="form-label">Reason</label>
-                    <textarea
-                        id="coordinatorInvalidationReason"
-                        name="reason"
-                        class="form-control"
-                        rows="4"
-                        maxlength="1000"
-                        placeholder="Reason (fraud/fake record)..."
-                        required
-                    ></textarea>
-                    <p class="text-muted small mt-2 mb-0">Admin approval is required before this record is excluded from reports.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-shield-exclamation me-1"></i> Submit request
-                    </button>
-                </div>
-            </form>
+    <div class="modal fade invalidate-attendance-modal" id="invalidateAttendanceModal" tabindex="-1" aria-labelledby="invalidateAttendanceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="invalidateAttendanceForm" method="POST" action="">
+                    @csrf
+                    <div class="modal-header">
+                        <div class="invalidate-modal-head">
+                            <span class="invalidate-modal-icon" aria-hidden="true"><i class="bi bi-shield-exclamation"></i></span>
+                            <div class="min-w-0">
+                                <h5 class="modal-title" id="invalidateAttendanceModalLabel">Request invalidation</h5>
+                                <p class="small mb-0 invalidate-modal-sub">Admin approval is required before this record can be excluded from official reports. Describe the issue clearly.</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="invalidateReasonInput" class="form-label">Reason <span class="text-danger">*</span></label>
+                        <textarea id="invalidateReasonInput"
+                                  name="reason"
+                                  class="form-control"
+                                  rows="4"
+                                  maxlength="1000"
+                                  required
+                                  placeholder="e.g. Incorrect time-in, duplicate entry, fraudulent record, wrong student…"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-invalidate-cancel" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit"
+                                class="btn btn-danger btn-invalidate-submit"
+                                data-norsu-confirm="Submit this invalidation request? An admin will review it before the record is excluded from reports."
+                                data-norsu-variant="warning">
+                            <i class="bi bi-send-fill" aria-hidden="true"></i> Submit request
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
 @push('scripts')
 <script>
+(function() {
+    var invModal = document.getElementById('invalidateAttendanceModal');
+    if (invModal) {
+        invModal.addEventListener('show.bs.modal', function (ev) {
+            var btn = ev.relatedTarget;
+            var form = document.getElementById('invalidateAttendanceForm');
+            if (!form || !btn || typeof btn.getAttribute !== 'function') return;
+            var action = btn.getAttribute('data-invalidate-action');
+            if (action) form.setAttribute('action', action);
+            var ta = document.getElementById('invalidateReasonInput');
+            if (ta) {
+                ta.value = '';
+                ta.classList.remove('is-invalid');
+            }
+        });
+    }
+})();
 (function() {
     var filterMonth = document.getElementById('filterMonth');
     var filterWeek = document.getElementById('filterWeek');
@@ -620,27 +765,6 @@
     if (filterMonth) filterMonth.addEventListener('change', updatePanels);
     if (filterWeek) filterWeek.addEventListener('change', updatePanels);
     updatePanels();
-})();
-
-(function () {
-    var modal = document.getElementById('coordinatorInvalidationModal');
-    var form = document.getElementById('coordinatorInvalidationForm');
-    var target = document.getElementById('coordinatorInvalidationTarget');
-    var reasonInput = document.getElementById('coordinatorInvalidationReason');
-    if (!modal || !form || !reasonInput) return;
-
-    document.querySelectorAll('.js-open-invalidation-modal').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            form.setAttribute('action', btn.getAttribute('data-action') || '');
-            var date = btn.getAttribute('data-date') || 'selected date';
-            var student = btn.getAttribute('data-student') || 'Student';
-            if (target) {
-                target.textContent = 'Request invalidation for ' + student + ' on ' + date + '.';
-            }
-            reasonInput.value = '';
-            reasonInput.focus();
-        });
-    });
 })();
 </script>
 @endpush

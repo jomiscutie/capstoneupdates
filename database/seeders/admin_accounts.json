@@ -1,0 +1,15 @@
+[
+  {
+    "name": "System Administrator",
+    "email": "admin@norsu.test",
+    "password": "admin12345",
+    "role": "super_admin"
+  },
+  {
+    "name": "System Administrator 2",
+    "email": "admin2@norsu.test",
+    "password": "admin12345",
+    "role": "super_admin"
+  }
+]
+

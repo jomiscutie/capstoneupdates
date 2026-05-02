@@ -8,7 +8,8 @@
     .dtr-report .dashboard-header > div { margin: 0 auto; width: 100%; }
     .dtr-report .dashboard-header h2,
     .dtr-report .dashboard-header p { text-align: center; }
-    .dtr-report .program-badge-inline { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; width: 100%; margin-top: 0.5rem; }
+    .dtr-report .program-badge-inline { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.45rem 0.65rem; width: 100%; margin-top: 0.5rem; }
+    .dtr-report .program-badge-inline span.badge-soft { font-size: 0.78rem; font-weight: 600; padding: 0.3rem 0.62rem; border-radius: 999px; background: var(--dtr-primary-soft); color: var(--dtr-primary); }
     .dtr-report .report-shell { max-width: 820px; margin: 0 auto; }
     .dtr-report .report-card { border-radius: 1.5rem; box-shadow: var(--dtr-shadow-soft); border: 1px solid var(--dtr-border-soft); background: var(--dtr-card-bg); overflow: hidden; }
     .dtr-report .report-card-header {
@@ -91,9 +92,12 @@
             <h2><i class="bi bi-file-earmark-pdf me-2"></i>Generate Monthly Report</h2>
             <p>Pick a month, choose <strong>one student</strong> for a PDF or <strong>several</strong> for a ZIP. Same list and search for both. PDF generation needs your server running (e.g. XAMPP).</p>
         </div>
-        @if(auth()->guard('coordinator')->user()->major)
+        @if(($assignedPrograms ?? collect())->isNotEmpty())
             <div class="program-badge-inline">
-                <i class="bi bi-mortarboard me-1"></i><strong>Program:</strong> {{ auth()->guard('coordinator')->user()->major }}
+                <i class="bi bi-mortarboard me-1" aria-hidden="true"></i><strong class="me-1">Programs:</strong>
+                @foreach($assignedPrograms as $programLabel)
+                    <span class="badge-soft">{{ $programLabel }}</span>
+                @endforeach
             </div>
         @endif
     </div>
@@ -459,14 +463,18 @@
             var n = form.querySelectorAll('.picker-batch:checked').length;
             if (n < 1) {
                 e.preventDefault();
-                alert('Select at least one student for the ZIP download.');
+                if (window.norsuPrompt) {
+                    window.norsuPrompt.alert('Select at least one student for the ZIP download.', { variant: 'warning', title: 'Nothing selected' });
+                }
                 return;
             }
         } else {
             var sel = form.querySelector('.picker-single:checked');
             if (!sel) {
                 e.preventDefault();
-                alert('Select a student to download the PDF.');
+                if (window.norsuPrompt) {
+                    window.norsuPrompt.alert('Select a student to download the PDF.', { variant: 'warning', title: 'Nothing selected' });
+                }
                 return;
             }
         }

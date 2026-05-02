@@ -6,24 +6,6 @@
 <style>
     .page-title { text-align: center; }
     .page-sub { text-align: center; }
-    .dashboard-card,
-    .time-log-card,
-    .attendance-card {
-        background: var(--dtr-card-bg);
-        border-color: var(--dtr-border-soft);
-        color: var(--dtr-text);
-    }
-    .time-log-table thead th,
-    .recent-logs-table thead th,
-    .table thead th {
-        color: var(--dtr-heading);
-        border-bottom-color: var(--dtr-border-strong);
-    }
-    .time-log-table tbody td,
-    .recent-logs-table tbody td,
-    .table tbody td {
-        border-bottom-color: var(--dtr-row-divider);
-    }
     .alert-warning.late-alert {
         border-radius: 12px;
         border-left: 4px solid #f59e0b;
@@ -41,57 +23,6 @@
     html[data-theme="dark"] .alert-warning.late-alert i { color: #fbbf24; }
     html[data-theme="dark"] .alert-warning.late-alert strong { color: #fcd34d; }
     .alert-attendance-error { border-left: 4px solid #dc2626; font-size: 0.9375rem; }
-    /* Single flex row: icon + one text block (avoids BS5 .alert flex child gaps) */
-    .alert-face-enrollment-missing {
-        display: flex;
-        flex-direction: row;
-        align-items: flex-start; /* override theme .alert { align-items: center } for multi-line copy */
-        gap: 0.6rem;
-        border-radius: 12px;
-        border-left: 4px solid #dc2626;
-        border: 1px solid rgba(220, 38, 38, 0.35);
-        background: rgba(220, 38, 38, 0.08);
-        color: #7f1d1d;
-        font-size: 0.92rem;
-        line-height: 1.45;
-        text-align: left;
-        margin-bottom: 1rem;
-    }
-    .alert-face-enrollment-missing .fe-icon {
-        flex-shrink: 0;
-        line-height: 1;
-        margin-top: 0.1rem;
-        color: #dc2626;
-        font-size: 1.1rem;
-    }
-    .alert-face-enrollment-missing .fe-body {
-        flex: 1;
-        min-width: 0;
-    }
-    .alert-face-enrollment-missing .fe-title {
-        display: block;
-        color: #991b1b;
-        font-weight: 700;
-        margin: 0 0 0.35rem 0;
-        line-height: 1.3;
-    }
-    .alert-face-enrollment-missing .fe-text {
-        margin: 0;
-    }
-    .alert-face-enrollment-missing a {
-        color: #1d4ed8;
-        font-weight: 600;
-        text-decoration: underline;
-        text-underline-offset: 2px;
-    }
-    html[data-theme="dark"] .alert-face-enrollment-missing {
-        border-color: rgba(248, 113, 113, 0.45);
-        background: rgba(239, 68, 68, 0.14);
-        color: #fecaca;
-    }
-    html[data-theme="dark"] .alert-face-enrollment-missing .fe-icon { color: #f87171; }
-    html[data-theme="dark"] .alert-face-enrollment-missing .fe-title { color: #fecaca; }
-    html[data-theme="dark"] .alert-face-enrollment-missing a { color: #93c5fd; }
     .attendance-status-notice { display: flex; flex-direction: column; gap: 0.5rem; }
     .notice-item.notice-recorded {
         display: flex; align-items: center;
@@ -103,167 +34,6 @@
         color: var(--dtr-text);
     }
     .notice-item.notice-recorded i { color: #d97706; flex-shrink: 0; }
-    .manual-request-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-        gap: 0.75rem;
-        margin-bottom: 0.9rem;
-    }
-    .manual-request-status {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.22rem 0.58rem;
-        border-radius: 999px;
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-    .manual-request-status.status-pending {
-        background: rgba(245, 158, 11, 0.16);
-        color: #b45309;
-    }
-    .manual-request-status.status-approved {
-        background: rgba(16, 185, 129, 0.16);
-        color: #047857;
-    }
-    .manual-request-status.status-rejected {
-        background: rgba(239, 68, 68, 0.14);
-        color: #b91c1c;
-    }
-    .manual-request-history td {
-        vertical-align: top;
-        font-size: 0.84rem;
-    }
-    .manual-request-history .table {
-        --bs-table-hover-bg: var(--dtr-hover-bg);
-        --bs-table-hover-color: var(--dtr-text);
-    }
-    .manual-request-history .table tbody tr:hover > td,
-    .manual-request-history .table tbody tr:hover > th {
-        background: var(--dtr-hover-bg) !important;
-        color: var(--dtr-text) !important;
-    }
-    html[data-theme="dark"] .manual-request-history .table tbody tr:hover > td,
-    html[data-theme="dark"] .manual-request-history .table tbody tr:hover > th {
-        background: #1b2538 !important;
-        color: #f8fbff !important;
-    }
-    html[data-theme="dark"] .manual-request-history .table tbody tr:hover > td .text-muted,
-    html[data-theme="dark"] .manual-request-history .table tbody tr:hover > td .small {
-        color: #c9d5e7 !important;
-    }
-    .manual-request-history .reviewer-meta {
-        color: color-mix(in srgb, var(--dtr-text) 78%, var(--dtr-muted) 22%) !important;
-        font-weight: 600;
-    }
-    .manual-request-history .table tbody tr:hover .reviewer-meta {
-        color: var(--dtr-heading) !important;
-    }
-    html[data-theme="dark"] .manual-request-history .reviewer-meta {
-        color: color-mix(in srgb, var(--dtr-text) 84%, var(--dtr-muted) 16%) !important;
-    }
-    .manual-request-tools {
-        margin-top: 0.6rem;
-    }
-    .manual-request-tools .btn-view-requests {
-        border-radius: 12px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        padding: 0.38rem 0.74rem;
-        border-color: color-mix(in srgb, var(--dtr-primary) 44%, var(--dtr-border-soft) 56%);
-        color: var(--dtr-primary);
-        background: color-mix(in srgb, var(--dtr-primary) 9%, transparent 91%);
-    }
-    .manual-request-tools .btn-view-requests:hover {
-        background: color-mix(in srgb, var(--dtr-primary) 18%, transparent 82%);
-        color: var(--dtr-primary);
-        border-color: color-mix(in srgb, var(--dtr-primary) 64%, var(--dtr-border-soft) 36%);
-    }
-    .manual-request-modal .modal-content {
-        border-radius: 16px;
-        border: 1px solid var(--dtr-border-soft);
-        background: var(--dtr-card-bg);
-        box-shadow: var(--dtr-shadow-soft);
-    }
-    .manual-request-filter {
-        display: flex;
-        align-items: end;
-        gap: 0.65rem;
-        margin-bottom: 0.8rem;
-    }
-    .manual-request-filter .form-label {
-        color: var(--dtr-muted);
-        margin-bottom: 0.3rem;
-    }
-    .manual-request-filter .form-select {
-        min-width: 200px;
-    }
-    .manual-request-filter .form-control[type="month"] {
-        min-width: 200px;
-    }
-    .manual-request-filter .btn {
-        font-size: 0.8rem;
-        font-weight: 500;
-        padding: 0.36rem 0.72rem;
-        border-radius: 10px;
-    }
-    .manual-request-empty {
-        border: 1px dashed var(--dtr-border-soft);
-        border-radius: 12px;
-        padding: 0.9rem;
-        color: var(--dtr-muted);
-        text-align: center;
-        font-size: 0.88rem;
-    }
-    @media (max-width: 576px) {
-        .manual-request-filter {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .manual-request-filter .form-select {
-            min-width: 0;
-        }
-        .manual-request-filter .form-control[type="month"] {
-            min-width: 0;
-        }
-        .manual-request-tools {
-            margin-top: 0.7rem;
-        }
-        .manual-request-tools .btn-view-requests {
-            width: 100%;
-        }
-    }
-    /* Face verification: modal must sit above Bootstrap backdrop (backdrop is 1050) */
-    #faceVerificationModal.modal { z-index: 1060 !important; }
-    #faceVerificationModal .modal-dialog { z-index: 1061; }
-    #faceVerificationModal .modal-content { position: relative; overflow: hidden; }
-    #faceVerificationModal .modal-body { position: relative; z-index: 0; }
-    #faceVerificationModal .position-relative.d-inline-block {
-        overflow: hidden;
-        max-height: 50vh;
-        position: relative;
-        z-index: 0;
-    }
-    #faceVerificationModal #faceCanvas,
-    #faceVerificationModal #faceVideo {
-        pointer-events: none !important;
-    }
-    /* Un-mirror front camera so preview and ID are not inverted */
-    #faceVerificationModal #faceVideo {
-        transform: scaleX(-1);
-    }
-    #faceVerificationModal #faceCanvas {
-        transform: scaleX(-1);
-    }
-    #verificationStatus.flash-alert {
-        animation: faceMismatchFlash 0.22s ease-in-out 0s 4;
-    }
-    @keyframes faceMismatchFlash {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-3px); }
-        75% { transform: translateX(3px); }
-    }
     .term-status-card {
         border-radius: 16px;
         padding: 1.2rem 1.35rem;
@@ -377,33 +147,344 @@
         font-size: 0.76rem;
         font-weight: 600;
     }
+
+    /* ---- Student dashboard shell (light / dark adaptive) ---- */
+    .stu-dash {
+        max-width: 920px;
+        margin: 0 auto;
+        padding-bottom: 1.5rem;
+    }
+    .stu-dash > .page-title {
+        margin: 0 0 0.35rem;
+        font-size: clamp(1.45rem, 3.5vw, 1.75rem);
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        color: var(--dtr-heading);
+        text-align: center;
+    }
+    .stu-dash > .page-sub {
+        margin: 0 auto 1.35rem;
+        text-align: center;
+        font-size: 0.9375rem;
+        color: var(--dtr-muted);
+        max-width: 36rem;
+    }
+    .stu-dash .term-status-card {
+        margin-bottom: 1.25rem;
+    }
+
+    .stu-dash .card-section {
+        background: var(--dtr-card-bg);
+        border: 1px solid var(--dtr-border-soft);
+        border-radius: 16px;
+        box-shadow: var(--dtr-shadow-soft);
+        padding: 1.2rem 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+    .stu-dash .card-section > .card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0 0 0.9rem;
+        margin: 0 0 1rem;
+        border-bottom: 1px solid var(--dtr-border-soft);
+        border-radius: 0;
+        background: transparent !important;
+    }
+    .stu-dash .card-section > .card-header i {
+        font-size: 1.2rem;
+        color: var(--dtr-primary);
+        flex-shrink: 0;
+    }
+    .stu-dash .card-section > .card-header h4 {
+        margin: 0;
+        font-size: 1.0625rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--dtr-heading);
+    }
+
+    .stu-dash .alert {
+        padding: 0.62rem 0.92rem;
+        font-size: 0.878rem;
+        line-height: 1.45;
+        border-radius: 12px;
+        margin-bottom: 0.6rem;
+        border-width: 1px;
+        box-shadow: none;
+    }
+    .stu-dash .alert:last-of-type { margin-bottom: 1rem; }
+    .stu-dash .alert .btn-close {
+        padding: 0.6rem;
+    }
+    html[data-theme="dark"] .stu-dash .alert-success {
+        background: rgba(34, 197, 94, 0.12);
+        border-color: rgba(34, 197, 94, 0.38);
+        color: #bbf7d0;
+    }
+    html[data-theme="dark"] .stu-dash .alert-warning:not(.late-alert) {
+        background: rgba(245, 158, 11, 0.12);
+        border-color: rgba(245, 158, 11, 0.4);
+        color: #fde68a;
+    }
+    html[data-theme="dark"] .stu-dash .alert-danger {
+        background: rgba(248, 113, 113, 0.1);
+        border-color: rgba(248, 113, 113, 0.4);
+        color: #fecaca;
+    }
+    html[data-theme="dark"] .stu-dash .alert-info {
+        background: rgba(59, 130, 246, 0.12);
+        border-color: rgba(59, 130, 246, 0.38);
+        color: #bfdbfe;
+    }
+
+    .stu-dash .attendance-status-notice {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-bottom: 1rem !important;
+    }
+    .stu-dash .notice-item.notice-recorded {
+        flex: 1 1 auto;
+        min-width: min(100%, 200px);
+        max-width: 100%;
+        padding: 0.5rem 0.75rem;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        line-height: 1.38;
+        background: color-mix(in srgb, #d97706 10%, var(--dtr-card-bg));
+        border: 1px solid color-mix(in srgb, #d97706 32%, var(--dtr-border-soft));
+        color: var(--dtr-text);
+    }
+    html[data-theme="dark"] .stu-dash .notice-item.notice-recorded {
+        background: rgba(251, 191, 36, 0.08);
+        border-color: rgba(251, 191, 36, 0.32);
+        color: var(--dtr-text);
+    }
+    .stu-dash .notice-item.notice-recorded i {
+        color: #c2410c;
+        margin-right: 0.35rem;
+    }
+    html[data-theme="dark"] .stu-dash .notice-item.notice-recorded i {
+        color: #fbbf24;
+    }
+
+    .stu-dash .time-display {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1.15rem;
+    }
+    @media (max-width: 620px) {
+        .stu-dash .time-display { grid-template-columns: 1fr; }
+    }
+    .stu-dash .time-item {
+        padding: 0.92rem 1rem;
+        border-radius: 12px;
+        background: var(--dtr-surface-soft);
+        border: 1px solid var(--dtr-border-soft);
+        text-align: left;
+        min-height: 4.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .stu-dash .time-item .label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--dtr-muted);
+        margin-bottom: 0.3rem;
+    }
+    .stu-dash .time-item .value {
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: var(--dtr-heading);
+        font-variant-numeric: tabular-nums;
+        line-height: 1.25;
+    }
+    .stu-dash .time-item #clock { font-size: 1.2rem; }
+
+    .stu-dash .text-muted.small,
+    .stu-dash p.text-muted.small {
+        font-size: 0.8125rem;
+        line-height: 1.5;
+        color: var(--dtr-muted) !important;
+    }
+
+    .stu-dash .late-alert {
+        border-radius: 12px !important;
+        padding: 0.65rem 0.92rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .stu-dash .attendance-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+        gap: 0.75rem;
+    }
+    .stu-dash .summary-item {
+        padding: 0.82rem 0.92rem;
+        border-radius: 12px;
+        background: var(--dtr-surface-soft);
+        border: 1px solid var(--dtr-border-soft);
+        min-height: 4.85rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.35rem;
+    }
+    .stu-dash .summary-item .label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--dtr-muted);
+        line-height: 1.2;
+    }
+    .stu-dash .summary-item .value {
+        font-size: 0.95rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--dtr-heading);
+        line-height: 1.35;
+        word-break: break-word;
+    }
+    .stu-dash .summary-item .badge {
+        font-weight: 700;
+        font-size: 0.78rem !important;
+        padding: 0.35rem 0.55rem !important;
+        border-radius: 8px !important;
+    }
+    .stu-dash .stu-dash-empty-attendance i {
+        color: var(--dtr-muted) !important;
+        opacity: 0.85;
+    }
+    .stu-dash-kiosk-hint {
+        padding: 0.75rem 0.95rem;
+        border-radius: 12px;
+        background: var(--dtr-surface-soft);
+        border: 1px solid var(--dtr-border-soft);
+        line-height: 1.5;
+    }
+    .stu-dash .stu-dash-manual-form .form-label {
+        color: var(--dtr-muted);
+        font-weight: 600;
+    }
+    /* Manual requests modal */
+    .stu-manual-requests-modal .modal-content {
+        border-radius: 16px;
+        border: 1px solid var(--dtr-border-soft);
+        background: var(--dtr-card-bg);
+        color: var(--dtr-text);
+        box-shadow: var(--dtr-shadow-soft, 0 18px 50px rgba(15, 23, 42, 0.18));
+        overflow: hidden;
+    }
+    .stu-manual-requests-modal .modal-header {
+        border-bottom: 1px solid var(--dtr-border-soft);
+        padding: 1rem 1.15rem;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    .stu-manual-requests-modal .manual-req-modal-head {
+        display: flex;
+        gap: 0.85rem;
+        align-items: flex-start;
+        flex: 1;
+        min-width: 0;
+    }
+    .stu-manual-requests-modal .manual-req-modal-icon {
+        flex-shrink: 0;
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: var(--dtr-primary);
+        background: var(--dtr-primary-soft);
+        border: 1px solid color-mix(in srgb, var(--dtr-primary) 28%, var(--dtr-border-soft));
+    }
+    .stu-manual-requests-modal .modal-title {
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--dtr-heading);
+        font-size: 1.08rem;
+    }
+    .stu-manual-requests-modal .manual-req-modal-sub {
+        color: var(--dtr-muted) !important;
+        font-size: 0.84rem !important;
+        line-height: 1.45;
+        margin-top: 0.2rem !important;
+    }
+    .stu-manual-requests-modal .modal-body {
+        padding-top: 1rem;
+    }
+    .stu-manual-requests-modal .manual-req-filter-card {
+        padding: 1rem 1.05rem;
+        border-radius: 14px;
+        background: var(--dtr-surface-soft);
+        border: 1px solid var(--dtr-border-soft);
+        margin-bottom: 1rem;
+    }
+    .stu-manual-requests-modal .manual-req-filter-card .form-label {
+        color: var(--dtr-heading);
+        font-size: 0.8rem;
+    }
+    .stu-manual-requests-modal .manual-req-month-input {
+        max-width: 14rem;
+        min-height: 46px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        background: var(--dtr-input-bg);
+        border: 1.5px solid var(--dtr-input-border);
+        color: var(--dtr-text);
+    }
+    .stu-manual-requests-modal .manual-req-month-input:focus {
+        border-color: color-mix(in srgb, var(--dtr-primary) 55%, var(--dtr-input-border));
+        box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--dtr-primary) 18%, transparent);
+    }
+    .stu-manual-requests-modal .manual-requests-table-wrap {
+        border-color: var(--dtr-border-soft) !important;
+        background: var(--dtr-card-bg);
+    }
+    .stu-manual-requests-modal .manual-requests-table-wrap thead th {
+        background: var(--dtr-surface-soft);
+        color: var(--dtr-heading);
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-bottom-color: var(--dtr-border-soft);
+        white-space: nowrap;
+    }
+    .stu-manual-requests-modal .manual-requests-table-wrap tbody td {
+        border-color: var(--dtr-border-soft);
+        vertical-align: top;
+        font-size: 0.875rem;
+    }
+    html[data-theme="dark"] .stu-manual-requests-modal .manual-requests-table-wrap .table-light {
+        --bs-table-bg: var(--dtr-surface-soft);
+        --bs-table-color: var(--dtr-heading);
+    }
+    html[data-theme="dark"] .stu-manual-requests-modal .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+    .stu-manual-requests-modal .modal-footer {
+        padding: 0.75rem 1rem 1.1rem;
+    }
 </style>
 @endpush
 
 @section('content')
     @if(auth()->guard('student')->check())
-        @php
-            $showLunchBreakButton = false;
-            $timeOutCoolingDown = !empty($timeOutUnlockAtIso ?? null);
-            $canTimeOut = false;
-            $showTimeOutLockedHint = true;
-        @endphp
+        <div class="stu-dash">
         <h1 class="page-title">Dashboard</h1>
         <p class="page-sub">Welcome, {{ auth()->guard('student')->user()->name }}</p>
-
-        @if(empty(optional(auth()->guard('student')->user())->face_encoding))
-            <div class="alert alert-face-enrollment-missing" role="alert">
-                <i class="bi bi-camera-video-off fe-icon" aria-hidden="true"></i>
-                <div class="fe-body">
-                    <span class="fe-title">Face enrollment is missing</span>
-                    <p class="fe-text">
-                        Your account may have been registered on a device without camera access. Complete face enrollment in
-                        <a href="{{ route('student.settings') }}">Settings</a>
-                        before using camera verification for attendance.
-                    </p>
-                </div>
-            </div>
-        @endif
         
         <div class="term-status-card">
             <div class="term-status-head">
@@ -441,16 +522,22 @@
             @endif
         </div>
 
-        <!-- Time & Actions Card -->
+        <!-- Today & Manila time -->
         <div class="card-section">
             <div class="card-header">
-                <i class="bi bi-clock-history"></i>
-                <h4>Time & Attendance</h4>
+                <i class="bi bi-calendar3"></i>
+                <h4>Today &amp; Manila time</h4>
             </div>
 
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show">
                     <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            @if(session('info'))
+                <div class="alert alert-info alert-dismissible fade show">
+                    <i class="bi bi-info-circle me-2"></i>{{ session('info') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
@@ -463,7 +550,10 @@
             @if(session('error'))
                 <div class="alert alert-danger alert-dismissible fade show {{ session('error_type') ? 'alert-attendance-error' : '' }}">
                     <i class="bi bi-shield-exclamation me-2"></i>
-                    <strong>Verification:</strong> {{ session('error') }}
+                    @if(session('error_type'))
+                        <strong>Verification:</strong>
+                    @endif
+                    {{ session('error') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
@@ -473,44 +563,29 @@
                 @if($attendance->time_in)
                     <div class="notice-item notice-recorded">
                         <i class="bi bi-check-circle-fill me-2"></i>
-                        <span>Morning time-in already recorded today at <strong>{{ $attendance->time_in_12 }}</strong>. Duplicate not allowed.</span>
+                        <span>Morning time-in recorded today at <strong>{{ $attendance->time_in_12 }}</strong>.</span>
                     </div>
                 @endif
                 @if($attendance->afternoon_time_in)
                     <div class="notice-item notice-recorded">
                         <i class="bi bi-check-circle-fill me-2"></i>
-                        <span>Afternoon time-in already recorded today at <strong>{{ $attendance->afternoon_time_in_12 }}</strong>. Duplicate not allowed.</span>
+                        <span>Afternoon time-in recorded today at <strong>{{ $attendance->afternoon_time_in_12 }}</strong>.</span>
                     </div>
                 @endif
                 @if($attendance->lunch_break_out)
                     <div class="notice-item notice-recorded">
                         <i class="bi bi-check-circle-fill me-2"></i>
-                        <span>Lunch / break out already recorded today at <strong>{{ $attendance->lunch_break_out_12 }}</strong> (DTR morning departure).</span>
+                        <span>Lunch / break out recorded at <strong>{{ $attendance->lunch_break_out_12 }}</strong> (A.M. departure).</span>
                     </div>
                 @endif
                 @if($attendance->time_out)
                     <div class="notice-item notice-recorded">
                         <i class="bi bi-check-circle-fill me-2"></i>
-                        <span>Time-out already recorded today at <strong>{{ $attendance->time_out_12 }}</strong>. Duplicate not allowed.</span>
+                        <span>Time-out recorded today at <strong>{{ $attendance->time_out_12 }}</strong>.</span>
                     </div>
                 @endif
             </div>
             @endif
-
-            @php
-                $showLunchBreakButton = isset($attendance) && $attendance
-                    && $attendance->time_in
-                    && ! $attendance->lunch_break_out
-                    && ! $attendance->afternoon_time_in
-                    && ! $attendance->time_out;
-                $timeOutCoolingDown = !empty($timeOutUnlockAtIso ?? null);
-                $canTimeOut = isset($attendance) && $attendance
-                    && ($attendance->time_in || $attendance->afternoon_time_in)
-                    && ! $attendance->time_out
-                    && ! $timeOutCoolingDown;
-                $showTimeOutLockedHint = ! $canTimeOut && (! isset($attendance) || ! $attendance
-                    || ((! $attendance->time_in && ! $attendance->afternoon_time_in) && ! $attendance->time_out));
-            @endphp
 
             <div class="time-display">
                 <div class="time-item">
@@ -518,151 +593,16 @@
                     <div class="value" id="day">-</div>
                 </div>
                 <div class="time-item">
-                    <div class="label">Current Time</div>
+                    <div class="label">Current time</div>
                     <div class="value" id="clock">-</div>
                 </div>
                 <div class="time-item">
-                    <div class="label">Month & Year</div>
+                    <div class="label">Month &amp; year</div>
                     <div class="value" id="month-year">-</div>
                 </div>
             </div>
 
-        </div>
-
-        <div class="card-section">
-            <div class="card-header">
-                <i class="bi bi-journal-medical"></i>
-                <h4>Manual Attendance Request</h4>
-            </div>
-            <p class="text-muted small mt-0 mb-3">
-                If you used the physical logbook due to power outage or device failure, submit the date and logbook times here.
-                Your attendance will only appear after your coordinator approves and verifies your reason.
-            </p>
-            <form method="POST" action="{{ route('student.manual.request') }}">
-                @csrf
-                <div class="manual-request-grid">
-                    <div>
-                        <label class="form-label small" for="manual_attendance_date">Attendance date</label>
-                        <input type="date" class="form-control form-control-sm" id="manual_attendance_date" name="attendance_date" value="{{ old('attendance_date') }}" min="{{ now('Asia/Manila')->year }}-01-01" required>
-                    </div>
-                    <div>
-                        <label class="form-label small" for="manual_time_in">Morning Time In</label>
-                        <input type="time" class="form-control form-control-sm" id="manual_time_in" name="time_in" value="{{ old('time_in') }}" max="21:00">
-                    </div>
-                    <div>
-                        <label class="form-label small" for="manual_lunch_out">Lunch / break out</label>
-                        <input type="time" class="form-control form-control-sm" id="manual_lunch_out" name="lunch_break_out" value="{{ old('lunch_break_out') }}" max="21:00">
-                    </div>
-                    <div>
-                        <label class="form-label small" for="manual_afternoon_in">Afternoon Time In</label>
-                        <input type="time" class="form-control form-control-sm" id="manual_afternoon_in" name="afternoon_time_in" value="{{ old('afternoon_time_in') }}" max="21:00">
-                    </div>
-                    <div>
-                        <label class="form-label small" for="manual_time_out">Time Out</label>
-                        <input type="time" class="form-control form-control-sm" id="manual_time_out" name="time_out" value="{{ old('time_out') }}" max="21:00">
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label small" for="manual_reason">Reason (required)</label>
-                    <textarea class="form-control form-control-sm" id="manual_reason" name="reason" rows="2" maxlength="1500" placeholder="Example: Power interruption in our area from 8:00 AM to 4:00 PM; attendance was recorded in the company logbook and validated by the coordinator/admin." required>{{ old('reason') }}</textarea>
-                </div>
-                <button type="submit" class="btn btn-action btn-timein">
-                    <i class="bi bi-send-check"></i> Submit request for coordinator/admin approval
-                </button>
-                <div class="manual-request-tools">
-                    <button type="button" class="btn btn-sm btn-outline-primary btn-view-requests" data-bs-toggle="modal" data-bs-target="#manualRequestsModal">
-                        <i class="bi bi-calendar2-week me-1"></i> View Manual Requests
-                    </button>
-                </div>
-            </form>
             
-        </div>
-
-        <div class="modal fade manual-request-modal" id="manualRequestsModal" tabindex="-1" aria-labelledby="manualRequestsModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="manualRequestsModalLabel">
-                            <i class="bi bi-journal-text me-2"></i>Manual Attendance Requests
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="GET" action="{{ route('student.dashboard') }}" class="manual-request-filter">
-                            <input type="hidden" name="filter" value="{{ $filter ?? 'month' }}">
-                            <input type="hidden" name="month" value="{{ $selectedMonth ?? now('Asia/Manila')->format('Y-m') }}">
-                            <input type="hidden" name="week_start" value="{{ $weekStartInput ?? '' }}">
-                            <input type="hidden" name="week_end" value="{{ $weekEndInput ?? '' }}">
-                            <div>
-                                <label class="form-label small" for="manual_month">Filter month</label>
-                                <input
-                                    class="form-control form-control-sm"
-                                    type="month"
-                                    id="manual_month"
-                                    name="manual_month"
-                                    value="{{ $manualSelectedMonth ?? now('Asia/Manila')->format('Y-m') }}"
-                                    min="{{ now('Asia/Manila')->year }}-01"
-                                >
-                                {{-- Keep options list fallback for legacy browsers that may not support type=month --}}
-                                <select class="form-select form-select-sm d-none" aria-hidden="true" tabindex="-1">
-                                    @foreach(($manualMonthOptions ?? collect()) as $monthOption)
-                                        <option value="{{ $monthOption['value'] }}" {{ ($manualSelectedMonth ?? now('Asia/Manila')->format('Y-m')) === $monthOption['value'] ? 'selected' : '' }}>
-                                            {{ $monthOption['label'] }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-sm btn-primary">
-                                <i class="bi bi-funnel me-1"></i> Apply
-                            </button>
-                        </form>
-
-                        @if(isset($manualRequests) && $manualRequests->count() > 0)
-                            <div class="table-container manual-request-history">
-                                <table class="table mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Status</th>
-                                            <th>Reason</th>
-                                            <th>Coordinator/Admin note</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($manualRequests as $requestRow)
-                                            <tr>
-                                                <td>{{ $requestRow->attendance_date?->format('M d, Y') }}</td>
-                                                <td>
-                                                    <span class="manual-request-status status-{{ $requestRow->status }}">
-                                                        {{ ucfirst($requestRow->status) }}
-                                                    </span>
-                                                </td>
-                                                <td>{{ $requestRow->reason }}</td>
-                                                <td>
-                                                    @if($requestRow->coordinator_note)
-                                                        <div>{{ $requestRow->coordinator_note }}</div>
-                                                        @if($requestRow->reviewed_at)
-                                                            <div class="small text-muted mt-1 reviewer-meta">
-                                                                {{ $requestRow->reviewer?->name ? 'Coordinator: '.$requestRow->reviewer->name : 'Reviewed by admin' }}
-                                                            </div>
-                                                        @endif
-                                                    @else
-                                                        -
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @else
-                            <div class="manual-request-empty">
-                                No manual attendance requests found for this month.
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Today's Attendance Summary -->
@@ -672,12 +612,29 @@
                 <h4>Today's Attendance</h4>
             </div>
             @if(isset($attendance) && $attendance)
+                @if($attendance->is_late || $attendance->afternoon_is_late)
+                <div class="alert alert-warning late-alert mb-3">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Late Arrival:</strong>
+                    @if($attendance->is_late && $attendance->afternoon_is_late)
+                        Morning: {{ $attendance->late_display }} late | Afternoon: {{ $attendance->afternoon_late_display }} late
+                    @elseif($attendance->is_late)
+                        Morning: {{ $attendance->late_display }} late
+                    @elseif($attendance->afternoon_is_late)
+                        Afternoon: {{ $attendance->afternoon_late_display }} late
+                    @endif
+                </div>
+                @endif
                 <div class="attendance-summary-grid">
                     <div class="summary-item">
                         <div class="label">Morning Time In</div>
                         <div class="value">
                             @if($attendance->time_in)
-                                <span class="badge bg-success">{{ $attendance->time_in_12 }}</span>
+                                @if($attendance->is_late)
+                                    <span class="badge bg-warning text-dark me-1">{{ $attendance->time_in_12 }}</span>
+                                @else
+                                    <span class="badge bg-success">{{ $attendance->time_in_12 }}</span>
+                                @endif
                             @else
                                 <span class="text-muted">-</span>
                             @endif
@@ -691,7 +648,11 @@
                         <div class="label">Afternoon Time In</div>
                         <div class="value">
                             @if($attendance->afternoon_time_in)
-                                <span class="badge bg-success">{{ $attendance->afternoon_time_in_12 }}</span>
+                                @if($attendance->afternoon_is_late)
+                                    <span class="badge bg-warning text-dark me-1">{{ $attendance->afternoon_time_in_12 }}</span>
+                                @else
+                                    <span class="badge bg-success">{{ $attendance->afternoon_time_in_12 }}</span>
+                                @endif
                             @else
                                 <span class="text-muted">-</span>
                             @endif
@@ -705,7 +666,7 @@
                         <div class="label">Hours Rendered</div>
                         <div class="value">
                             @php
-                                $hoursRendered = $attendance->hours_rendered_display ?? '';
+                                $hoursRendered = $attendance->hours_rendered ?? '';
                             @endphp
                             @if($hoursRendered !== '')
                                 {{ str_replace([' hr ', ' min', ' hr'], ['h ', 'm', 'h'], $hoursRendered) }}
@@ -716,20 +677,155 @@
                     </div>
                 </div>
             @else
-                <div class="text-center py-4">
-                    <i class="bi bi-calendar-x" style="font-size: 3rem; color: var(--dtr-muted);"></i>
+                <div class="text-center py-4 stu-dash-empty-attendance">
+                    <i class="bi bi-calendar-x" style="font-size: 3rem;"></i>
                     <p class="text-muted mt-3 mb-0">No attendance record for today</p>
                 </div>
             @endif
         </div>
 
+        @php $maxManualDate = now('Asia/Manila')->format('Y-m-d'); @endphp
+        <div class="card-section" id="manual-request-form-card">
+            <div class="card-header align-items-start flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2 flex-grow-1 min-w-0">
+                    <i class="bi bi-journal-plus"></i>
+                    <h4 class="mb-0">Manual attendance request</h4>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm flex-shrink-0 text-nowrap" data-bs-toggle="modal" data-bs-target="#manualRequestsHistoryModal">
+                    <i class="bi bi-list-ul me-1"></i>View recent requests
+                </button>
+            </div>
+            <p class="text-muted small mb-3">Request a manual entry when you missed the kiosk or need a correction. Enter the <strong>date</strong> and at least <strong>one time</strong>. Your coordinator must approve before it appears on your record. You cannot request a date that already has attendance — use your coordinator for invalidations.</p>
+
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <strong class="d-block mb-1">Please fix the following:</strong>
+                    <ul class="mb-0 ps-3 small">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('student.manual.request') }}" class="stu-dash-manual-form">
+                @csrf
+                <div class="row g-2 g-md-3">
+                    <div class="col-md-6">
+                        <label for="manual_attendance_date" class="form-label">Attendance date <span class="text-danger">*</span></label>
+                        <input type="date" name="attendance_date" id="manual_attendance_date" class="form-control" required max="{{ $maxManualDate }}" value="{{ old('attendance_date', $maxManualDate) }}">
+                    </div>
+                </div>
+                <div class="row g-2 g-md-3 mt-2 stu-dash-manual-times">
+                    <div class="col-6 col-lg-3">
+                        <label class="form-label" for="manual_time_in">Morning time in</label>
+                        <input type="time" step="60" name="time_in" id="manual_time_in" class="form-control" value="{{ old('time_in') }}">
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <label class="form-label" for="manual_lunch">A.M. departure (lunch)</label>
+                        <input type="time" step="60" name="lunch_break_out" id="manual_lunch" class="form-control" value="{{ old('lunch_break_out') }}">
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <label class="form-label" for="manual_pm_in">Afternoon time in</label>
+                        <input type="time" step="60" name="afternoon_time_in" id="manual_pm_in" class="form-control" value="{{ old('afternoon_time_in') }}">
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <label class="form-label" for="manual_time_out">Time out</label>
+                        <input type="time" step="60" name="time_out" id="manual_time_out" class="form-control" value="{{ old('time_out') }}">
+                    </div>
+                </div>
+                <p class="text-muted small mb-0 mt-1">Times must be in realistic order (morning in → lunch out → afternoon in → out).</p>
+                <div class="mt-3">
+                    <label for="manual_reason" class="form-label">Reason <span class="text-danger">*</span></label>
+                    <textarea name="reason" id="manual_reason" class="form-control" rows="3" required maxlength="1500" placeholder="e.g. Kiosk unavailable, supervised off-site activity, verified by supervisor…">{{ old('reason') }}</textarea>
+                </div>
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send-fill me-1"></i>Submit request
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#manualRequestsHistoryModal">
+                        <i class="bi bi-inboxes me-1"></i>See your requests
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        @php $manualModalMaxMonth = now('Asia/Manila')->format('Y-m'); @endphp
+        <div class="modal fade stu-manual-requests-modal" id="manualRequestsHistoryModal" tabindex="-1" aria-labelledby="manualRequestsHistoryModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="manual-req-modal-head">
+                            <span class="manual-req-modal-icon" aria-hidden="true"><i class="bi bi-inboxes"></i></span>
+                            <div class="min-w-0">
+                                <h5 class="modal-title mb-0" id="manualRequestsHistoryModalLabel">Recent manual requests</h5>
+                                <p class="manual-req-modal-sub mb-0">Pick a month to see what you submitted and your coordinator’s decision.</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="manual-req-filter-card">
+                            <label for="manualRequestsMonthPicker" class="form-label">Calendar month</label>
+                            <div class="d-flex flex-wrap align-items-stretch align-items-md-end gap-2">
+                                <input type="month"
+                                       id="manualRequestsMonthPicker"
+                                       class="form-control manual-req-month-input"
+                                       max="{{ $manualModalMaxMonth }}"
+                                       value="{{ $manualModalMaxMonth }}"
+                                       aria-describedby="manualRequestsMonthHelp">
+                                <button type="button" class="btn btn-primary manual-req-refresh-btn" id="manualRequestsReloadBtn">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                                </button>
+                            </div>
+                            <p class="small mb-0 pt-2 mt-3 border-top" style="border-color: var(--dtr-border-soft) !important;">
+                                <span class="text-muted">Showing:&nbsp;</span>
+                                <span id="manualRequestsMonthLabelBadge" style="color: var(--dtr-heading);" class="fw-semibold">—</span>
+                            </p>
+                            <p id="manualRequestsMonthHelp" class="text-muted small mb-0 mt-2">Uses the native month picker — works in modern browsers on desktop and mobile.</p>
+                        </div>
+
+                        <div id="manualRequestsAlert" class="alert alert-danger small py-2 mb-3 d-none" role="alert"></div>
+
+                        <div id="manualRequestsTableWrap" class="manual-requests-table-wrap rounded-3 d-none">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0 align-middle" id="manualRequestsTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Times</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="manualRequestsTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="manualRequestsEmpty" class="text-center py-5 rounded-3 d-none" style="background: var(--dtr-surface-soft); border: 1px dashed var(--dtr-border-soft);">
+                            <i class="bi bi-journal-text d-block mb-2" style="font-size: 2.25rem; color: var(--dtr-muted);"></i>
+                            <p class="text-muted mb-1 fw-semibold" style="color: var(--dtr-heading) !important;">No requests this month</p>
+                            <p class="text-muted small mb-0">Submit a manual attendance request above if you missed the kiosk.</p>
+                        </div>
+
+                        <div id="manualRequestsLoading" class="text-center py-5 d-none">
+                            <div class="spinner-border text-primary" style="width: 2.5rem; height: 2.5rem;" role="status" aria-label="Loading">
+                                <span class="visually-hidden">Loading…</span>
+                            </div>
+                            <p class="text-muted small mt-2 mb-0">Loading requests…</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </div>
     @else
         <div class="card text-center mt-5 p-5">
             <h2>Welcome, Guest</h2>
             <p>Please <a href="{{ route('login') }}">Login</a> or <a href="{{ route('student.register') }}">Register</a> to access your dashboard.</p>
         </div>
     @endif
-
 @endsection
 
 @push('scripts')
@@ -772,38 +868,135 @@ function scheduleMidnightReload() {
 }
 scheduleMidnightReload();
 
-(() => {
-    const shouldOpenManualModal = "{{ request()->has('manual_month') ? '1' : '0' }}" === '1';
-    const manualModalEl = document.getElementById('manualRequestsModal');
-    if (!shouldOpenManualModal || !manualModalEl || typeof bootstrap === 'undefined') {
-        return;
-    }
-    const manualModal = new bootstrap.Modal(manualModalEl);
-    manualModal.show();
-})();
+(function () {
+    var modalEl = document.getElementById('manualRequestsHistoryModal');
+    var monthInput = document.getElementById('manualRequestsMonthPicker');
+    var reloadBtn = document.getElementById('manualRequestsReloadBtn');
+    var tbody = document.getElementById('manualRequestsTableBody');
+    var monthBadge = document.getElementById('manualRequestsMonthLabelBadge');
+    var alertBox = document.getElementById('manualRequestsAlert');
+    var tableWrap = document.getElementById('manualRequestsTableWrap');
+    var emptyState = document.getElementById('manualRequestsEmpty');
+    var loadingEl = document.getElementById('manualRequestsLoading');
+    var url = @json(route('student.manual.requests.json'));
+    var abortCtl = null;
 
-(() => {
-    const monthPicker = document.getElementById('manual_month');
-    if (!monthPicker) {
+    if (!tbody || !modalEl || !monthInput || !monthBadge) {
         return;
     }
-    const minMonth = monthPicker.getAttribute('min');
-    if (!minMonth) {
-        return;
+
+    function hideAlert() {
+        alertBox.classList.add('d-none');
+        alertBox.textContent = '';
     }
-    const normalizeMonth = (value) => (/^\d{4}-\d{2}$/.test(value) ? value : '');
-    const currentValue = normalizeMonth(monthPicker.value);
-    if (currentValue && currentValue < minMonth) {
-        monthPicker.value = minMonth;
+
+    function showAlert(msg) {
+        alertBox.textContent = msg;
+        alertBox.classList.remove('d-none');
     }
-    monthPicker.addEventListener('change', () => {
-        const picked = normalizeMonth(monthPicker.value);
-        if (picked && picked < minMonth) {
-            monthPicker.value = minMonth;
+
+    function setLoading(on) {
+        if (!loadingEl || !tableWrap || !emptyState) return;
+        if (on) {
+            hideAlert();
+            loadingEl.classList.remove('d-none');
+            tableWrap.classList.add('d-none');
+            emptyState.classList.add('d-none');
+        } else {
+            loadingEl.classList.add('d-none');
         }
-    });
-})();
+    }
 
+    function escapeHtml(s) {
+        if (s === null || s === undefined || s === '') return '';
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function statusBadgeClass(st) {
+        if (st === 'approved') return 'bg-success';
+        if (st === 'rejected') return 'bg-danger';
+        return 'bg-warning text-dark';
+    }
+
+    function humanStatus(st) {
+        if (!st) return 'Pending';
+        return st.charAt(0).toUpperCase() + st.slice(1);
+    }
+
+    function render(data) {
+        hideAlert();
+        monthBadge.textContent = data.month_label || data.month || '—';
+        var rows = data.requests || [];
+        tbody.innerHTML = '';
+        if (!rows.length) {
+            tableWrap.classList.add('d-none');
+            emptyState.classList.remove('d-none');
+            return;
+        }
+        emptyState.classList.add('d-none');
+        tableWrap.classList.remove('d-none');
+
+        rows.forEach(function (r) {
+            var st = String(r.status || 'pending');
+            var tr = document.createElement('tr');
+            var details = '<span class="fw-semibold d-block" style="color: var(--dtr-heading);">' + escapeHtml(r.reviewer_name || '—') + '</span>';
+            if (r.reason_preview) {
+                details += '<span class="d-block text-muted mt-1 small" title="' + escapeHtml(r.reason_full || '') + '">Your reason: ' + escapeHtml(r.reason_preview) + '</span>';
+            }
+            if (r.coordinator_note) {
+                details += '<span class="d-block mt-1 small" style="color: var(--dtr-muted);"><strong>Note:</strong> ' + escapeHtml(r.coordinator_note) + '</span>';
+            }
+            tr.innerHTML =
+                '<td class="text-nowrap">' + escapeHtml(r.attendance_date_display || '—') + '</td>' +
+                '<td class="small">' + escapeHtml(r.times_summary || '—') + '</td>' +
+                '<td><span class="badge rounded-pill ' + statusBadgeClass(st) + '">' + escapeHtml(humanStatus(st)) + '</span></td>' +
+                '<td class="small">' + details + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function load() {
+        var month = monthInput.value.trim();
+        if (!month || !tbody) return;
+        if (abortCtl) abortCtl.abort();
+        abortCtl = new AbortController();
+        setLoading(true);
+
+        fetch(url + '?month=' + encodeURIComponent(month), {
+            method: 'GET',
+            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+            signal: abortCtl.signal,
+        })
+            .then(function (res) {
+                return res.json().then(function (body) {
+                    if (!res.ok) {
+                        throw new Error(body.message || 'Could not load requests.');
+                    }
+                    return body;
+                });
+            })
+            .then(render)
+            .catch(function (err) {
+                if (err.name === 'AbortError') return;
+                tableWrap.classList.add('d-none');
+                emptyState.classList.add('d-none');
+                showAlert(err.message || 'Something went wrong. Try again.');
+            })
+            .finally(function () {
+                setLoading(false);
+            });
+    }
+
+    modalEl.addEventListener('shown.bs.modal', function () {
+        load();
+    });
+
+    monthInput.addEventListener('change', load);
+    if (reloadBtn) reloadBtn.addEventListener('click', load);
+})();
 </script>
 @endpush
 

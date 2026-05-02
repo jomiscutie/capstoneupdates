@@ -17,6 +17,7 @@ use App\Support\StudentSearch;
 use App\Support\WeekRangeFilter;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -126,11 +127,29 @@ class AttendanceController extends Controller
             $noon = Carbon::createFromTime(12, 0, 0, 'Asia/Manila');
             $serverNow = Carbon::now('Asia/Manila');
 
-            // Get or create attendance record (needed before morning/afternoon routing)
-            $attendance = Attendance::valid()->firstOrNew([
-                'student_id' => $studentId,
-                'date' => $today,
-            ]);
+            // Get or create attendance record (atomic to prevent race conditions)
+            try {
+                $attendance = Attendance::firstOrCreate(
+                    [
+                        'student_id' => $studentId,
+                        'date' => $today,
+                    ]
+                );
+            } catch (QueryException $e) {
+                // Race condition: another request created the record between our check and insert
+                // Reload the existing record
+                if (str_contains($e->getMessage(), 'Duplicate entry') || str_contains($e->getMessage(), 'attendances_student_date_unique')) {
+                    $attendance = Attendance::valid()
+                        ->where('student_id', $studentId)
+                        ->where('date', $today)
+                        ->first();
+                    if (! $attendance) {
+                        throw $e;
+                    }
+                } else {
+                    throw $e;
+                }
+            }
 
             // After A.M. departure (lunch break out), the next Time In is always "afternoon return", even
             // if the clock is still before 12:00 (e.g. lunch at 11:00, back at 11:30 or 11:45).
@@ -344,9 +363,9 @@ class AttendanceController extends Controller
                 ->where('date', $today)
                 ->first();
 
-            // Strict old flow: a day must start with morning time-in before allowing time-out.
-            if (! $attendance || ! $attendance->time_in) {
-                return back()->with('error', 'You must record your morning time-in first before you can time out.')
+            // Allow time-out when at least one valid time-in exists (morning or afternoon).
+            if (! $attendance || (! $attendance->time_in && ! $attendance->afternoon_time_in)) {
+                return back()->with('error', 'You must record a time-in first before you can time out.')
                     ->with('error_type', 'no_time_in');
             }
 
@@ -1086,6 +1105,7 @@ class AttendanceController extends Controller
                 $secondBestDistance = $bestDistance;
                 $bestDistance = $distance;
                 $bestStudentId = (int) $candidate->id;
+
                 continue;
             }
             if ($distance <= $threshold && $distance < $secondBestDistance) {
@@ -1094,7 +1114,7 @@ class AttendanceController extends Controller
         }
 
         if (! $bestStudentId) {
-            return ['message' => 'Face not recognized. Please align your face and try again.'];
+            return ['message' => 'This face is not registered. Please register first before using the kiosk.'];
         }
 
         if ($secondBestDistance < INF && ($secondBestDistance - $bestDistance) < $ambiguityMargin) {
@@ -1680,9 +1700,11 @@ class AttendanceController extends Controller
         // Unique students with logs in this period (for the button list when not viewing one student)
         $studentsWithLogs = $logs->pluck('student')->unique('id')->filter()->sortBy('name')->values();
 
+        $assignedPrograms = $coordinator->assignedProgramLabels();
+
         return view('coordinator.attendance-logs', compact(
             'logs', 'totalStudents', 'presentToday', 'absentToday', 'month', 'search',
-            'filter', 'weekInput', 'weekStartInput', 'weekEndInput', 'weekStart', 'weekEnd', 'weekLabel', 'lateCount', 'viewStudent', 'studentsWithLogs'
+            'filter', 'weekInput', 'weekStartInput', 'weekEndInput', 'weekStart', 'weekEnd', 'weekLabel', 'lateCount', 'viewStudent', 'studentsWithLogs', 'assignedPrograms'
         ));
     }
 
@@ -1750,7 +1772,9 @@ class AttendanceController extends Controller
             }
         }
 
-        return view('coordinator.attendance-analytics', compact('monthlyAnalytics', 'totalStudents', 'comparisonMonths', 'compareValues'));
+        $assignedPrograms = $coordinator->assignedProgramLabels();
+
+        return view('coordinator.attendance-analytics', compact('monthlyAnalytics', 'totalStudents', 'comparisonMonths', 'compareValues', 'assignedPrograms'));
     }
 
     public function invalidateAttendance(InvalidateAttendanceRequest $request, Attendance $attendance)

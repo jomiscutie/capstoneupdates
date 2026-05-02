@@ -18,18 +18,32 @@
       --login-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --login-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       --auth-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --register-action-min-h: 2.45rem;
+      --register-action-pad-y: 0.42rem;
+      --register-action-pad-x: 0.88rem;
+      --register-action-fs: 0.875rem;
+      /* Unified registration type scale (html 16px base) */
+      --register-fs-section: 0.72rem;
+      --register-fs-label: 0.8125rem;
+      --register-fs-body: 0.875rem;
+      --register-fs-title: 1.125rem;
+      --register-input-border: #e8eaed;
+      --register-input-border-hover: #d1d5db;
+      --register-consent-border: #e8ecf2;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { font-size: 16px; }
     body {
-      background: var(--login-purple);
+      background:
+        radial-gradient(ellipse 140% 80% at 50% -20%, rgba(255, 255, 255, 0.14), transparent 50%),
+        linear-gradient(158deg, #5342a8 0%, var(--login-purple) 42%, #4b3daf 100%);
       min-height: 100vh;
       min-height: 100dvh;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       font-family: var(--login-font);
-      padding: 1rem;
+      padding: clamp(0.35rem, 1.2vw, 0.55rem) clamp(0.45rem, 2vw, 0.85rem) clamp(0.5rem, 1.5vw, 0.75rem);
       color: #1e293b;
       overflow: auto;
     }
@@ -39,19 +53,20 @@
 
     .login-wrapper {
       width: 100%;
-      max-width: min(1480px, calc(100vw - 1.5rem));
+      max-width: min(1320px, calc(100vw - 1.25rem));
       background: #fff;
-      border-radius: var(--login-radius-lg);
-      box-shadow: 0 12px 36px rgba(0,0,0,0.12);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.04),
+        0 22px 50px rgba(43, 32, 99, 0.28);
       overflow: hidden;
       display: block;
-      min-height: min(700px, 95vh);
-      min-height: min(700px, 95dvh);
       animation: authPageIn 0.28s var(--auth-ease) forwards;
     }
 
     .login-form-panel {
-      padding: 1rem 1.35rem;
+      padding: 0.72rem clamp(1.2rem, 3.6vw, 1.72rem) 0.82rem;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
@@ -61,42 +76,53 @@
     .login-form-panel .form-inner { width: 100%; max-width: 100%; margin: 0 auto; }
     .auth-tabs {
       display: flex;
-      margin-bottom: 0.55rem;
-      border-radius: var(--login-radius);
-      overflow: hidden;
+      gap: 0.26rem;
+      padding: 0.26rem;
+      margin-bottom: 0.45rem;
+      border-radius: var(--login-radius-lg);
       border: 1px solid var(--login-border);
-      background: #f9fafb;
+      background: #f1f5f9;
     }
     .auth-tab {
       flex: 1;
-      padding: 0.42rem 0.5rem;
+      padding: 0.38rem 0.5rem;
+      border-radius: calc(var(--login-radius) - 1px);
       text-align: center;
-      font-size: 0.76rem;
+      font-size: var(--register-fs-body);
       font-weight: 600;
       text-decoration: none;
       color: var(--login-muted);
-      transition: color var(--login-transition), background var(--login-transition);
+      transition: color var(--login-transition), background var(--login-transition), box-shadow var(--login-transition);
     }
-    .auth-tab.active { background: var(--login-purple); color: #fff; }
-    .auth-tab:not(.active):hover { background: #f3f4f6; color: #374151; }
+    .auth-tab.active {
+      background: var(--login-purple);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(109, 93, 209, 0.35);
+    }
+    .auth-tab:not(.active):hover { background: #fff; color: #334155; }
+    .auth-tab:focus-visible {
+      outline: 2px solid var(--login-purple);
+      outline-offset: 2px;
+    }
 
-    .login-form-panel .welcome { margin-bottom: 0.65rem; }
+    .login-form-panel .welcome { margin-bottom: 0.42rem; }
     .login-form-panel .welcome h1 {
-      font-size: 1.1rem;
+      font-size: var(--register-fs-title);
       font-weight: 700;
       color: #111827;
-      margin-bottom: 0.15rem;
-      line-height: 1.28;
+      margin-bottom: 0.1rem;
+      line-height: 1.22;
     }
     .login-form-panel .welcome h1 span { color: var(--login-purple); }
-    .login-form-panel .welcome p { font-size: 0.75rem; color: var(--login-muted); line-height: 1.3; margin-bottom: 0; }
+    .login-form-panel .welcome p { font-size: var(--register-fs-label); color: var(--login-muted); line-height: 1.32; margin-bottom: 0; }
 
     .alert {
       border-radius: var(--login-radius);
-      font-size: 0.72rem;
-      margin-bottom: 0.5rem;
-      border: none;
-      padding: 0.45rem 0.55rem;
+      font-size: var(--register-fs-body);
+      margin-bottom: 0.38rem;
+      border: 1px solid transparent;
+      border-left-width: 4px;
+      padding: 0.36rem 0.52rem;
     }
     .alert ul {
       margin-bottom: 0;
@@ -104,14 +130,81 @@
       overflow: auto;
       padding-left: 1rem;
     }
-    .alert-danger { background: #fef2f2; color: #b91c1c; }
-    .alert-success { background: #f0fdf4; color: #166534; }
+    .alert.alert-danger {
+      background: #fef7f7;
+      color: #991b1b;
+      border-left-color: #dc2626;
+      border-color: rgba(220, 38, 38, 0.12);
+    }
+    .alert.alert-success {
+      background: #f6fdf9;
+      color: #166534;
+      border-left-color: #16a34a;
+      border-color: rgba(22, 163, 74, 0.12);
+    }
+    .alert.alert-info {
+      background: #f4faff;
+      color: #0369a1;
+      border-left-color: #0284c7;
+      border-color: rgba(2, 132, 199, 0.12);
+    }
+    .alert.alert-secondary {
+      background: #f8fafc;
+      color: #475569;
+      border-left-color: #94a3b8;
+      border-color: rgba(148, 163, 184, 0.16);
+    }
 
     #registerForm {
+      display: flex;
+      flex-direction: column;
+      gap: 0.68rem;
+      align-items: stretch;
+    }
+    .register-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.48rem;
+      width: 100%;
+      min-width: 0;
+    }
+    .register-section-heading {
+      margin: 0;
+      padding: 0 0 0.2rem;
+      font-size: var(--register-fs-section);
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #5b5a6e;
+      line-height: 1.25;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+      width: 100%;
+    }
+    /* Full-width divider between major form sections */
+    hr.register-section-rule {
+      display: block;
+      width: 100%;
+      height: 0;
+      margin: 0.42rem 0 0.34rem;
+      padding: 0;
+      border: none;
+      border-top: 2px solid #301934;
+      background: none;
+      flex-shrink: 0;
+    }
+    .register-field-columns {
       display: grid;
-      grid-template-columns: repeat(2, minmax(260px, 1fr));
-      gap: 0.68rem 0.85rem;
-      align-content: start;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.4rem clamp(1.28rem, 3.4vw, 1.65rem);
+      align-items: start;
+      width: 100%;
+      min-width: 0;
+    }
+    .register-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.36rem;
+      min-width: 0;
     }
     .form-group {
       margin-bottom: 0;
@@ -123,39 +216,39 @@
     .form-label {
       font-weight: 600;
       color: #374151;
-      font-size: 0.74rem;
-      margin-bottom: 0.24rem;
+      font-size: var(--register-fs-label);
+      margin-bottom: 0.1rem;
       display: block;
       line-height: 1.2;
       word-break: break-word;
     }
-    .form-label i { margin-right: 0.28rem; color: #94a3b8; }
+    .form-label i { margin-right: 0.22rem; color: #94a3b8; font-size: 0.92em; }
     .input-wrapper { position: relative; }
     .input-icon {
       position: absolute;
-      left: 0.72rem;
+      left: 0.68rem;
       top: 50%;
       transform: translateY(-50%);
       color: #6b7280;
-      font-size: 0.9rem;
+      font-size: 0.9375rem;
       z-index: 2;
     }
     .form-control,
     .form-select {
       width: 100%;
-      min-height: 2.25rem;
-      padding: 0.5rem 0.72rem 0.5rem 2.1rem;
-      border: 1.4px solid #d1d5db;
+      min-height: 2.0625rem;
+      padding: 0.3rem 0.58rem 0.3rem 2.02rem;
+      border: 1px solid var(--register-input-border);
       border-radius: var(--login-radius);
-      font-size: 0.8rem;
-      background: #fafafa;
+      font-size: var(--register-fs-body);
+      background: #fff;
       transition: border-color var(--login-transition), background var(--login-transition), box-shadow var(--login-transition);
     }
     .form-control::placeholder { white-space: normal; }
     .form-control:hover,
     .form-select:hover {
       background: #fff;
-      border-color: #9ca3af;
+      border-color: var(--register-input-border-hover);
     }
     .form-control:focus,
     .form-select:focus {
@@ -167,17 +260,26 @@
     .form-select {
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
       background-repeat: no-repeat;
-      background-position: right 0.6rem center;
-      background-size: 13px 10px;
+      background-position: right 0.65rem center;
+      background-size: 14px 11px;
     }
-    .input-wrapper.has-password-toggle .form-control { padding-right: 2.5rem; }
+    .form-select.ghost-disabled,
+    .form-select.ghost-disabled:hover,
+    .form-select.ghost-disabled:focus {
+      background-color: #f3f4f6;
+      color: #6b7280;
+      border-color: #d1d5db;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+    .input-wrapper.has-password-toggle .form-control { padding-right: 2.48rem; }
     .password-toggle-btn {
       position: absolute;
-      right: 0.4rem;
+      right: 0.28rem;
       top: 50%;
       transform: translateY(-50%);
-      width: 2rem;
-      height: 2rem;
+      width: 1.72rem;
+      height: 1.72rem;
       border: none;
       background: none;
       color: #94a3b8;
@@ -190,24 +292,24 @@
     }
     .password-toggle-btn:hover { color: var(--login-purple); }
     .login-hint { display: none !important; }
-    .form-text { font-size: 0.7rem; color: var(--login-muted); margin-top: 0.2rem; }
+    .form-text { font-size: var(--register-fs-label); color: var(--login-muted); margin-top: 0.12rem; }
     .password-rules {
-      margin-top: 0.24rem;
+      margin-top: 0.16rem;
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.2rem 0.45rem;
-      font-size: 0.7rem;
+      grid-template-columns: repeat(auto-fit, minmax(8.125rem, 1fr));
+      gap: 0.1rem 0.38rem;
+      font-size: var(--register-fs-label);
       color: #64748b;
     }
     .password-rule {
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      line-height: 1.25;
+      gap: 0.26rem;
+      line-height: 1.2;
       min-width: 0;
     }
     .password-rule i {
-      font-size: 0.74rem;
+      font-size: 0.95em;
       color: #94a3b8;
     }
     .password-rule.ok {
@@ -220,10 +322,10 @@
     .date-range-group {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.42rem;
+      gap: 0.3rem;
     }
     .date-range-group .form-control {
-      padding-left: 0.72rem;
+      padding-left: 2.02rem;
       cursor: pointer;
       pointer-events: auto;
       position: relative;
@@ -231,28 +333,28 @@
     }
 
     .consent-grid {
-      grid-column: 1 / -1;
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.65rem;
+      gap: 0.42rem;
+      align-items: stretch;
     }
     .consent-box {
-      border: 1px solid #dbe2ea;
-      border-radius: 10px;
-      background: #f8fafc;
-      padding: 0.42rem 0.5rem;
+      border: 1px solid var(--register-consent-border);
+      border-radius: var(--login-radius);
+      background: #fff;
+      padding: 0.3rem 0.4rem;
       height: 100%;
       display: flex;
       align-items: flex-start;
     }
     .consent-box .form-check {
       margin: 0;
-      font-size: 0.72rem !important;
+      font-size: var(--register-fs-label) !important;
       color: var(--login-muted);
-      line-height: 1.25;
+      line-height: 1.22;
       display: flex;
       align-items: flex-start;
-      gap: 0.48rem;
+      gap: 0.38rem;
     }
     .consent-box .form-check-input {
       margin: 0.1rem 0 0;
@@ -275,7 +377,7 @@
       flex: 1 1 auto;
       color: #334155;
       cursor: pointer;
-      line-height: 1.4;
+      line-height: 1.32;
       word-break: break-word;
       overflow-wrap: anywhere;
     }
@@ -291,7 +393,7 @@
       color: var(--login-purple);
       border-radius: 999px;
       padding: 0.12rem 0.52rem;
-      font-size: 0.68rem;
+      font-size: var(--register-fs-label);
       font-weight: 600;
       line-height: 1.1;
       display: inline-flex;
@@ -306,60 +408,100 @@
     }
 
     .register-actions {
-      grid-column: 1 / -1;
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: clamp(0.45rem, 0.9vw, 0.65rem);
+      gap: 0.42rem;
       align-items: start;
     }
-    .btn-register {
+    .register-actions > .btn-register {
+      box-sizing: border-box;
+      align-self: start;
+      justify-self: stretch;
       width: 100%;
-      padding: 0.55rem 0.78rem;
-      background: var(--login-purple);
-      border: none;
-      border-radius: var(--login-radius);
-      color: #fff;
-      font-weight: 600;
-      font-size: 0.82rem;
-      cursor: pointer;
-      transition: background var(--login-transition);
-    }
-    .btn-register:hover { background: var(--login-purple-dark); color: #fff; }
-    .register-alt-action { margin-top: 0; text-align: center; }
-    .btn-register-alt {
-      width: 100%;
-      padding: 0.55rem 0.75rem;
-      border: 1px solid #dbe2ea;
-      border-radius: 10px;
-      background: #fff;
-      color: #334155;
-      font-weight: 600;
-      font-size: 0.8rem;
+      min-height: var(--register-action-min-h);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.35rem;
-      transition: border-color var(--login-transition), background var(--login-transition), color var(--login-transition);
+      gap: 0.38rem;
+    }
+    .register-actions > .btn-register .bi {
+      font-size: 1.05em;
+      opacity: 0.96;
+    }
+    .btn-register {
+      box-sizing: border-box;
+      min-height: var(--register-action-min-h);
+      padding: var(--register-action-pad-y) var(--register-action-pad-x);
+      background: var(--login-purple);
+      border: 1.5px solid transparent;
+      border-radius: var(--login-radius);
+      color: #fff;
+      font-weight: 600;
+      font-size: var(--register-action-fs);
+      line-height: 1.35;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(109, 93, 209, 0.22);
+      transition: background var(--login-transition), box-shadow var(--login-transition), transform 0.12s ease;
+    }
+    #registerForm .btn.btn-register {
+      box-sizing: border-box !important;
+      min-height: var(--register-action-min-h) !important;
+      padding: var(--register-action-pad-y) var(--register-action-pad-x) !important;
+      border: 1.5px solid transparent !important;
+      font-size: var(--register-action-fs) !important;
+      line-height: 1.35 !important;
+    }
+    .btn-register:hover {
+      background: var(--login-purple-dark);
+      color: #fff;
+      box-shadow: 0 3px 12px rgba(109, 93, 209, 0.28);
+    }
+    .btn-register:active { transform: translateY(1px); }
+    .register-alt-action {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.22rem;
+      align-items: stretch;
+    }
+    .btn-register-alt {
+      box-sizing: border-box;
+      width: 100%;
+      min-height: var(--register-action-min-h);
+      padding: var(--register-action-pad-y) var(--register-action-pad-x);
+      border: 1.5px solid var(--register-consent-border);
+      border-radius: var(--login-radius);
+      background: #fff;
+      color: #334155;
+      font-weight: 600;
+      font-size: var(--register-action-fs);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.38rem;
+      cursor: pointer;
+      transition: border-color var(--login-transition), background var(--login-transition), color var(--login-transition), box-shadow var(--login-transition);
     }
     .btn-register-alt:hover { border-color: #c7d2fe; background: #f8faff; color: #4338ca; }
     .register-alt-note {
-      margin-top: 0.25rem;
+      margin: 0;
+      text-align: center;
       color: #64748b;
-      font-size: 0.68rem;
-      line-height: 1.2;
+      font-size: var(--register-fs-label);
+      line-height: 1.4;
     }
     .password-match-indicator {
-      margin-top: 0.28rem;
-      font-size: 0.7rem;
+      margin-top: 0.16rem;
+      font-size: var(--register-fs-label);
       font-weight: 600;
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
+      gap: 0.26rem;
       color: #64748b;
-      min-height: 1rem;
+      min-height: 0.88rem;
     }
     .password-match-indicator i {
-      font-size: 0.75rem;
+      font-size: 0.95em;
       opacity: 0.9;
     }
     .password-match-indicator.match {
@@ -368,30 +510,26 @@
     .password-match-indicator.mismatch {
       color: #dc2626;
     }
-    .form-group-confirm-password {
-      grid-column: 2;
-    }
-
     .login-link,
     .switch-login {
-      grid-column: 1 / -1;
       text-align: center;
+      width: 100%;
     }
     .login-link {
-      margin-top: 0.6rem;
-      padding-top: 0.55rem;
+      margin-top: 0.42rem;
+      padding-top: 0.4rem;
       border-top: 1px solid var(--login-border);
-      font-size: 0.74rem;
+      font-size: var(--register-fs-body);
       color: var(--login-muted);
     }
     .login-link p { margin: 0; }
     .login-link a { color: var(--login-purple); font-weight: 600; text-decoration: none; }
     .login-link a:hover { color: var(--login-purple-dark); }
-    .switch-login { margin-top: 0.5rem; }
+    .switch-login { margin-top: 0.38rem; }
     .divider {
       position: relative;
       text-align: center;
-      margin: 0.45rem 0;
+      margin: 0.32rem 0;
     }
     .divider::before {
       content: '';
@@ -407,61 +545,60 @@
       background: #fff;
       padding: 0 0.4rem;
       color: var(--login-muted);
-      font-size: 0.72rem;
+      font-size: var(--register-fs-label);
+    }
+    .switch-login {
+      display: flex;
+      flex-direction: column;
+      gap: 0.38rem;
     }
     .btn-switch {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0.44rem 0.7rem;
+      gap: 0.38rem;
+      padding: 0.4rem 0.65rem;
+      min-height: 2.38rem;
       width: 100%;
-      background: #fff;
-      border: 1px solid var(--login-border);
+      background: #fafbfc;
+      border: 1.5px solid var(--login-border);
       border-radius: var(--login-radius);
       color: #374151;
       font-weight: 600;
-      font-size: 0.74rem;
+      font-size: var(--register-fs-body);
       text-decoration: none;
-      transition: border-color var(--login-transition), background var(--login-transition);
+      transition: border-color var(--login-transition), background var(--login-transition), box-shadow var(--login-transition);
     }
-    .btn-switch:hover { background: #f9fafb; border-color: #d1d5db; color: #111827; }
+    .btn-switch:hover {
+      background: #fff;
+      border-color: #cfd6e6;
+      color: #111827;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
     .btn-switch i { color: var(--login-purple); }
 
-    @media (max-width: 1280px) {
-      .login-wrapper { max-width: min(1380px, calc(100vw - 1.25rem)); }
-      .password-rules {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+    @media (max-width: 991px) {
+      .login-wrapper { max-width: min(780px, calc(100vw - 1.25rem)); }
+      .register-field-columns {
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
       }
-    }
-
-    @media (max-width: 1160px) {
-      .login-wrapper { max-width: min(1180px, calc(100vw - 1.1rem)); }
-      #registerForm,
       .consent-grid,
       .register-actions {
         grid-template-columns: 1fr;
       }
-      .form-group-confirm-password {
-        grid-column: 1;
-      }
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 576px) {
+      .login-wrapper {
+        border-radius: 12px;
+        max-width: 100%;
+      }
       .password-rules {
         grid-template-columns: 1fr;
       }
-    }
-
-    @media (max-width: 900px) {
-      .login-wrapper {
-        max-width: min(980px, calc(100vw - 1rem));
-        min-height: auto;
-      }
-      .login-form-panel { padding: 0.9rem; overflow-y: auto; }
-      #registerForm,
-      .consent-grid,
-      .register-actions { grid-template-columns: 1fr; }
-      body { overflow: auto; padding: 0.75rem; }
+      .login-form-panel { padding: 0.68rem 0.95rem 0.75rem; }
+      body { padding: 0.42rem 0.45rem 0.5rem; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition-duration: 0.01ms !important; }
@@ -497,194 +634,180 @@
         @csrf
         <input type="hidden" name="face_encoding" id="faceEncodingInput">
         <input type="hidden" id="oldMajorValue" value="{{ old('major') }}">
-        
-        <div class="form-group">
-          <label class="form-label">
-            <i class="bi bi-card-text"></i>Student Number
-          </label>
-          <div class="input-wrapper">
-            <i class="bi bi-card-text input-icon"></i>
-            <input type="text" name="student_no" class="form-control" value="{{ old('student_no') }}" placeholder="Enter student number (e.g. 202212345)" inputmode="numeric" pattern="[0-9]*" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'')" required />
-          </div>
-          <small class="login-hint d-block mt-1">Use your official student number exactly as it appears on your ID (e.g. 202212345).</small>
-        </div>
 
-        <div class="form-group">
-          <label class="form-label">
-            <i class="bi bi-person"></i>First Name
-          </label>
-          <div class="input-wrapper">
-            <i class="bi bi-person input-icon"></i>
-            <input type="text" name="first_name" class="form-control" value="{{ old('first_name') }}" placeholder="Enter first name" required />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="bi bi-person"></i>Last Name
-          </label>
-          <div class="input-wrapper">
-            <i class="bi bi-person input-icon"></i>
-            <input type="text" name="last_name" class="form-control" value="{{ old('last_name') }}" placeholder="Enter last name" required />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="bi bi-person"></i>Middle Name
-          </label>
-          <div class="input-wrapper">
-            <i class="bi bi-person input-icon"></i>
-            <input type="text" name="middle_name" class="form-control" value="{{ old('middle_name') }}" placeholder="Enter middle name (optional)" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="bi bi-person-badge"></i>Suffix
-          </label>
-          <div class="input-wrapper">
-            <i class="bi bi-person-badge input-icon"></i>
-            <select name="suffix" class="form-select">
-              <option value="">No suffix</option>
-              @foreach(['JR', 'SR', 'II', 'III', 'IV', 'V'] as $suffixOption)
-              <option value="{{ $suffixOption }}" {{ old('suffix') == $suffixOption ? 'selected' : '' }}>{{ $suffixOption }}</option>
-              @endforeach
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="bi bi-book"></i>Program/Course
-          </label>
-          <div class="input-wrapper">
-            <i class="bi bi-mortarboard input-icon"></i>
-            <select name="course" id="programSelect" class="form-select" required>
-              @foreach(\App\Models\Student::getProgramCatalog() as $collegeLabel => $programOptions)
-              <optgroup label="{{ $collegeLabel }}">
-                @foreach($programOptions as $programOption)
-                <option value="{{ $programOption }}" {{ old('course') == $programOption ? 'selected' : '' }}>{{ $programOption }}</option>
-                @endforeach
-              </optgroup>
-              @endforeach
-            </select>
-          </div>
-          <small class="login-hint d-block mt-1">Select the program where you are officially enrolled for OJT.</small>
-        </div>
-
-        <div class="form-group" id="majorGroup">
-          <label class="form-label">
-            <i class="bi bi-journal-bookmark"></i>Major
-          </label>
-          <div class="input-wrapper">
-            <i class="bi bi-journal-bookmark input-icon"></i>
-            <select name="major" id="majorSelect" class="form-select">
-              <option value="">Select Major</option>
-            </select>
-          </div>
-          <small class="login-hint d-block mt-1">Major appears only for programs that require specialization.</small>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="bi bi-calendar3"></i>Term
-          </label>
-          <div class="input-wrapper">
-            <i class="bi bi-calendar3 input-icon"></i>
-            <select name="term" class="form-select" required>
-              <option value="">Select Term</option>
-              @foreach(\App\Models\Student::TERMS as $termOption)
-              <option value="{{ $termOption }}" {{ old('term') == $termOption ? 'selected' : '' }}>{{ $termOption }}</option>
-              @endforeach
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="bi bi-journal-text"></i>School Year
-          </label>
-          <div class="input-wrapper">
-            <input type="hidden" name="school_year" id="schoolYearValue" value="{{ old('school_year') }}">
-            <div class="date-range-group">
-              <input type="date" id="schoolYearStart" class="form-control" required aria-label="School year start date">
-              <input type="date" id="schoolYearEnd" class="form-control" required aria-label="School year end date">
+        <div class="register-stack">
+          <h2 class="register-section-heading" id="register-heading-personal">Personal information</h2>
+          <div class="register-field-columns" role="group" aria-labelledby="register-heading-personal">
+            <div class="register-col">
+              <div class="form-group">
+                <label class="form-label" for="regStudentNo"><i class="bi bi-card-text"></i>Student Number</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-card-text input-icon" aria-hidden="true"></i>
+                  <input id="regStudentNo" type="text" name="student_no" class="form-control" value="{{ old('student_no') }}" placeholder="e.g. 202212345" inputmode="numeric" pattern="[0-9]*" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'')" maxlength="50" title="Official ID — digits only." required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regLastName"><i class="bi bi-person"></i>Last Name</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-person input-icon" aria-hidden="true"></i>
+                  <input id="regLastName" type="text" name="last_name" class="form-control register-name-field" value="{{ old('last_name') }}" placeholder="Family name" maxlength="100" autocomplete="family-name" inputmode="text" autocapitalize="words" spellcheck="false" title="Letters only" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regSuffix"><i class="bi bi-person-badge"></i>Suffix</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-person-badge input-icon" aria-hidden="true"></i>
+                  <select id="regSuffix" name="suffix" class="form-select" autocomplete="honorific-suffix">
+                    <option value="">No suffix</option>
+                    @foreach(['JR', 'SR', 'II', 'III', 'IV', 'V'] as $suffixOption)
+                    <option value="{{ $suffixOption }}" {{ old('suffix') == $suffixOption ? 'selected' : '' }}>{{ $suffixOption }}</option>
+                    @endforeach
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="register-col">
+              <div class="form-group">
+                <label class="form-label" for="regFirstName"><i class="bi bi-person"></i>First Name</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-person input-icon" aria-hidden="true"></i>
+                  <input id="regFirstName" type="text" name="first_name" class="form-control register-name-field" value="{{ old('first_name') }}" placeholder="Given name" maxlength="100" autocomplete="given-name" inputmode="text" autocapitalize="words" spellcheck="false" title="Letters only" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regMiddleName"><i class="bi bi-person"></i>Middle Name</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-person input-icon" aria-hidden="true"></i>
+                  <input id="regMiddleName" type="text" name="middle_name" class="form-control register-name-field" value="{{ old('middle_name') }}" placeholder="Optional" maxlength="100" autocomplete="additional-name" inputmode="text" autocapitalize="words" spellcheck="false" />
+                </div>
+              </div>
             </div>
           </div>
-          <small class="login-hint d-block mt-1">Pick start and end dates. We will store it as YYYY-YYYY.</small>
-        </div>
 
-        <div class="form-group">
-          <label class="form-label">
-            <i class="bi bi-grid-3x3-gap"></i>Section
-          </label>
-          <div class="input-wrapper">
-            <i class="bi bi-grid-3x3-gap input-icon"></i>
-            <select name="section" class="form-select" required>
-              <option value="">Select Section</option>
-              @foreach(\App\Models\Student::getSectionOptions() as $sectionOption)
-              @continue(strcasecmp(trim((string) $sectionOption), 'All') === 0 || strcasecmp(trim((string) $sectionOption), 'Section All') === 0)
-              <option value="{{ $sectionOption }}" {{ old('section') == $sectionOption ? 'selected' : '' }}>
-                {{ in_array($sectionOption, \App\Models\Student::SECTIONS, true) ? 'Section '.$sectionOption : $sectionOption }}
-              </option>
-              @endforeach
-            </select>
-          </div>
-        </div>
+          <hr class="register-section-rule" aria-hidden="true" />
 
-        <div class="form-group">
-          <label class="form-label">
-            <i class="bi bi-building"></i>Assigned Office
-          </label>
-          <div class="input-wrapper">
-            <i class="bi bi-building input-icon"></i>
-            <select name="assigned_office" class="form-select" required>
-              <option value="">Select Assigned Office</option>
-              @foreach(\App\Models\Student::getOfficeOptions() as $officeOption)
-              <option value="{{ $officeOption }}" {{ old('assigned_office') === $officeOption ? 'selected' : '' }}>
-                {{ $officeOption }}
-              </option>
-              @endforeach
-            </select>
+          <h2 class="register-section-heading" id="register-heading-academic">Academic information</h2>
+          <div class="register-field-columns" role="group" aria-labelledby="register-heading-academic">
+            <div class="register-col">
+              <div class="form-group" id="majorGroup">
+                <label class="form-label" for="majorSelect"><i class="bi bi-journal-bookmark"></i>Major</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-journal-bookmark input-icon" aria-hidden="true"></i>
+                  <select name="major" id="majorSelect" class="form-select">
+                    <option value="">Select Major</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="bi bi-journal-text"></i>School Year</label>
+                <input type="hidden" name="school_year" id="schoolYearValue" value="{{ old('school_year') }}">
+                <div class="date-range-group">
+                  <div class="input-wrapper">
+                    <i class="bi bi-calendar3 input-icon" aria-hidden="true"></i>
+                    <input type="date" id="schoolYearStart" class="form-control" required aria-label="School year start">
+                  </div>
+                  <div class="input-wrapper">
+                    <i class="bi bi-calendar3 input-icon" aria-hidden="true"></i>
+                    <input type="date" id="schoolYearEnd" class="form-control" required aria-label="School year end">
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regOffice"><i class="bi bi-building"></i>Assigned Office</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-building input-icon" aria-hidden="true"></i>
+                  <select id="regOffice" name="assigned_office" class="form-select" title="Optional now; set or request later in Student settings.">
+                    @php($officeOld = old('assigned_office'))
+                    <option value="" {{ $officeOld === null || $officeOld === '' ? 'selected' : '' }}>No assigned office yet</option>
+                    @foreach(\App\Models\Student::getOfficeOptions() as $officeOption)
+                    <option value="{{ $officeOption }}" {{ (string) $officeOld === (string) $officeOption ? 'selected' : '' }}>{{ $officeOption }}</option>
+                    @endforeach
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="register-col">
+              <div class="form-group">
+                <label class="form-label" for="programSelect"><i class="bi bi-book"></i>Program / Course</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-book input-icon" aria-hidden="true"></i>
+                  <select name="course" id="programSelect" class="form-select" required>
+                    @foreach(\App\Models\Student::getProgramCatalog() as $collegeLabel => $programOptions)
+                    <optgroup label="{{ $collegeLabel }}">
+                      @foreach($programOptions as $programOption)
+                      <option value="{{ $programOption }}" {{ old('course') == $programOption ? 'selected' : '' }}>{{ $programOption }}</option>
+                      @endforeach
+                    </optgroup>
+                    @endforeach
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regTerm"><i class="bi bi-calendar3"></i>Term</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-calendar3 input-icon" aria-hidden="true"></i>
+                  <select id="regTerm" name="term" class="form-select" required>
+                    <option value="">Select Term</option>
+                    @foreach(\App\Models\Student::TERMS as $termOption)
+                    <option value="{{ $termOption }}" {{ old('term') == $termOption ? 'selected' : '' }}>{{ $termOption }}</option>
+                    @endforeach
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regSection"><i class="bi bi-grid-3x3-gap"></i>Section</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-grid-3x3-gap input-icon" aria-hidden="true"></i>
+                  <select id="regSection" name="section" class="form-select" required>
+                    <option value="">Select Section</option>
+                    @foreach(\App\Models\Student::getSectionOptions() as $sectionOption)
+                    @continue(strcasecmp(trim((string) $sectionOption), 'All') === 0 || strcasecmp(trim((string) $sectionOption), 'Section All') === 0)
+                    <option value="{{ $sectionOption }}" {{ old('section') == $sectionOption ? 'selected' : '' }}>
+                      {{ in_array($sectionOption, \App\Models\Student::SECTIONS, true) ? 'Section '.$sectionOption : $sectionOption }}
+                    </option>
+                    @endforeach
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
-          <small class="login-hint d-block mt-1">Choose the office where you are currently assigned for OJT.</small>
-        </div>
 
-        <div class="form-group">
-          <label class="form-label">
-            <i class="bi bi-lock"></i>Password
-          </label>
-          <div class="input-wrapper has-password-toggle">
-            <i class="bi bi-key input-icon"></i>
-            <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Enter password" minlength="8" required />
-            <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password" title="Show password"><i class="bi bi-eye"></i></button>
+          <div class="register-field-columns register-password-row" role="group" aria-label="Password">
+            <div class="register-col">
+              <div class="form-group">
+                <label class="form-label" for="passwordInput"><i class="bi bi-lock"></i>Password</label>
+                <div class="input-wrapper has-password-toggle">
+                  <i class="bi bi-key input-icon" aria-hidden="true"></i>
+                  <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Enter password" minlength="8" autocomplete="new-password" required />
+                  <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                </div>
+                <div class="password-rules" id="passwordRules" aria-live="polite">
+                  <span class="password-rule" data-rule="length"><i class="bi bi-circle" aria-hidden="true"></i> 8+ characters</span>
+                  <span class="password-rule" data-rule="uppercase"><i class="bi bi-circle" aria-hidden="true"></i> Uppercase (A-Z)</span>
+                  <span class="password-rule" data-rule="lowercase"><i class="bi bi-circle" aria-hidden="true"></i> Lowercase (a-z)</span>
+                  <span class="password-rule" data-rule="number"><i class="bi bi-circle" aria-hidden="true"></i> Number (0-9)</span>
+                  <span class="password-rule" data-rule="symbol"><i class="bi bi-circle" aria-hidden="true"></i> Symbol (! @ # …)</span>
+                </div>
+              </div>
+            </div>
+            <div class="register-col">
+              <div class="form-group">
+                <label class="form-label" for="passwordConfirmationInput"><i class="bi bi-lock-fill"></i>Confirm Password</label>
+                <div class="input-wrapper has-password-toggle">
+                  <i class="bi bi-key-fill input-icon" aria-hidden="true"></i>
+                  <input type="password" name="password_confirmation" id="passwordConfirmationInput" class="form-control" placeholder="Confirm password" minlength="8" autocomplete="new-password" required />
+                  <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                </div>
+                <div id="passwordMatchIndicator" class="password-match-indicator" aria-live="polite"></div>
+              </div>
+            </div>
           </div>
-          <div class="password-rules" id="passwordRules" aria-live="polite">
-            <span class="password-rule" data-rule="length"><i class="bi bi-circle"></i> 8+ characters</span>
-            <span class="password-rule" data-rule="uppercase"><i class="bi bi-circle"></i> Uppercase (A-Z)</span>
-            <span class="password-rule" data-rule="lowercase"><i class="bi bi-circle"></i> Lowercase (a-z)</span>
-            <span class="password-rule" data-rule="number"><i class="bi bi-circle"></i> Number (0-9)</span>
-            <span class="password-rule" data-rule="symbol"><i class="bi bi-circle"></i> Symbol (! @ # ...)</span>
-          </div>
-        </div>
-
-        <div class="form-group form-group-confirm-password">
-          <label class="form-label">
-            <i class="bi bi-lock-fill"></i>Confirm Password
-          </label>
-          <div class="input-wrapper has-password-toggle">
-            <i class="bi bi-key-fill input-icon"></i>
-            <input type="password" name="password_confirmation" id="passwordConfirmationInput" class="form-control" placeholder="Confirm password" minlength="8" required />
-            <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password" title="Show password"><i class="bi bi-eye"></i></button>
-          </div>
-          <div id="passwordMatchIndicator" class="password-match-indicator" aria-live="polite"></div>
         </div>
 
         <div class="consent-grid">
           <div class="consent-box">
             <div class="form-check text-start">
-              <input class="form-check-input me-2" type="checkbox" value="1" id="privacyConsent" required>
+              <input class="form-check-input" type="checkbox" value="1" id="privacyConsent" required>
               <label class="form-check-label" for="privacyConsent">
                 <span class="consent-label-row">
                   <span>I understand my personal and facial data will be used only for OJT attendance, in line with RA 10173.</span>
@@ -697,7 +820,7 @@
           </div>
           <div class="consent-box">
             <div class="form-check text-start">
-              <input class="form-check-input me-2" type="checkbox" value="1" id="honestyConsent" required>
+              <input class="form-check-input" type="checkbox" value="1" id="honestyConsent" required>
               <label class="form-check-label" for="honestyConsent">
                 I will use only my own account and attendance records honestly.
               </label>
@@ -707,7 +830,7 @@
 
         <div class="register-actions">
           <button type="button" class="btn btn-register" onclick="openFaceCapture()">
-            <i class="bi bi-camera me-2"></i>Register with Face
+            <i class="bi bi-camera" aria-hidden="true"></i><span>Register with Face</span>
           </button>
           <div class="register-alt-action">
             <button type="button" class="btn-register-alt" onclick="submitWithoutFace()">
@@ -728,8 +851,7 @@
           <span>Need coordinator access?</span>
         </div>
         <a href="{{ route('login') }}" class="btn-switch">
-          <i class="bi bi-person-gear me-2"></i>
-          Contact Admin for Coordinator Account
+          <i class="bi bi-person-gear" aria-hidden="true"></i><span>Contact Admin for Coordinator Account</span>
         </a>
       </div>
       </div>
@@ -746,7 +868,7 @@
           </h5>
         </div>
         <div class="modal-body text-center">
-          <div class="alert alert-info mb-3 text-start" style="font-size: 0.85rem;">
+          <div class="alert alert-info mb-3 text-start">
             <i class="bi bi-info-circle me-2"></i>
             <strong>Face registration steps:</strong>
             <ol class="mt-2 mb-0 ps-4">
@@ -756,7 +878,7 @@
               <li>Wait for the system to confirm that your face has been captured.</li>
             </ol>
           </div>
-          <div class="alert alert-secondary mb-3 text-start" style="font-size: 0.85rem;">
+          <div class="alert alert-secondary mb-3 text-start">
             <i class="bi bi-shield-lock me-2"></i>
             <strong>Data privacy notice:</strong> Captured faces are used for <strong>educational purposes only</strong> and are kept
             securely inside NORSU's OJT DTR system. They are not shared outside the university.
@@ -827,17 +949,17 @@
       display: flex;
       justify-content: space-around;
       align-items: center;
-      margin: 1.5rem 0;
-      padding: 1rem 1.25rem;
-      background: #f8fafc;
+      margin: 0.85rem 0;
+      padding: 0.72rem 1rem;
+      background: #fff;
       border-radius: 1rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--register-consent-border, #e8ecf2);
     }
     .step {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.35rem;
       flex: 1;
       opacity: 0.35;
       transition: opacity 0.2s ease, transform 0.2s ease;
@@ -850,7 +972,7 @@
       animation: pulse 1.5s infinite;
     }
     .step.completed i { color: #059669; }
-    .step span { font-size: 0.75rem; font-weight: 600; color: #64748b; }
+    .step span { font-size: var(--register-fs-body); font-weight: 600; color: #64748b; }
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.15); }
@@ -1181,6 +1303,25 @@
   })();
 
   (function () {
+    var stripDigits = function (v) {
+      var s = String(v || '');
+      try {
+        return s.replace(/\p{Nd}/gu, '');
+      } catch (e) {
+        return s.replace(/\d/g, '');
+      }
+    };
+    document.querySelectorAll('.register-name-field').forEach(function (input) {
+      input.addEventListener('input', function () {
+        var next = stripDigits(input.value);
+        if (next !== input.value) {
+          input.value = next;
+        }
+      });
+    });
+  })();
+
+  (function () {
     var programSelect = document.getElementById('programSelect');
     var majorGroup = document.getElementById('majorGroup');
     var majorSelect = document.getElementById('majorSelect');
@@ -1197,29 +1338,60 @@
     }
 
     function setMajorOptions(programValue) {
-      var majors = majorsByProgram[programValue] || [];
-      majorSelect.innerHTML = '<option value="">Select Major</option>';
+      majorGroup.classList.remove('is-hidden');
+      majorSelect.innerHTML = '';
+      majorSelect.removeAttribute('title');
+      majorSelect.disabled = false;
+      majorSelect.required = false;
+      majorSelect.classList.remove('ghost-disabled');
 
-      if (!majors.length) {
-        majorGroup.classList.add('is-hidden');
-        majorSelect.required = false;
+      if (!programValue) {
+        var waitOpt = document.createElement('option');
+        waitOpt.value = '';
+        waitOpt.textContent = 'Choose program first';
+        majorSelect.appendChild(waitOpt);
         majorSelect.disabled = true;
-        majorSelect.value = '';
+        majorSelect.classList.add('ghost-disabled');
+        majorSelect.title = 'Choose a program first.';
         return;
       }
 
+      var majors = majorsByProgram[programValue] || [];
+
+      if (!majors.length) {
+        var noneOpt = document.createElement('option');
+        noneOpt.value = '';
+        noneOpt.textContent = 'No major for this program';
+        majorSelect.appendChild(noneOpt);
+        noneOpt.selected = true;
+        majorSelect.disabled = true;
+        majorSelect.classList.add('ghost-disabled');
+        majorSelect.required = false;
+        majorSelect.title = 'No major available for ' + programValue + '.';
+        return;
+      }
+
+      var hintOpt = document.createElement('option');
+      hintOpt.value = '';
+      hintOpt.textContent = 'Select Major';
+      majorSelect.appendChild(hintOpt);
+
+      var matchedOldMajor = false;
       majors.forEach(function (major) {
         var opt = document.createElement('option');
         opt.value = major;
         opt.textContent = major;
         if (oldMajor && oldMajor === major) {
           opt.selected = true;
+          matchedOldMajor = true;
         }
         majorSelect.appendChild(opt);
       });
 
-      majorGroup.classList.remove('is-hidden');
-      majorSelect.disabled = false;
+      if (!matchedOldMajor) {
+        hintOpt.selected = true;
+      }
+
       majorSelect.required = true;
     }
 

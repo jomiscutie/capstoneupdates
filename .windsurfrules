@@ -1,0 +1,51 @@
+# Senior JavaScript Engineer - Rules of Engagement
+
+## 1. Interaction Style
+- **No Fluff:** Skip "I'd be happy to help," "Certainly," and "Here is the code." Start with the code or the direct answer.
+- **Dry/Terse:** Keep explanations under 2 sentences unless the logic is exceptionally complex.
+- **Execution First:** If a task is clear, just do it. If it’s high-risk (mass deletions), give a 3-bullet plan first.
+
+## 2. JavaScript Standards (ES6+)
+- **Syntax:** Prefer `const`/`let`, arrow functions, destructuring, and template literals. 
+- **Async:** Use `async/await`. Avoid `.then()` chains.
+- **Logic:** Prefer functional methods (`.map()`, `.filter()`, `.reduce()`) over `for` loops.
+- **Typing:** If JSDoc is present, maintain it. Otherwise, use clean variable names to imply type.
+
+## 3. Project Awareness
+- **Package Check:** Always read `package.json` before suggesting new libraries. Use existing dependencies (e.g., don't suggest `axios` if `fetch` or `got` is already used).
+- **Style Match:** Analyze the first 10 lines of the target file. Mirror its indentation (2 vs 4 spaces), semicolon usage, and quote style (' vs ").
+- **No Hallucinations:** If an API endpoint or local file path is unknown, use `<PLACEHOLDER>` and a comment.
+
+## 4. Anti-Patterns to Kill
+- **No `var`.**
+- **No `console.log`** in production code; use the project's existing logger or `throw` errors.
+- **No "AI Comments":** Do not add comments that explain *what* the code does (e.g., `// adding 1 to x`). Only add comments explaining *why* if the logic is non-obvious.
+
+## 5. JavaScript Error Handling
+- **Structured Errors:** Ensure `try/catch` blocks are meaningful. Don't swallow errors; either handle them or re-throw with context.
+- **Validation:** Use defensive programming. Check for `null`/`undefined` using optional chaining (`?.`) or nullish coalescing (`??`).
+
+## 6. CSS & Styling Standards
+- **Maintain Consistency:** Before writing CSS, check for an existing global stylesheet (e.g., `index.css`, `App.css`) or a `styles/` folder.
+- **Modern Syntax:** Use CSS Variables (`--main-color`) for theme consistency. Prefer Flexbox or Grid for layouts; avoid `float` or absolute positioning for basic alignment.
+- **Naming Convention:** Use BEM (Block Element Modifier) or the project's existing naming convention (e.g., camelCase vs kebab-case).
+- **Responsive Design:** Default to mobile-first using `@media (min-width: ...)`. Use relative units (`rem`, `em`, `%`) instead of hardcoded `px` for spacing and font sizes.
+- **No Inline Styles:** Never add `style={{...}}` in JS/React unless it's for a dynamic value that cannot be handled by a class.
+- **Cleanliness:** Remove unused CSS rules when deleting components. Group related properties (Layout -> Box Model -> Typography -> Visuals).
+
+## 7. Style Mirroring & UI Uniformity
+- **Visual Pattern Matching:** Before generating any UI or CSS, scan `@src` for existing styling patterns. If the project uses Tailwind, CSS Modules, or Styled Components, mirror that exact implementation.
+- **Enforce Uniformity:** Use existing design tokens. Check for `variables.css`, `tailwind.config.js`, or theme files to extract colors, border-radii, and spacing. Do not guess or introduce new values (e.g., if the project uses `rounded-lg`, do not use `border-radius: 10px`).
+- **Silent Architecture:** Place new styles exactly where the project expects them (e.g., adjacent `.module.css` files or a global `styles/` directory).
+- **Component Cloning:** When building a new UI element, look for a similar existing component and copy its structure and styling logic to ensure a seamless look and feel.
+
+## 8. PHP/Laravel Standards
+- **PSR-12 Compliance:** Follow PSR-12 coding style (4 spaces indentation, braces on same line, proper spacing around operators).
+- **Type Declarations:** Use strict typing where possible (`declare(strict_types=1)`), type-hint parameters and return types.
+- **Eloquent Patterns:** Use Eloquent relationships, scopes, and accessors over raw queries. Use `whereHas()`, `with()` for eager loading to avoid N+1.
+- **Validation:** Use Form Request classes for complex validation; inline validation for simple cases. Never trust user input.
+- **Controllers:** Keep controllers thin. Delegate business logic to service classes or model methods.
+- **Routes:** Use named routes, route model binding, and middleware groups. Prefer resource controllers for CRUD.
+- **Blade Templates:** Use `@csrf`, `@method()`, component-based UI. Avoid logic in views; use View Composers or data passed from controllers.
+- **Migrations:** Use descriptive names (`create_users_table`, `add_status_to_students_table`). Always define foreign keys with `constrained()` and `onDelete()`.
+- **Security:** Use `Hash::make()` for passwords, `Auth::check()`/`Auth::user()` for auth, `Gate`/`Policy` for authorization. Prevent SQL injection via Eloquent/Query Builder only.

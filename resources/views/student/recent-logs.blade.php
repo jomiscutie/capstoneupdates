@@ -32,9 +32,6 @@
         --attendance-surface-soft: var(--dtr-surface-soft);
         --attendance-hover: var(--dtr-hover-bg);
     }
-    html[data-theme="dark"] .dtr-attendance-history {
-        --attendance-hover: rgba(59, 130, 246, 0.1);
-    }
     .dtr-attendance-history .page-title { text-align: center; }
     .dtr-attendance-history .page-sub { text-align: center; max-width: 720px; margin-left: auto; margin-right: auto; }
     .dtr-attendance-history .card {
@@ -95,23 +92,88 @@
         font-size: 0.875rem;
         border-radius: 10px;
     }
+    /* Download PDF — high visibility, theme-adaptive (not default outline) */
+    .recent-logs-download-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.55rem 1.2rem;
+        min-height: 2.5rem;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-decoration: none;
+        white-space: nowrap;
+        border: 1px solid color-mix(in srgb, var(--dtr-primary) 42%, var(--dtr-border-soft) 58%);
+        color: color-mix(in srgb, var(--dtr-heading) 88%, var(--dtr-primary) 12%);
+        background:
+            linear-gradient(180deg,
+                color-mix(in srgb, var(--dtr-primary) 18%, var(--dtr-card-bg) 82%) 0%,
+                color-mix(in srgb, var(--dtr-primary) 10%, var(--dtr-card-bg) 90%) 100%);
+        box-shadow:
+            0 1px 2px color-mix(in srgb, #0f172a 8%, transparent),
+            0 0 0 1px color-mix(in srgb, #fff 55%, transparent) inset;
+        transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+    }
+    .recent-logs-download-btn i {
+        font-size: 1.05rem;
+        opacity: 0.92;
+        flex-shrink: 0;
+    }
+    .recent-logs-download-btn:hover {
+        color: var(--dtr-heading);
+        border-color: color-mix(in srgb, var(--dtr-primary) 58%, var(--dtr-border-soft) 42%);
+        background:
+            linear-gradient(180deg,
+                color-mix(in srgb, var(--dtr-primary) 26%, var(--dtr-card-bg) 74%) 0%,
+                color-mix(in srgb, var(--dtr-primary) 14%, var(--dtr-card-bg) 86%) 100%);
+        box-shadow:
+            0 2px 8px color-mix(in srgb, var(--dtr-primary) 22%, transparent),
+            0 0 0 1px color-mix(in srgb, #fff 40%, transparent) inset;
+        transform: translateY(-1px);
+    }
+    .recent-logs-download-btn:focus-visible {
+        outline: none;
+        box-shadow:
+            0 0 0 3px color-mix(in srgb, var(--dtr-primary) 35%, transparent),
+            0 1px 2px color-mix(in srgb, #0f172a 10%, transparent);
+    }
+    html[data-theme="dark"] .recent-logs-download-btn {
+        color: #ecfeff;
+        border-color: color-mix(in srgb, var(--dtr-primary) 55%, #1e293b 45%);
+        background:
+            linear-gradient(180deg,
+                color-mix(in srgb, var(--dtr-primary) 32%, #0f172a 68%) 0%,
+                color-mix(in srgb, var(--dtr-primary) 18%, #0c1222 82%) 100%);
+        box-shadow:
+            0 2px 12px color-mix(in srgb, #000 45%, transparent),
+            0 0 0 1px color-mix(in srgb, #fff 8%, transparent) inset;
+    }
+    html[data-theme="dark"] .recent-logs-download-btn:hover {
+        color: #f0fdfa;
+        border-color: color-mix(in srgb, var(--dtr-primary) 70%, #1e293b 30%);
+        background:
+            linear-gradient(180deg,
+                color-mix(in srgb, var(--dtr-primary) 42%, #0f172a 58%) 0%,
+                color-mix(in srgb, var(--dtr-primary) 24%, #0a0f18 76%) 100%);
+        box-shadow:
+            0 4px 16px color-mix(in srgb, #000 50%, transparent),
+            0 0 20px color-mix(in srgb, var(--dtr-primary) 18%, transparent);
+    }
+    html[data-theme="dark"] .recent-logs-download-btn:focus-visible {
+        box-shadow:
+            0 0 0 3px color-mix(in srgb, var(--dtr-primary) 45%, transparent),
+            0 2px 12px color-mix(in srgb, #000 45%, transparent);
+    }
     .dtr-attendance-history .table-responsive {
         border-radius: 10px;
         overflow-x: auto;
         border: 1px solid var(--attendance-border);
         background: var(--attendance-surface);
     }
-    .dtr-attendance-history .table-responsive .table {
-        min-width: 920px;
-        margin-bottom: 0;
-        --bs-table-bg: var(--attendance-surface);
-        --bs-table-color: var(--attendance-text);
-        --bs-table-border-color: var(--attendance-border);
-        --bs-table-hover-bg: var(--attendance-hover);
-        --bs-table-hover-color: var(--attendance-text);
-        --bs-table-striped-bg: var(--attendance-surface);
-        --bs-table-striped-color: var(--attendance-text);
-    }
+    .dtr-attendance-history .table-responsive .table { min-width: 920px; margin-bottom: 0; }
     .dtr-attendance-history .table-dtr-layout thead th {
         text-align: center;
         vertical-align: middle;
@@ -137,72 +199,9 @@
         border-bottom: 1px solid var(--attendance-border);
         font-size: 0.875rem;
         color: var(--attendance-text);
-        background: var(--attendance-surface) !important;
-    }
-    .dtr-attendance-history .table tbody tr {
-        background: var(--attendance-surface) !important;
     }
     .dtr-attendance-history .table tbody tr:last-child td { border-bottom: none; }
-    .dtr-attendance-history .table tbody tr:hover {
-        background: var(--attendance-hover) !important;
-    }
-    .dtr-attendance-history .table tbody tr:hover > td,
-    .dtr-attendance-history .table tbody tr:hover > th {
-        background: var(--attendance-hover) !important;
-        color: var(--attendance-text) !important;
-    }
-    .dtr-attendance-history .table .btn-outline-primary {
-        --bs-btn-color: #60a5fa;
-        --bs-btn-border-color: rgba(96, 165, 250, 0.42);
-        --bs-btn-hover-color: #bfdbfe;
-        --bs-btn-hover-bg: rgba(59, 130, 246, 0.18);
-        --bs-btn-hover-border-color: rgba(96, 165, 250, 0.55);
-        --bs-btn-active-color: #e0f2fe;
-        --bs-btn-active-bg: rgba(59, 130, 246, 0.26);
-        --bs-btn-active-border-color: rgba(96, 165, 250, 0.65);
-        --bs-btn-focus-shadow-rgb: 96, 165, 250;
-    }
-    .dtr-attendance-history .table .btn-outline-primary,
-    .dtr-attendance-history .table .btn-outline-primary:hover,
-    .dtr-attendance-history .table .btn-outline-primary:focus,
-    .dtr-attendance-history .table .btn-outline-primary:active {
-        box-shadow: none !important;
-    }
-    .dtr-attendance-history .table tbody .btn-outline-primary {
-        color: #2563eb !important;
-        border-color: rgba(37, 99, 235, 0.45) !important;
-        background: rgba(37, 99, 235, 0.08) !important;
-    }
-    .dtr-attendance-history .table tbody .btn-outline-primary i {
-        color: inherit !important;
-    }
-    .dtr-attendance-history .table tbody tr:hover .btn-outline-primary {
-        color: #1d4ed8 !important;
-        border-color: rgba(29, 78, 216, 0.55) !important;
-        background: rgba(29, 78, 216, 0.14) !important;
-    }
-    html[data-theme="dark"] .dtr-attendance-history .table tbody .btn-outline-primary {
-        color: #93c5fd !important;
-        border-color: rgba(147, 197, 253, 0.48) !important;
-        background: rgba(59, 130, 246, 0.15) !important;
-    }
-    html[data-theme="dark"] .dtr-attendance-history .table tbody tr:hover .btn-outline-primary {
-        color: #dbeafe !important;
-        border-color: rgba(147, 197, 253, 0.62) !important;
-        background: rgba(59, 130, 246, 0.25) !important;
-    }
-    html[data-theme="dark"] .dtr-attendance-history .table-dtr-layout tbody td {
-        background: #0f1a2d !important;
-        color: #e5edf7 !important;
-    }
-    html[data-theme="dark"] .dtr-attendance-history .table-dtr-layout tbody tr:hover > td {
-        background: #1b2538 !important;
-        color: #f8fbff !important;
-    }
-    html[data-theme="dark"] .dtr-attendance-history .table-dtr-layout tbody tr:hover > td .text-muted,
-    html[data-theme="dark"] .dtr-attendance-history .table-dtr-layout tbody tr:hover > td .small {
-        color: #c9d5e7 !important;
-    }
+    .dtr-attendance-history .table tbody tr:hover { background: var(--attendance-hover); }
     .dtr-attendance-history .table-dtr-layout tbody td.dtr-time {
         text-align: center;
         font-variant-numeric: tabular-nums;
@@ -364,7 +363,7 @@
         @if(($termSummary['history'] ?? collect())->isNotEmpty())
             <div class="term-history-strip">
                 @foreach($termSummary['history'] as $historyItem)
-                    <span class="term-history-chip">{{ $historyItem->term }} � {{ $historyItem->section }}</span>
+                    <span class="term-history-chip">{{ $historyItem->term }} · {{ $historyItem->section }}</span>
                 @endforeach
             </div>
         @endif
@@ -418,15 +417,16 @@
                         <input type="week" id="recentWeekEnd" name="week_end" class="form-control form-control-sm" value="{{ $weekEndInput ?? $weekStartInput ?? $weekInput ?? '' }}" style="min-width: 160px;" aria-label="End week">
                     </div>
                 </div>
-                <div class="col-auto">
+                <div class="col-auto d-flex flex-wrap align-items-center gap-2 filter-actions">
                     <button type="submit" class="btn btn-primary btn-sm">Apply</button>
-                </div>
-                <div class="col-auto">
                     <a
-                        href="{{ route('student.recentlogs.download', ['filter' => $filter ?? 'month', 'month' => $selectedMonth ?? now()->format('Y-m'), 'week_start' => $weekStartInput ?? null, 'week_end' => $weekEndInput ?? null, 'week' => $weekInput ?? null]) }}"
-                        class="btn btn-primary btn-sm"
+                        href="#"
+                        id="recentLogsDownloadLink"
+                        class="recent-logs-download-btn"
+                        data-download-base="{{ route('student.recentlogs.download') }}"
                     >
-                        <i class="bi bi-download me-1"></i> Download logs
+                        <i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i>
+                        <span>Download PDF logs</span>
                     </a>
                 </div>
             </form>
@@ -477,7 +477,7 @@
                                     <td class="dtr-time">@if($utM !== null){{ $utM }}@else<span class="text-muted">—</span>@endif</td>
                                     <td class="dtr-time">
                                         @if($log->hours_rendered)
-                                            {{ $log->hours_rendered_display ?? $log->hours_rendered }}
+                                            {{ $log->hours_rendered }}
                                         @else
                                             <span class="text-muted" title="Recorded when you time out for the day.">—</span>
                                         @endif
@@ -489,7 +489,7 @@
                                                 $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'morning'])) . '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 mb-1"><i class="bi bi-camera-fill"></i> Morning</a>';
                                             }
                                             if ($log->afternoon_verification_snapshot) {
-                                                $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'afternoon'])) . '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 mb-1"><i class="bi bi-camera-fill"></i> Break</a>';
+                                                $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'afternoon'])) . '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 mb-1"><i class="bi bi-camera-fill"></i> Afternoon</a>';
                                             }
                                             if ($log->timeout_verification_snapshot) {
                                                 $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'timeout'])) . '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 mb-1"><i class="bi bi-camera-fill"></i> Time out</a>';
@@ -556,6 +556,39 @@ document.querySelectorAll('.progress-bar-fill[data-pct]').forEach(function(el) {
     if (filterMonth) filterMonth.addEventListener('change', updatePanels);
     if (filterWeek) filterWeek.addEventListener('change', updatePanels);
     updatePanels();
+
+    var dlLink = document.getElementById('recentLogsDownloadLink');
+    function updateDownloadHref() {
+        if (!dlLink) return;
+        var base = dlLink.getAttribute('data-download-base');
+        var u = new URL(base, window.location.origin);
+        if (filterWeek && filterWeek.checked) {
+            u.searchParams.set('filter', 'week');
+            if (weekStartInput && weekStartInput.value) {
+                u.searchParams.set('week_start', weekStartInput.value);
+            }
+            if (weekEndInput && weekEndInput.value) {
+                u.searchParams.set('week_end', weekEndInput.value);
+            }
+            u.searchParams.delete('month');
+        } else {
+            u.searchParams.set('filter', 'month');
+            var m = document.getElementById('recentMonthSelect');
+            if (m && m.value) {
+                u.searchParams.set('month', m.value);
+            }
+            u.searchParams.delete('week_start');
+            u.searchParams.delete('week_end');
+        }
+        dlLink.setAttribute('href', u.pathname + u.search);
+    }
+    updateDownloadHref();
+    if (filterMonth) filterMonth.addEventListener('change', updateDownloadHref);
+    if (filterWeek) filterWeek.addEventListener('change', updateDownloadHref);
+    if (weekStartInput) weekStartInput.addEventListener('change', updateDownloadHref);
+    if (weekEndInput) weekEndInput.addEventListener('change', updateDownloadHref);
+    var monthSel = document.getElementById('recentMonthSelect');
+    if (monthSel) monthSel.addEventListener('change', updateDownloadHref);
 })();
 </script>
 @endpush

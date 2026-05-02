@@ -7,8 +7,7 @@
     .page-title { font-size: 1.5rem; font-weight: 600; color: var(--dtr-text); margin-bottom: 0.35rem; text-align: center; }
     .page-sub { font-size: 0.9rem; color: var(--dtr-muted); margin: 0 auto 1.5rem; text-align: center; max-width: 720px; }
     .program-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; background: var(--dtr-surface-soft); color: var(--dtr-primary); border-radius: 6px; font-size: 0.8rem; font-weight: 500; margin-top: 0.5rem; }
-    .program-badge-wrap { text-align: center; margin-bottom: 0.5rem; }
-    .program-list-inline { margin-top: 0.35rem; font-size: 0.82rem; color: var(--dtr-muted); }
+    .program-badge-wrap { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; align-items: center; text-align: center; margin-bottom: 0.5rem; max-width: 720px; margin-left: auto; margin-right: auto; }
     .info-alert { background: var(--dtr-surface-soft); border-left: 3px solid var(--dtr-primary); border-radius: 6px; padding: 0.9rem 1.1rem; margin-bottom: 1.5rem; font-size: 0.9rem; text-align: center; }
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
     .stat-card { background: var(--dtr-card-bg); padding: 1.2rem; border-radius: 10px; border: 1px solid var(--dtr-border-soft); box-shadow: var(--dtr-shadow-soft); }
@@ -25,44 +24,39 @@
     .action-card:hover { border-color: rgba(37,99,235,0.15); }
     .action-card h3 { font-size: 1rem; font-weight: 600; color: var(--dtr-text); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
     .action-card p { font-size: 0.85rem; color: var(--dtr-muted); margin-bottom: 1rem; line-height: 1.45; }
-    .action-card .btn-minimal { min-height: 40px; }
 </style>
 @endpush
 
 @section('content')
-    @php
-        $programs = ($assignedPrograms ?? collect())->values();
-        $hasPrograms = $programs->isNotEmpty();
-        $isMultiProgram = $programs->count() > 1;
-        $programSummary = $isMultiProgram ? ($programs->count() . ' programs assigned') : ($programs->first() ?? 'All Programs');
-    @endphp
     <h1 class="page-title">Dashboard</h1>
     <p class="page-sub">Welcome, {{ auth()->guard('coordinator')->user()->name }}</p>
-    @if($hasPrograms)
+    @if(($assignedPrograms ?? collect())->isNotEmpty())
         <div class="program-badge-wrap">
-            <div class="program-badge">
-                <i class="bi bi-mortarboard"></i>
-                <span>{{ $programSummary }}</span>
-            </div>
-            @if($isMultiProgram)
-                <div class="program-list-inline">{{ $programs->implode(' • ') }}</div>
-            @endif
+        @foreach($assignedPrograms as $programLabel)
+        <div class="program-badge">
+            <i class="bi bi-mortarboard"></i>
+            <span>{{ $programLabel }}</span>
+        </div>
+        @endforeach
         </div>
     @endif
 
-    @if($hasPrograms)
-        <div class="info-alert">
-            Data shown is for
-            <strong>{{ $isMultiProgram ? 'assigned programs' : ($programs->first() ?? 'assigned program') }}</strong>
-            students.
-        </div>
+    @if(($assignedPrograms ?? collect())->isNotEmpty())
+    @php($programSummary = $assignedPrograms->implode(' · '))
+    <div class="info-alert">
+        @if($assignedPrograms->count() === 1)
+            Figures and shortcuts below include verified students rostered under <strong>{{ $programSummary }}</strong>.
+        @else
+            Figures and shortcuts below include verified students rostered across <strong>{{ $assignedPrograms->count() }}</strong> programs: <strong>{{ $programSummary }}</strong>.
+        @endif
+    </div>
     @endif
 
     <div class="stats-grid">
         <div class="stat-card primary">
             <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
             <div class="label">Total Students</div>
-            <div class="sub-label">{{ $programSummary }}</div>
+            <div class="sub-label">@if(($assignedPrograms ?? collect())->isNotEmpty()){{ $assignedPrograms->implode(' · ') }}@else<span class="text-muted">Programs not set — contact admin</span>@endif</div>
             <div class="number">{{ $totalStudents }}</div>
         </div>
         <div class="stat-card success">

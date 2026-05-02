@@ -4,69 +4,74 @@
     <meta charset="UTF-8">
     <title>Daily Time Record - {{ $student->name }} - {{ $month }}</title>
     <style>
+        @page {
+            size: 4in 8.5in;
+            margin: 0;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'DejaVu Serif', 'Times New Roman', Times, serif;
-            font-size: 7.3pt;
+            font-size: 7pt;
             color: #000;
-            line-height: 1.15;
-            padding: 7mm 8mm;
+            line-height: 1.12;
+            padding: 5mm 4.75mm;
         }
         .dtr-title {
             text-align: center;
-            font-size: 10pt;
+            font-size: 9.2pt;
             font-weight: bold;
             letter-spacing: 0.08em;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         .name-block {
             text-align: center;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
         .name-line {
             border-bottom: 2px solid #000;
-            min-height: 18px;
+            min-height: 15px;
             margin: 0 auto 2px;
-            max-width: 90%;
-            padding: 2px 6px 1px;
+            max-width: 94%;
+            padding: 1px 4px 0;
         }
         .student-name {
-            font-size: 11pt;
+            font-size: 10pt;
             font-weight: bold;
             letter-spacing: 0.02em;
-            line-height: 1.2;
+            line-height: 1.15;
         }
         .name-hint {
-            font-size: 6.8pt;
+            font-size: 6.2pt;
             color: #222;
         }
         .month-line {
             text-align: center;
-            margin-bottom: 6px;
-            font-size: 8pt;
+            margin-bottom: 5px;
+            font-size: 7.5pt;
         }
         .official-row {
             width: 100%;
-            margin-bottom: 5px;
-            font-size: 6.8pt;
+            margin-bottom: 4px;
+            font-size: 6pt;
+            line-height: 1.1;
         }
         .official-row table { width: 100%; border-collapse: collapse; }
-        .official-row td { vertical-align: bottom; padding: 2px 0; }
-        .official-label { width: 42%; }
-        .official-blank { border-bottom: 1px solid #000; min-height: 12px; }
+        .official-row td { vertical-align: bottom; padding: 1px 0; }
+        .official-label { width: 40%; }
+        .official-blank { border-bottom: 1px solid #000; min-height: 10px; }
         .dtr-table {
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
-            font-size: 6.3pt;
-            margin-bottom: 5px;
+            font-size: 5.85pt;
+            margin-bottom: 0;
         }
         .dtr-table th,
         .dtr-table td {
             border: 1px solid #000;
             text-align: center;
             vertical-align: middle;
-            padding: 1px 1px;
+            padding: 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: clip;
@@ -78,77 +83,113 @@
         .col-day { width: 6%; }
         .col-time { width: 11%; }
         .dtr-table tbody td {
-            height: 11px;
-            max-height: 11px;
+            height: 10px;
+            max-height: 10px;
             line-height: 1;
+            font-size: 5.7pt;
         }
         .dtr-table tbody tr.dim td {
             color: #999;
         }
-        .cert {
-            font-size: 6.6pt;
+        .dtr-table tbody tr.dtr-total-summary td {
+            height: auto;
+            border-top: 2px solid #000;
+            vertical-align: middle;
+            padding: 2px 1px;
+            background: #f7f7f7;
+        }
+        .dtr-table tbody tr.dtr-total-summary .undertime-tail-cell {
+            font-size: 5.95pt;
+        }
+        .dtr-table tbody tr.dtr-total-summary .undertime-total-cell {
+            font-weight: bold;
+            font-size: 6pt;
+            padding: 3px 1px;
+        }
+        /* Total hours rendered (above certification); one line, compact type */
+        .hours-rendered-above-cert {
+            margin: 0 0 5px;
+            padding: 4px 1.25mm 4px 2.75mm;
+            text-align: left;
+            line-height: 1.25;
+        }
+        .hours-rendered-above-cert .total-rendered-inner {
+            display: inline-block;
+            max-width: 100%;
+            padding: 3px 5px;
+            border: 1px solid #8a8a8a;
+            border-radius: 2px;
+            background: #fff;
+            font-weight: bold;
+            font-size: 7.15pt;
+            letter-spacing: 0.025em;
+            color: #000;
+        }
+        .hours-rendered-above-cert .hours-numeric {
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+        }
+        /* Classic DTR separators and certification block */
+        .dtr-double-rule {
+            border: 0 solid transparent;
+            border-top: 3px double #000;
+            margin: 5px 0 6px;
+            height: 0;
+            clear: both;
+            font-size: 0;
+            line-height: 0;
+        }
+        .cert-classic {
+            font-size: 6.1pt;
             font-style: italic;
             text-align: justify;
-            margin: 5px 0 6px;
-            line-height: 1.2;
+            margin: 0 0 5px;
+            padding-left: 2.75mm;
+            padding-right: 2.75mm;
+            line-height: 1.22;
+            hyphens: none;
         }
-        .sig-block { margin-top: 4px; font-size: 7pt; }
-        .sig-line {
-            border-bottom: 1px solid #000;
-            min-height: 13px;
-            margin: 4px 0 2px;
-            max-width: 70%;
-        }
-        .sig-line-wide {
-            border-bottom: 1px solid #000;
-            min-height: 13px;
-            margin: 4px 0 2px;
-        }
-        .sig-label { font-size: 6.4pt; }
-        .sig-right { text-align: right; margin-top: 4px; }
-        .footer-note {
-            text-align: center;
-            font-size: 6pt;
-            margin-top: 6px;
-        }
-        .meta-foot {
-            margin-top: 6px;
-            text-align: center;
-            border-top: 1px solid #000;
-            padding-top: 5px;
-        }
-        .meta-student-ref {
-            font-size: 6.6pt;
-            color: #333;
-            margin-bottom: 4px;
-        }
-        .meta-prepared {
-            margin: 4px 0;
-            padding: 4px 8px;
-            border: 1px solid #000;
-            background: #fafafa;
-        }
-        .meta-prepared-label {
-            display: block;
-            font-size: 6.5pt;
+        .cert-classic-lead {
+            font-style: italic;
             font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-bottom: 2px;
-            color: #000;
-        }
-        .meta-prepared-name {
-            font-size: 8pt;
-            font-weight: bold;
+            font-variant: normal;
+            font-size: inherit;
             letter-spacing: 0.02em;
-            color: #000;
         }
-        .meta-generated {
-            font-size: 5.8pt;
-            color: #444;
+        .sig-dashed {
+            border-bottom: 1px dashed #000;
+            min-height: 14px;
+            margin: 0 0 2px;
+            width: 100%;
+        }
+        .verify-line {
+            font-size: 6.2pt;
+            font-style: italic;
+            margin: 4px 0 4px;
+        }
+        .sig-dashed-in-charge {
+            border-bottom: 1px dashed #000;
+            text-align: right;
+            padding: 0 0 1px;
+            margin: 0;
+            width: 100%;
+            line-height: 1.05;
+            min-height: 15px;
+        }
+        .sig-dashed-in-charge .in-charge-name-line {
+            display: inline-block;
+            font-weight: bold;
+            font-size: 6.35pt;
+            background-color: #fff;
+            padding: 1px 0 0 14px;
+        }
+        .in-charge-role {
+            font-size: 6.1pt;
+            font-style: italic;
+            font-weight: bold;
+            text-align: right;
             margin-top: 2px;
         }
-        .total-label { font-weight: bold; }
     </style>
 </head>
 <body>
@@ -167,9 +208,9 @@
     <div class="official-row">
         <table>
             <tr>
-                <td class="official-label" rowspan="2" style="vertical-align: middle;">Prescribed OJT hours for<br>arrival and departure</td>
-                <td style="width: 35%;">Regular days</td>
-                <td class="official-blank" style="width: 23%;">&nbsp;</td>
+                <td class="official-label" rowspan="2" style="vertical-align: middle;">Official hours<br>Arrival&nbsp;&amp;&nbsp;Departure</td>
+                <td style="width: 36%;">Regular days</td>
+                <td class="official-blank" style="width: 24%;">&nbsp;</td>
             </tr>
             <tr>
                 <td>Saturdays</td>
@@ -207,49 +248,35 @@
                 <td>{{ $row['in_month'] && $row['ut_m'] !== null ? $row['ut_m'] : '' }}</td>
             </tr>
             @endforeach
-            <tr>
-                <td colspan="5" class="total-label" style="text-align: right; padding-right: 6px;">TOTAL</td>
-                <td>{{ $undertimeTotalH !== null ? $undertimeTotalH : '' }}</td>
-                <td>{{ $undertimeTotalM !== null ? $undertimeTotalM : '' }}</td>
+            <tr class="dtr-total-summary">
+                <td colspan="5" class="undertime-tail-cell">&nbsp;</td>
+                <td class="undertime-total-cell">{{ $undertimeTotalH !== null ? $undertimeTotalH : '' }}</td>
+                <td class="undertime-total-cell">{{ $undertimeTotalM !== null ? $undertimeTotalM : '' }}</td>
             </tr>
         </tbody>
     </table>
 
-    <p style="font-size: 5.8pt; margin-bottom: 3px;">
-        <strong>Note:</strong> A.M. departure uses lunch break out when recorded. Under Time (Hours/Minutes) shows combined late minutes for that day when recorded by the system.
+    <div class="dtr-double-rule" role="presentation"></div>
+
+    <div class="hours-rendered-above-cert" role="note">
+        <div class="total-rendered-inner">
+            TOTAL&nbsp;<span class="hours-numeric">{{ (int) $totalHours }}h {{ str_pad((string) (int) $totalMinutes, 2, '0', STR_PAD_LEFT) }}m</span>
+        </div>
+    </div>
+
+    <p class="cert-classic">
+        <span class="cert-classic-lead">I CERTIFY</span> on my honor that the above is a true and correct report of the hours of work performed, record of which was made daily at the time of arrival at and departure from office.
     </p>
 
-    <p class="cert">
-        I CERTIFY on my honor that the above is a true and correct report of my OJT attendance hours, recorded through the NORSU OJT Daily Time Record (DTR) system at the time of my morning and afternoon time-in and time-out.
-    </p>
+    <div class="sig-dashed" aria-hidden="true"></div>
 
-    <div class="sig-block">
-        <div class="sig-line-wide"></div>
-        <div class="sig-label">(Signature of student)</div>
+    <div class="dtr-double-rule" role="presentation"></div>
+
+    <p class="verify-line">Verified as to the prescribed office hours.</p>
+
+    <div class="sig-dashed-in-charge">
+        <span class="in-charge-name-line">{{ $coordinator->name }}</span>
     </div>
-
-    <p style="margin-top: 6px; font-size: 6.8pt;">Verified as to the prescribed OJT attendance hours.</p>
-
-    <div class="sig-right">
-        <div class="sig-line" style="margin-left: auto;"></div>
-        <div class="sig-label">OJT Coordinator / In Charge</div>
-    </div>
-
-    <div class="footer-note">(Refer to your college OJT program guidelines)</div>
-
-    <div class="meta-foot">
-        <div class="meta-student-ref">
-            Student No. <strong>{{ $student->student_no }}</strong> &middot; {{ $student->course ?? 'Course N/A' }}
-        </div>
-        @if($coordinator)
-        <div class="meta-prepared">
-            <span class="meta-prepared-label">Prepared by</span>
-            <span class="meta-prepared-name">{{ $coordinator->name }}</span>
-        </div>
-        @endif
-        <div class="meta-generated">
-            Generated {{ $generatedAt }} &middot; NORSU OJT DTR
-        </div>
-    </div>
+    <div class="in-charge-role">In Charge</div>
 </body>
 </html>

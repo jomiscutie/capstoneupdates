@@ -132,6 +132,10 @@ Route::prefix('student')->group(function () {
 
     Route::middleware(['auth:student', 'single.session'])->group(function () {
         Route::get('dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+        Route::get('manual-requests', [StudentDashboardController::class, 'manualRequestsForMonth'])->name('student.manual.requests.json')->middleware('throttle:60,1');
+        Route::post('time-in', [AttendanceController::class, 'timeIn'])->name('student.timein')->middleware('throttle:60,1');
+        Route::post('lunch-break-out', [AttendanceController::class, 'lunchBreakOut'])->name('student.lunch.breakout')->middleware('throttle:60,1');
+        Route::post('time-out', [AttendanceController::class, 'timeOut'])->name('student.timeout')->middleware('throttle:60,1');
         Route::post('manual-attendance-request', [AttendanceController::class, 'submitManualRequest'])->name('student.manual.request')->middleware('throttle:10,1');
         Route::get('recent-logs', [AttendanceController::class, 'recentLogs'])->name('student.recentlogs');
         Route::get('recent-logs/download', [AttendanceController::class, 'downloadRecentLogs'])->name('student.recentlogs.download');

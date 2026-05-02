@@ -150,8 +150,9 @@ class ReportController extends Controller
     {
         $coordinator = Auth::guard('coordinator')->user();
         $students = Student::forCoordinator($coordinator)->verified()->orderBy('name')->get();
+        $assignedPrograms = $coordinator->assignedProgramLabels();
 
-        return view('coordinator.generate-report', compact('students'));
+        return view('coordinator.generate-report', compact('students', 'assignedPrograms'));
     }
 
     private function resolveLogoDataUri(): ?string
@@ -248,7 +249,6 @@ class ReportController extends Controller
             'totalHours' => $totalHours,
             'totalMinutes' => $remainingMinutes,
             'coordinator' => $coordinator,
-            'generatedAt' => Carbon::now('Asia/Manila')->format('F d, Y g:i A'),
             'logoDataUri' => $logoDataUri,
             'dtrRows' => $dtrRows,
             'monthName' => $date->format('F'),
@@ -265,8 +265,8 @@ class ReportController extends Controller
     {
         try {
             $pdf = Pdf::loadView('reports.monthly-attendance', $data);
-            // 3.5in x 8.5in custom DTR slip size (width x height), in points.
-            $pdf->setPaper([0, 0, 252, 612], 'portrait');
+            // DTR slip: exactly 4in x 8.5in (72pt per inch → 288 x 612pt).
+            $pdf->setPaper([0, 0, 288, 612], 'portrait');
 
             return $pdf->output();
         } catch (\Throwable $e) {
@@ -281,7 +281,7 @@ class ReportController extends Controller
             try {
                 $data['logoDataUri'] = null;
                 $pdf = Pdf::loadView('reports.monthly-attendance', $data);
-                $pdf->setPaper([0, 0, 252, 612], 'portrait');
+                $pdf->setPaper([0, 0, 288, 612], 'portrait');
 
                 return $pdf->output();
             } catch (\Throwable $e2) {
