@@ -308,21 +308,36 @@
         background: color-mix(in srgb, var(--dtr-input-bg) 95%, transparent 5%);
     }
     .admin-modal .btn.btn-primary {
-        border-radius: 10px;
-        min-height: 46px;
-        font-size: 1.03rem;
-        font-weight: 700;
-        letter-spacing: 0.01em;
-        background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%);
-        border-color: #14b8a6;
-        color: #f8fffe;
-        box-shadow: 0 14px 30px -18px rgba(20, 184, 166, 0.8);
+        border-radius: 8px;
+        min-height: 40px;
+        font-size: 0.8625rem;
+        font-weight: 600;
+        letter-spacing: 0.015em;
+        background: transparent !important;
+        border: 1px solid color-mix(in srgb, var(--dtr-primary) 58%, var(--dtr-input-border)) !important;
+        color: var(--dtr-primary) !important;
+        box-shadow: none !important;
     }
     .admin-modal .btn.btn-primary:hover,
     .admin-modal .btn.btn-primary:focus {
-        background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-        border-color: #0d9488;
-        color: #ffffff;
+        background: var(--dtr-primary-soft) !important;
+        border-color: color-mix(in srgb, var(--dtr-primary) 72%, transparent) !important;
+        color: var(--dtr-heading) !important;
+    }
+    .admin-modal .btn.btn-outline-secondary {
+        border-radius: 8px;
+        min-height: 40px;
+        font-size: 0.8625rem;
+        font-weight: 600;
+        background: transparent !important;
+        color: color-mix(in srgb, var(--dtr-muted) 78%, var(--dtr-text)) !important;
+        border: 1px solid color-mix(in srgb, var(--dtr-input-border) 88%, transparent) !important;
+    }
+    .admin-modal .btn.btn-outline-secondary:hover:not(:disabled),
+    .admin-modal .btn.btn-outline-secondary:focus {
+        background: var(--dtr-hover-bg) !important;
+        color: var(--dtr-heading) !important;
+        border-color: color-mix(in srgb, var(--dtr-muted) 35%, var(--dtr-input-border)) !important;
     }
     html[data-theme="dark"] .admin-modal .btn-close {
         filter: invert(1) grayscale(100%) brightness(200%);

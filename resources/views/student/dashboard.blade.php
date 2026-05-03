@@ -238,6 +238,18 @@
         color: #bfdbfe;
     }
 
+    /* In-modal fetch errors: always legible (not the default light-on-light mix) */
+    #manualRequestsHistoryModal #manualRequestsAlert.alert-danger:not(.d-none) {
+        background: color-mix(in srgb, #fecaca 52%, var(--dtr-card-bg)) !important;
+        border: 1px solid #f87171 !important;
+        color: #7f1d1d !important;
+    }
+    html[data-theme="dark"] #manualRequestsHistoryModal #manualRequestsAlert.alert-danger:not(.d-none) {
+        background: color-mix(in srgb, rgba(127, 29, 29, 0.5) 72%, var(--dtr-card-bg)) !important;
+        border-color: rgba(248, 113, 113, 0.45) !important;
+        color: #fecaca !important;
+    }
+
     .stu-dash .attendance-status-notice {
         flex-direction: row;
         flex-wrap: wrap;
@@ -529,35 +541,6 @@
                 <h4>Today's Time &amp; Date</h4>
             </div>
 
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show">
-                    <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-            @if(session('info'))
-                <div class="alert alert-info alert-dismissible fade show">
-                    <i class="bi bi-info-circle me-2"></i>{{ session('info') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-            @if(session('warning'))
-                <div class="alert alert-warning alert-dismissible fade show">
-                    <i class="bi bi-exclamation-triangle me-2"></i>{{ session('warning') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-            @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show {{ session('error_type') ? 'alert-attendance-error' : '' }}">
-                    <i class="bi bi-shield-exclamation me-2"></i>
-                    @if(session('error_type'))
-                        <strong>Verification:</strong>
-                    @endif
-                    {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
             @if(isset($attendance) && $attendance)
             <div class="attendance-status-notice mb-3">
                 @if($attendance->time_in)
@@ -612,29 +595,12 @@
                 <h4>Today's Attendance</h4>
             </div>
             @if(isset($attendance) && $attendance)
-                @if($attendance->is_late || $attendance->afternoon_is_late)
-                <div class="alert alert-warning late-alert mb-3">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <strong>Late Arrival:</strong>
-                    @if($attendance->is_late && $attendance->afternoon_is_late)
-                        Morning: {{ $attendance->late_display }} late | Afternoon: {{ $attendance->afternoon_late_display }} late
-                    @elseif($attendance->is_late)
-                        Morning: {{ $attendance->late_display }} late
-                    @elseif($attendance->afternoon_is_late)
-                        Afternoon: {{ $attendance->afternoon_late_display }} late
-                    @endif
-                </div>
-                @endif
                 <div class="attendance-summary-grid">
                     <div class="summary-item">
                         <div class="label">Morning Time In</div>
                         <div class="value">
                             @if($attendance->time_in)
-                                @if($attendance->is_late)
-                                    <span class="badge bg-warning text-dark me-1">{{ $attendance->time_in_12 }}</span>
-                                @else
-                                    <span class="badge bg-success">{{ $attendance->time_in_12 }}</span>
-                                @endif
+                                <span class="badge bg-success">{{ $attendance->time_in_12 }}</span>
                             @else
                                 <span class="text-muted">-</span>
                             @endif
@@ -648,11 +614,7 @@
                         <div class="label">Afternoon Time In</div>
                         <div class="value">
                             @if($attendance->afternoon_time_in)
-                                @if($attendance->afternoon_is_late)
-                                    <span class="badge bg-warning text-dark me-1">{{ $attendance->afternoon_time_in_12 }}</span>
-                                @else
-                                    <span class="badge bg-success">{{ $attendance->afternoon_time_in_12 }}</span>
-                                @endif
+                                <span class="badge bg-success">{{ $attendance->afternoon_time_in_12 }}</span>
                             @else
                                 <span class="text-muted">-</span>
                             @endif
@@ -665,11 +627,8 @@
                     <div class="summary-item">
                         <div class="label">Hours Rendered</div>
                         <div class="value">
-                            @php
-                                $hoursRendered = $attendance->hours_rendered ?? '';
-                            @endphp
-                            @if($hoursRendered !== '')
-                                {{ str_replace([' hr ', ' min', ' hr'], ['h ', 'm', 'h'], $hoursRendered) }}
+                            @if($attendance->hours_rendered_display)
+                                {{ str_replace([' hr ', ' min', ' hr'], ['h ', 'm', 'h'], $attendance->hours_rendered_display) }}
                             @else
                                 0h 0m
                             @endif
@@ -691,18 +650,9 @@
                     <i class="bi bi-journal-plus"></i>
                     <h4 class="mb-0">Manual attendance request</h4>
                 </div>
-                <button type="button" class="btn btn-outline-primary btn-sm flex-shrink-0 text-nowrap" data-bs-toggle="modal" data-bs-target="#manualRequestsHistoryModal">
-                    <i class="bi bi-list-ul me-1"></i>View recent requests
-                </button>
+               
             </div>
-            <p class="text-muted small mb-3">Request a manual entry when you missed the kiosk or need a correction. Enter the <strong>date</strong> and at least <strong>one time</strong>. Your coordinator must approve before it appears on your record. You cannot request a date that already has attendance — use your coordinator for invalidations.</p>
-
-            @if($errors->any())
-                <div class="alert alert-danger">
-                    <strong class="d-block mb-1">Please fix the following:</strong>
-                    <ul class="mb-0 ps-3 small">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul>
-                </div>
-            @endif
+            <p class="text-muted small mb-3">Request a manual entry when you missed the kiosk or need a correction. Enter the <strong>date</strong> and at least <strong>one time</strong>. Your coordinator/admin must approve before it appears on your record. You cannot request a date that already has attendance — use your coordinator for invalidations.</p>
 
             <form method="POST" action="{{ route('student.manual.request') }}" class="stu-dash-manual-form">
                 @csrf
@@ -736,8 +686,8 @@
                     <textarea name="reason" id="manual_reason" class="form-control" rows="3" required maxlength="1500" placeholder="e.g. Kiosk unavailable, supervised off-site activity, verified by supervisor…">{{ old('reason') }}</textarea>
                 </div>
                 <div class="d-flex flex-wrap gap-2 mt-3">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-send-fill me-1"></i>Submit request
+                    <button type="submit" class="btn btn-primary dtr-mbtn dtr-mbtn--rose">
+                        <i class="bi bi-send me-1" aria-hidden="true"></i>Submit request
                     </button>
                     <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#manualRequestsHistoryModal">
                         <i class="bi bi-inboxes me-1"></i>See your requests
@@ -770,8 +720,8 @@
                                        max="{{ $manualModalMaxMonth }}"
                                        value="{{ $manualModalMaxMonth }}"
                                        aria-describedby="manualRequestsMonthHelp">
-                                <button type="button" class="btn btn-primary manual-req-refresh-btn" id="manualRequestsReloadBtn">
-                                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                                <button type="button" class="btn btn-primary dtr-mbtn dtr-mbtn--brand manual-req-refresh-btn" id="manualRequestsReloadBtn">
+                                    <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh
                                 </button>
                             </div>
                             <p class="small mb-0 pt-2 mt-3 border-top" style="border-color: var(--dtr-border-soft) !important;">

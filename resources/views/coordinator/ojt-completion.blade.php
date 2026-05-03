@@ -115,25 +115,6 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show">
-            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show">
-            <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-    @if(session('info'))
-        <div class="alert alert-info alert-dismissible fade show">
-            <i class="bi bi-info-circle me-2"></i>{{ session('info') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     <div class="card">
         <div class="card-body">
             <h5 class="card-title mb-0"><i class="bi bi-people me-2"></i>Students — Required Hours & Confirmation</h5>

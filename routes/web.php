@@ -87,7 +87,7 @@ Route::prefix('coordinator')->group(function () {
         Route::post('manual-attendance-requests/{manualRequest}/review', [AttendanceController::class, 'reviewManualRequest'])->name('coordinator.manual.requests.review');
         Route::post('manual-attendance-requests/bulk-review', [AttendanceController::class, 'coordinatorBulkReviewManualRequests'])->name('coordinator.manual.requests.bulk.review');
         Route::post('attendance/{attendance}/invalidate', [AttendanceController::class, 'invalidateAttendance'])->name('coordinator.attendance.invalidate');
-        Route::get('attendance/{attendance}/verification-snapshot/{type}', [AttendanceController::class, 'viewVerificationSnapshot'])->where('type', 'morning|afternoon|timeout')->name('coordinator.attendance.verification_snapshot');
+        Route::get('attendance/{attendance}/verification-snapshot/{type}', [AttendanceController::class, 'viewVerificationSnapshot'])->where('type', 'morning|afternoon|lunch|timeout')->name('coordinator.attendance.verification_snapshot');
         Route::get('attendance-analytics', [AttendanceController::class, 'attendanceAnalytics'])->name('coordinator.attendance.analytics');
         Route::get('generate-report', [ReportController::class, 'showReportForm'])->name('coordinator.generate.report');
         Route::post('generate-report', [ReportController::class, 'generateMonthlyReport'])->name('coordinator.generate.report.submit');
@@ -139,7 +139,7 @@ Route::prefix('student')->group(function () {
         Route::post('manual-attendance-request', [AttendanceController::class, 'submitManualRequest'])->name('student.manual.request')->middleware('throttle:10,1');
         Route::get('recent-logs', [AttendanceController::class, 'recentLogs'])->name('student.recentlogs');
         Route::get('recent-logs/download', [AttendanceController::class, 'downloadRecentLogs'])->name('student.recentlogs.download');
-        Route::get('attendance/{attendance}/verification-snapshot/{type}', [AttendanceController::class, 'viewVerificationSnapshot'])->where('type', 'morning|afternoon|timeout')->name('student.attendance.verification_snapshot');
+        Route::get('attendance/{attendance}/verification-snapshot/{type}', [AttendanceController::class, 'viewVerificationSnapshot'])->where('type', 'morning|afternoon|lunch|timeout')->name('student.attendance.verification_snapshot');
         Route::get('settings', [StudentSettingsController::class, 'index'])->name('student.settings');
         Route::post('settings/face-enrollment', [StudentSettingsController::class, 'saveFaceEnrollment'])->name('student.settings.face-enrollment');
         Route::post('settings/office-request', [StudentSettingsController::class, 'submitOfficeAssignmentRequest'])->name('student.settings.office-request');

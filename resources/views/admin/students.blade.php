@@ -60,29 +60,6 @@
 
                 <div id="bulkStudentIds"></div>
 
-                @if ($errors->has('bulk_assign'))
-                    <div class="col-12">
-                        <div class="alert alert-danger">{{ $errors->first('bulk_assign') }}</div>
-                    </div>
-                @endif
-                @if ($errors->any() && ! $errors->has('bulk_assign'))
-                    <div class="col-12">
-                        <div class="alert alert-danger">
-                            <div class="fw-semibold mb-1">Could not apply bulk assignment.</div>
-                            <ul class="mb-0 ps-3 small">
-                                @foreach ($errors->all() as $err)
-                                    <li>{{ $err }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                @endif
-                @if (session('success'))
-                    <div class="col-12">
-                        <div class="alert alert-success">{{ session('success') }}</div>
-                    </div>
-                @endif
-
                 <div class="row g-3 bulk-fields-grid">
 
                     @php($bulkSchoolYearMin = now('Asia/Manila')->format('Y-m-d'))
@@ -138,9 +115,6 @@
                         </button>
                     </div>
                 </div>
-                @error('bulk_assign')
-                    <div class="alert alert-danger mt-2 mb-0 py-2 px-3">{{ $message }}</div>
-                @enderror
             </div>
         </form>
         <form id="adminDeleteBatchForm" method="POST" action="{{ route('admin.students.delete-batch') }}" class="d-none" aria-hidden="true">

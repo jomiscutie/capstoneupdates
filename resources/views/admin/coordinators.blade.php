@@ -302,12 +302,6 @@
                     @csrf
                     <input type="hidden" name="form_context" value="create_coordinator">
 
-                    @if($createFormCtx && $errors->has('duplicate_coordinator'))
-                        <div class="alert alert-danger py-2 px-3 mb-3" role="alert">
-                            <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>{{ $errors->first('duplicate_coordinator') }}
-                        </div>
-                    @endif
-
                     <fieldset class="coordinator-form-section coordinator-form-section--account">
                         <legend class="form-section-legend"><i class="bi bi-person-vcard" aria-hidden="true"></i> Account</legend>
                         <input type="hidden" name="name" id="coord_name" value="{{ $createFormCtx ? old('name') : '' }}">

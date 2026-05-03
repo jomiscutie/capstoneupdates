@@ -104,25 +104,8 @@
     .settings-page #changePasswordModal .modal-footer {
         border: none;
         padding: 0 1.5rem 1.5rem;
-        gap: 0.5rem;
-        flex-direction: row-reverse;
-        justify-content: flex-start;
-    }
-    .settings-page #changePasswordModal .modal-footer .btn {
-        padding: 0.6rem 1.25rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        border-radius: 10px;
-        transition: background 0.15s ease, color 0.15s ease;
-    }
-    .settings-page #changePasswordModal .modal-footer .btn-secondary {
-        background: transparent;
-        border: none;
-        color: var(--dtr-muted);
-    }
-    .settings-page #changePasswordModal .modal-footer .btn-secondary:hover {
-        background: var(--dtr-hover-bg);
-        color: var(--dtr-text);
+        gap: 0.65rem;
+        justify-content: flex-end;
     }
     .settings-page .password-toggle-wrap { position: relative; display: block; }
     .settings-page .password-toggle-wrap .form-control { padding-right: 2.75rem; }
@@ -202,29 +185,6 @@
 <div class="settings-page">
     <h1 class="page-title">Settings</h1>
     <p class="page-sub">Account and preferences.</p>
-
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show">
-            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show">
-            <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-    @if($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show">
-            <ul class="mb-0">
-                @foreach($errors->all() as $e)
-                    <li>{{ $e }}</li>
-                @endforeach
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
 
     <div class="card">
         <div class="card-body">
@@ -396,7 +356,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Submit for verification</button>
+                        <button type="submit" class="btn btn-primary dtr-mbtn--rose"><i class="bi bi-send me-1" aria-hidden="true"></i>Submit for verification</button>
                     </div>
                 </form>
             </div>

@@ -67,21 +67,21 @@
                                         @csrf
                                         <button
                                             type="submit"
-                                            class="btn btn-sm btn-outline-success arch-btn-restore arch-action-btn"
-                                            title="Restore"
-                                            aria-label="Restore student"
+                                            class="arch-btn-restore arch-action-btn"
+                                            title="Restore to active list"
+                                            aria-label="Restore student {{ e($student->student_no) }}, {{ e($student->name) }}, to the active list"
                                         >
                                             <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                                         </button>
                                     </form>
                                     <button
                                         type="button"
-                                        class="btn btn-sm btn-outline-danger arch-btn-remove arch-action-btn js-open-archive-remove-modal"
+                                        class="arch-btn-remove arch-action-btn js-open-archive-remove-modal"
                                         data-remove-url="{{ route('admin.students.archived.remove', ['id' => $student->id]) }}"
                                         data-student-no="{{ $student->student_no }}"
                                         data-student-name="{{ $student->name }}"
-                                        title="Remove"
-                                        aria-label="Remove student"
+                                        title="Permanently remove from archive"
+                                        aria-label="Permanently remove archived student {{ e($student->student_no) }}, {{ e($student->name) }}"
                                     >
                                         <i class="bi bi-trash3" aria-hidden="true"></i>
                                     </button>
@@ -139,8 +139,8 @@
                     ></textarea>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-outline-secondary arch-modal-cancel" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn arch-btn-remove arch-modal-submit">
+                    <button type="button" class="btn btn-outline-secondary arch-modal-cancel dtr-mbtn dtr-mbtn--cancel" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn arch-btn-remove arch-modal-submit dtr-mbtn dtr-mbtn--danger">
                         <i class="bi bi-trash3 me-1" aria-hidden="true"></i>Remove permanently
                     </button>
                 </div>
@@ -168,8 +168,8 @@
                 </div>
             </div>
             <div class="modal-footer border-0 pt-2">
-                <button type="button" class="btn btn-outline-secondary arch-modal-cancel" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn arch-btn-remove arch-modal-submit" id="archiveRemoveConfirmSubmit">
+                <button type="button" class="btn btn-outline-secondary arch-modal-cancel dtr-mbtn dtr-mbtn--cancel" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn arch-btn-remove arch-modal-submit dtr-mbtn dtr-mbtn--danger" id="archiveRemoveConfirmSubmit">
                     <i class="bi bi-trash3 me-1" aria-hidden="true"></i>Yes, remove
                 </button>
             </div>
@@ -219,7 +219,7 @@
     .archived-students-page col.arch-col-name { width: 22%; }
     .archived-students-page col.arch-col-course { width: 20%; }
     .archived-students-page col.arch-col-archived-at { width: 9.75rem; }
-    .archived-students-page col.arch-col-actions { width: 7.25rem; }
+    .archived-students-page col.arch-col-actions { width: 5.25rem; }
     .archived-students-page .archived-students-table thead th,
     .archived-students-page .archived-students-table tbody td {
         text-align: center !important;
@@ -242,10 +242,11 @@
     }
     .archived-students-page .arch-action-stack {
         display: inline-flex;
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
+        align-items: center;
         justify-content: center;
-        gap: 0.45rem;
+        flex-wrap: nowrap;
+        gap: 0.42rem;
         width: 100%;
     }
     .archived-students-page .arch-archived-meta {
@@ -256,34 +257,64 @@
         margin-top: 0.15rem;
     }
     .archived-students-page .arch-restore-form {
-        display: block;
-        text-align: center;
+        display: inline-flex;
+        margin: 0;
+        align-items: center;
     }
-    .archived-students-page .arch-btn-restore {
-        border-radius: 999px;
+    /* Row icon triggers: outline style (matches manual-request / invalidation row actions) */
+    .archived-students-page .arch-action-btn.arch-btn-restore {
+        border-radius: 8px;
         font-weight: 600;
-        background: #059669;
-        border-color: #059669;
-        color: #fff;
+        background: transparent !important;
+        border: 1px solid color-mix(in srgb, #059669 52%, var(--dtr-input-border)) !important;
+        color: #059669 !important;
+        box-shadow: none !important;
     }
-    .archived-students-page .arch-btn-restore:hover,
-    .archived-students-page .arch-btn-restore:focus {
-        background: #047857;
-        border-color: #047857;
-        color: #fff;
+    .archived-students-page .arch-action-btn.arch-btn-restore:hover,
+    .archived-students-page .arch-action-btn.arch-btn-restore:focus {
+        background: color-mix(in srgb, #059669 9%, transparent) !important;
+        border-color: #059669 !important;
+        color: #047857 !important;
     }
-    .archived-students-page .arch-btn-remove {
-        border-radius: 999px;
+    .archived-students-page .arch-action-btn.arch-btn-remove {
+        border-radius: 8px;
         font-weight: 600;
-        background: #dc2626;
-        border-color: #dc2626;
-        color: #fff;
+        background: transparent !important;
+        border: 1px solid color-mix(in srgb, #f43f5e 48%, var(--dtr-input-border)) !important;
+        color: #e11d48 !important;
+        box-shadow: none !important;
     }
-    .archived-students-page .arch-btn-remove:hover,
-    .archived-students-page .arch-btn-remove:focus {
-        background: #b91c1c;
-        border-color: #b91c1c;
-        color: #fff;
+    .archived-students-page .arch-action-btn.arch-btn-remove:hover,
+    .archived-students-page .arch-action-btn.arch-btn-remove:focus {
+        background: color-mix(in srgb, #f43f5e 10%, transparent) !important;
+        border-color: #f43f5e !important;
+        color: #be123c !important;
+    }
+    .archived-students-page .arch-action-btn:focus-visible {
+        outline: 2px solid color-mix(in srgb, var(--dtr-primary) 55%, transparent);
+        outline-offset: 2px;
+    }
+    html[data-theme="dark"] .archived-students-page .arch-action-btn.arch-btn-restore {
+        color: #6ee7b7 !important;
+        border-color: rgba(52, 211, 153, 0.55) !important;
+        background: transparent !important;
+    }
+    html[data-theme="dark"] .archived-students-page .arch-action-btn.arch-btn-restore:hover,
+    html[data-theme="dark"] .archived-students-page .arch-action-btn.arch-btn-restore:focus {
+        background: rgba(52, 211, 153, 0.1) !important;
+        border-color: rgba(52, 211, 153, 0.75) !important;
+        color: #a7f3d0 !important;
+    }
+    html[data-theme="dark"] .archived-students-page .arch-action-btn.arch-btn-remove {
+        color: #fda4af !important;
+        border-color: rgba(251, 113, 133, 0.55) !important;
+        background: transparent !important;
+    }
+    html[data-theme="dark"] .archived-students-page .arch-action-btn.arch-btn-remove:hover,
+    html[data-theme="dark"] .archived-students-page .arch-action-btn.arch-btn-remove:focus {
+        background: rgba(251, 113, 133, 0.1) !important;
+        border-color: rgba(252, 165, 165, 0.65) !important;
+        color: #fecaca !important;
     }
     .archived-students-page .arch-remove-modal .modal-content {
         border-radius: 16px;
@@ -346,29 +377,28 @@
         border-color: rgba(220, 38, 38, 0.45);
         box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.12);
     }
-    .archived-students-page .arch-modal-cancel {
-        border-radius: 999px;
-        padding: 0.42rem 1rem;
-        font-weight: 600;
-    }
-    .archived-students-page .arch-modal-submit {
-        border-radius: 999px;
-        font-weight: 700;
-        padding: 0.42rem 1rem;
-    }
     .archived-students-page .arch-action-btn {
-        width: 68%;
-        margin-inline: auto;
-        min-height: 2rem;
-        padding: 0.3rem;
-        display: inline-flex;
+        flex: 0 0 auto;
+        box-sizing: border-box;
+        width: 2.25rem;
+        height: 2.25rem;
+        min-width: 2.25rem;
+        min-height: 2.25rem;
+        margin: 0;
+        padding: 0 !important;
+        display: inline-flex !important;
         align-items: center;
         justify-content: center;
-        line-height: 1.1;
+        line-height: 1;
+        cursor: pointer;
+        -webkit-appearance: none;
+        appearance: none;
+        vertical-align: middle;
     }
     .archived-students-page .arch-action-btn i {
-        font-size: 0.9rem;
+        font-size: 1rem;
         line-height: 1;
+        font-weight: 400;
     }
     .archived-students-page .arch-empty-cell {
         border: none;

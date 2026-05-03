@@ -30,6 +30,7 @@ class Attendance extends Model
         'verification_snapshot',
         'afternoon_verification_snapshot',
         'timeout_verification_snapshot',
+        'lunch_break_verification_snapshot',
         'is_invalid',
         'invalidated_at',
         'invalidated_by',
@@ -61,6 +62,37 @@ class Attendance extends Model
     public function events(): HasMany
     {
         return $this->hasMany(AttendanceEvent::class);
+    }
+
+    /**
+     * Lunch break-out events that stored a verification image (legacy rows may only have this, not lunch_break_verification_snapshot).
+     */
+    public function lunchBreakSnapshotEvents(): HasMany
+    {
+        return $this->hasMany(AttendanceEvent::class)
+            ->where('event_type', 'lunch_break_out')
+            ->whereNotNull('snapshot_path')
+            ->orderByDesc('id');
+    }
+
+    /**
+     * Path for break/lunch verification image: dedicated column, or latest matching attendance_events row.
+     */
+    public function resolvedLunchBreakVerificationSnapshot(): ?string
+    {
+        if (! empty($this->lunch_break_verification_snapshot)) {
+            return $this->lunch_break_verification_snapshot;
+        }
+        if ($this->relationLoaded('lunchBreakSnapshotEvents')) {
+            return $this->lunchBreakSnapshotEvents->first()?->snapshot_path;
+        }
+
+        return AttendanceEvent::query()
+            ->where('attendance_id', $this->id)
+            ->where('event_type', 'lunch_break_out')
+            ->whereNotNull('snapshot_path')
+            ->orderByDesc('id')
+            ->value('snapshot_path');
     }
 
     public function scopeValid($query)
@@ -134,6 +166,79 @@ class Attendance extends Model
         }
 
         return $raw;
+    }
+
+    /**
+     * Hours rendered for coordinator log views: uses stored normalized display first,
+     * then derives from recorded times when hours_rendered is empty (parity with coordinator UI).
+     */
+    public function hoursRenderedDisplayForCoordinatorLogs(): ?string
+    {
+        $stored = $this->hours_rendered_display;
+        if (! empty($stored)) {
+            return $stored;
+        }
+
+        $totalMinutes = 0;
+        $dateStr = Carbon::parse($this->date)->format('Y-m-d');
+        $toDatetime = static function (?string $time) use ($dateStr): ?string {
+            if (empty($time)) {
+                return null;
+            }
+            $t = (string) $time;
+
+            return str_contains($t, ' ') ? $t : $dateStr.' '.$t;
+        };
+
+        try {
+            if ($this->time_in && $this->lunch_break_out) {
+                $start = Carbon::parse($toDatetime((string) $this->time_in));
+                $end = Carbon::parse($toDatetime((string) $this->lunch_break_out));
+                if ($end->gt($start)) {
+                    $totalMinutes += abs($start->diffInMinutes($end));
+                }
+            }
+            if ($this->afternoon_time_in && $this->time_out) {
+                $start = Carbon::parse($toDatetime((string) $this->afternoon_time_in));
+                $end = Carbon::parse($toDatetime((string) $this->time_out));
+                if ($end->gt($start)) {
+                    $totalMinutes += abs($start->diffInMinutes($end));
+                }
+            }
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        if ($totalMinutes === 0) {
+            return null;
+        }
+
+        $hours = abs((int) floor($totalMinutes / 60));
+        $minutes = abs((int) ($totalMinutes % 60));
+
+        return $hours.' hr '.$minutes.' min';
+    }
+
+    /**
+     * @return array<int, array{type: string, label: string}>
+     */
+    public function coordinatorVerificationSnapshotItems(): array
+    {
+        $items = [];
+        if ($this->verification_snapshot) {
+            $items[] = ['type' => 'morning', 'label' => 'Morning'];
+        }
+        if ($this->resolvedLunchBreakVerificationSnapshot()) {
+            $items[] = ['type' => 'lunch', 'label' => 'Break'];
+        }
+        if ($this->afternoon_verification_snapshot) {
+            $items[] = ['type' => 'afternoon', 'label' => 'Afternoon'];
+        }
+        if ($this->timeout_verification_snapshot) {
+            $items[] = ['type' => 'timeout', 'label' => 'Time out'];
+        }
+
+        return $items;
     }
 
     /** Morning late duration as "X hr Y min". */

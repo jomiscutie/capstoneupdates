@@ -62,25 +62,6 @@
     <h1 class="page-title">Verify Students</h1>
     <p class="page-sub">Confirm that students who registered under your program belong to your class. Only verified students can log in and record attendance.</p>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show">
-            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show">
-            <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-    @if(session('info'))
-        <div class="alert alert-info alert-dismissible fade show">
-            <i class="bi bi-info-circle me-2"></i>{{ session('info') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
     <div class="card">
         <div class="card-body">
             <h2 class="section-title"><i class="bi bi-people"></i> Pending verification</h2>

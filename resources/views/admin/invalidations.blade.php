@@ -52,13 +52,16 @@
                             </td>
                             <td>{{ $row->invalidatedByCoordinator->name ?? '-' }}</td>
                             <td style="max-width: 320px;">{{ $row->invalidation_reason }}</td>
-                            <td><span class="badge bg-secondary">{{ ucfirst($row->invalidation_status) }}</span></td>
+                            <td>
+                                @php($invSlug = \Illuminate\Support\Str::slug((string) $row->invalidation_status, '-'))
+                                <span class="inv-status-chip inv-status-chip--{{ $invSlug !== '' ? $invSlug : 'unknown' }}" title="{{ ucfirst((string) $row->invalidation_status) }}">{{ ucfirst((string) $row->invalidation_status) }}</span>
+                            </td>
                             <td class="inv-col-actions">
                                 @if($row->invalidation_status === 'requested')
                                     <div class="inv-action-stack">
                                         <button
                                             type="button"
-                                            class="btn btn-sm inv-action-btn inv-action-btn-approve js-open-admin-invalidation-modal"
+                                            class="inv-action-btn inv-action-btn-approve js-open-admin-invalidation-modal"
                                             data-bs-toggle="modal"
                                             data-bs-target="#adminInvalidationActionModal"
                                             data-action="{{ route('admin.invalidations.review', $row) }}"
@@ -67,10 +70,12 @@
                                             data-title="Approve invalidation request"
                                             data-target="{{ $row->student->name ?? 'Student' }} — {{ \Carbon\Carbon::parse($row->date)->format('M d, Y') }}"
                                             data-placeholder="Optional note"
-                                        >Approve</button>
+                                            title="Approve invalidation request"
+                                            aria-label="Approve invalidation request for {{ e($row->student->name ?? 'student') }} on {{ \Carbon\Carbon::parse($row->date)->format('M j, Y') }}"
+                                        ><i class="bi bi-check2" aria-hidden="true"></i></button>
                                         <button
                                             type="button"
-                                            class="btn btn-sm inv-action-btn inv-action-btn-reject js-open-admin-invalidation-modal"
+                                            class="inv-action-btn inv-action-btn-reject js-open-admin-invalidation-modal"
                                             data-bs-toggle="modal"
                                             data-bs-target="#adminInvalidationActionModal"
                                             data-action="{{ route('admin.invalidations.review', $row) }}"
@@ -79,12 +84,14 @@
                                             data-title="Reject invalidation request"
                                             data-target="{{ $row->student->name ?? 'Student' }} — {{ \Carbon\Carbon::parse($row->date)->format('M d, Y') }}"
                                             data-placeholder="Reason for rejection"
-                                        >Reject</button>
+                                            title="Reject invalidation request"
+                                            aria-label="Reject invalidation request for {{ e($row->student->name ?? 'student') }} on {{ \Carbon\Carbon::parse($row->date)->format('M j, Y') }}"
+                                        ><i class="bi bi-x-lg" aria-hidden="true"></i></button>
                                     </div>
                                 @elseif($row->is_invalid)
                                     <button
                                         type="button"
-                                        class="btn btn-sm inv-action-btn inv-action-btn-restore js-open-admin-invalidation-modal"
+                                        class="inv-action-btn inv-action-btn-restore js-open-admin-invalidation-modal"
                                         data-bs-toggle="modal"
                                         data-bs-target="#adminInvalidationActionModal"
                                         data-action="{{ route('admin.invalidations.restore', $row) }}"
@@ -92,7 +99,9 @@
                                         data-title="Restore attendance record"
                                         data-target="{{ $row->student->name ?? 'Student' }} — {{ \Carbon\Carbon::parse($row->date)->format('M d, Y') }}"
                                         data-placeholder="Restore note"
-                                    >Restore</button>
+                                        title="Restore attendance record"
+                                        aria-label="Restore attendance for {{ e($row->student->name ?? 'student') }} on {{ \Carbon\Carbon::parse($row->date)->format('M j, Y') }}"
+                                    ><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></button>
                                 @else
                                     <span class="text-muted small">No action available</span>
                                 @endif
@@ -119,13 +128,17 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted small mb-2" id="adminInvalidationTargetText">Selected attendance record</p>
-                    <label for="adminInvalidationNoteInput" class="form-label">Note</label>
-                    <textarea id="adminInvalidationNoteInput" class="form-control" rows="3" maxlength="1000"></textarea>
+                    <p class="admin-inv-modal-target text-muted small mb-3" id="adminInvalidationTargetText">Selected attendance record</p>
+                    <label for="adminInvalidationNoteInput" class="form-label admin-inv-modal-field-label">Note</label>
+                    <div class="admin-inv-note-bubble">
+                        <textarea id="adminInvalidationNoteInput" class="form-control admin-inv-note-textarea" rows="3" maxlength="1000"></textarea>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                <div class="modal-footer border-0 admin-inv-modal-footer">
+                    <button type="button" class="btn dtr-mbtn dtr-mbtn--cancel" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn dtr-mbtn dtr-mbtn--brand">
+                        <i class="bi bi-send" aria-hidden="true"></i> Submit
+                    </button>
                 </div>
             </form>
         </div>
@@ -218,97 +231,215 @@
     }
     .admin-invalidation-modal {
         border: 1px solid var(--dtr-border-soft);
-        border-radius: 16px;
-        background: linear-gradient(180deg, color-mix(in srgb, var(--dtr-card-solid) 94%, white 6%), var(--dtr-card-solid));
+        border-radius: 14px;
+        background: var(--dtr-card-solid, var(--dtr-card-bg));
         box-shadow: var(--dtr-shadow-strong);
+        overflow: hidden;
     }
     .admin-invalidation-modal .modal-title {
-        font-weight: 800;
+        font-weight: 700;
+        letter-spacing: -0.02em;
         color: var(--dtr-heading);
+        font-size: 1.05rem;
     }
     .admin-invalidation-modal .modal-header {
         border-bottom-color: var(--dtr-border-soft);
+        padding: 1rem 1.1rem;
     }
-    .admin-invalidation-modal .form-label {
-        font-size: 0.74rem;
+    .admin-inv-modal-field-label {
+        font-size: 0.73rem !important;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--dtr-muted);
-        font-weight: 700;
+        letter-spacing: 0.06em !important;
+        color: var(--dtr-muted) !important;
+        font-weight: 700 !important;
+        margin-bottom: 0.3rem !important;
     }
-    .admin-invalidation-modal .form-control {
+    .admin-inv-modal-target {
+        line-height: 1.45;
+        padding: 0.52rem 0.65rem;
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--dtr-surface-soft) 94%, transparent);
+        border: 1px solid var(--dtr-border-soft);
+        color: var(--dtr-text) !important;
+    }
+    .admin-inv-note-bubble {
+        padding: 0.65rem 0.75rem;
         border-radius: 12px;
-        border: 1px solid var(--dtr-input-border);
-        background: var(--dtr-input-bg);
+        background: color-mix(in srgb, var(--dtr-surface-soft) 94%, transparent);
+        border: 1px solid var(--dtr-border-soft);
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        margin-top: 0.2rem;
+    }
+    .admin-inv-note-bubble:focus-within {
+        border-color: color-mix(in srgb, var(--dtr-primary) 42%, var(--dtr-input-border));
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--dtr-primary) 14%, transparent);
+    }
+    .admin-inv-note-textarea.form-control {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0;
+        padding: 0.15rem 0 !important;
+        font-size: 0.9075rem;
+        line-height: 1.5;
+        resize: vertical;
         color: var(--dtr-text);
     }
-    .admin-invalidation-modal .form-control:focus {
-        border-color: rgba(45,212,191,0.72);
-        box-shadow: 0 0 0 4px rgba(45,212,191,0.14);
+    .admin-inv-note-textarea:focus {
+        outline: none !important;
+        box-shadow: none !important;
     }
+    .admin-inv-modal-footer {
+        padding-top: 0 !important;
+        padding-bottom: 1rem !important;
+        gap: 0.48rem !important;
+    }
+    .inv-status-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.34rem 0.72rem;
+        border-radius: 999px;
+        font-size: 0.625rem;
+        font-weight: 750;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        line-height: 1.15;
+        border: 1px solid transparent;
+        max-width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .inv-status-chip--requested {
+        background: transparent;
+        color: #b45309;
+        border-color: color-mix(in srgb, #f59e0b 52%, transparent);
+    }
+    .inv-status-chip--approved {
+        background: transparent;
+        color: #047857;
+        border-color: color-mix(in srgb, #10b981 52%, transparent);
+    }
+    .inv-status-chip--rejected {
+        background: transparent;
+        color: #b91c1c;
+        border-color: color-mix(in srgb, #ef4444 52%, transparent);
+    }
+    html[data-theme="dark"] .inv-status-chip--requested { color: #fde68a; border-color: rgba(251, 191, 36, 0.45); }
+    html[data-theme="dark"] .inv-status-chip--approved { color: #a7f3d0; border-color: rgba(52, 211, 153, 0.45); }
+    html[data-theme="dark"] .inv-status-chip--rejected { color: #fecaca; border-color: rgba(248, 113, 113, 0.45); }
+    .inv-status-chip--unknown {
+        color: var(--dtr-muted);
+        border-color: var(--dtr-border-soft);
+        background: color-mix(in srgb, var(--dtr-surface-soft) 82%, transparent);
+    }
+
     .inv-col-actions {
-        width: 9.25rem;
-        min-width: 9.25rem;
+        width: 6.25rem;
+        min-width: 6.25rem;
         text-align: center;
         vertical-align: middle;
     }
     .inv-action-stack {
         display: inline-flex;
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: nowrap;
         align-items: center;
         justify-content: center;
-        gap: 0.38rem;
-        width: 100%;
+        gap: 0.42rem;
     }
     .inv-action-btn {
-        width: 100%;
-        min-height: 2.05rem;
-        border-radius: 999px;
-        padding: 0.36rem 0.8rem;
-        font-weight: 700;
-        letter-spacing: 0.01em;
-        display: inline-flex;
+        flex: 0 0 auto;
+        box-sizing: border-box;
+        width: 2.25rem;
+        height: 2.25rem;
+        min-width: 2.25rem;
+        min-height: 2.25rem;
+        margin: 0;
+        padding: 0 !important;
+        border-radius: 8px;
+        font-weight: 600;
+        display: inline-flex !important;
         align-items: center;
         justify-content: center;
         border-width: 1px;
-        transition: filter 0.15s ease, transform 0.15s ease;
+        border-style: solid;
+        background: transparent !important;
+        box-shadow: none !important;
+        cursor: pointer;
+        -webkit-appearance: none;
+        appearance: none;
+        vertical-align: middle;
+        transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+    }
+    .inv-action-btn .bi {
+        font-size: 1rem;
+        line-height: 1;
+        font-weight: 400;
     }
     .inv-action-btn:hover {
-        transform: translateY(-1px);
-        filter: brightness(1.05);
+        transform: none;
+        filter: none;
     }
     .inv-action-btn-approve {
-        background: #059669;
-        border-color: #059669;
-        color: #fff;
+        border-color: color-mix(in srgb, #059669 52%, var(--dtr-input-border));
+        color: #059669 !important;
     }
     .inv-action-btn-approve:hover,
     .inv-action-btn-approve:focus {
-        background: #047857;
-        border-color: #047857;
-        color: #fff;
+        background: color-mix(in srgb, #059669 9%, transparent) !important;
+        border-color: #059669 !important;
+        color: #047857 !important;
     }
     .inv-action-btn-reject {
-        background: #dc2626;
-        border-color: #dc2626;
-        color: #fff;
+        border-color: color-mix(in srgb, #f43f5e 48%, var(--dtr-input-border));
+        color: #e11d48 !important;
     }
     .inv-action-btn-reject:hover,
     .inv-action-btn-reject:focus {
-        background: #b91c1c;
-        border-color: #b91c1c;
-        color: #fff;
+        background: color-mix(in srgb, #f43f5e 10%, transparent) !important;
+        border-color: #f43f5e !important;
+        color: #be123c !important;
     }
     .inv-action-btn-restore {
-        background: #059669;
-        border-color: #059669;
-        color: #fff;
+        border-color: color-mix(in srgb, #059669 52%, var(--dtr-input-border));
+        color: #059669 !important;
     }
     .inv-action-btn-restore:hover,
     .inv-action-btn-restore:focus {
-        background: #047857;
-        border-color: #047857;
-        color: #fff;
+        background: color-mix(in srgb, #059669 9%, transparent) !important;
+        border-color: #059669 !important;
+        color: #047857 !important;
+    }
+    html[data-theme="dark"] .inv-action-btn-approve {
+        color: #6ee7b7 !important;
+        border-color: rgba(52, 211, 153, 0.55) !important;
+    }
+    html[data-theme="dark"] .inv-action-btn-approve:hover,
+    html[data-theme="dark"] .inv-action-btn-approve:focus {
+        background: rgba(52, 211, 153, 0.1) !important;
+        border-color: rgba(52, 211, 153, 0.75) !important;
+        color: #a7f3d0 !important;
+    }
+    html[data-theme="dark"] .inv-action-btn-reject {
+        color: #fda4af !important;
+        border-color: rgba(251, 113, 133, 0.55) !important;
+    }
+    html[data-theme="dark"] .inv-action-btn-reject:hover,
+    html[data-theme="dark"] .inv-action-btn-reject:focus {
+        background: rgba(251, 113, 133, 0.1) !important;
+        border-color: rgba(252, 165, 165, 0.65) !important;
+        color: #fecaca !important;
+    }
+    html[data-theme="dark"] .inv-action-btn-restore {
+        color: #6ee7b7 !important;
+        border-color: rgba(52, 211, 153, 0.55) !important;
+    }
+    html[data-theme="dark"] .inv-action-btn-restore:hover,
+    html[data-theme="dark"] .inv-action-btn-restore:focus {
+        background: rgba(52, 211, 153, 0.1) !important;
+        border-color: rgba(52, 211, 153, 0.75) !important;
+        color: #a7f3d0 !important;
     }
 </style>
 @endpush

@@ -572,6 +572,7 @@ class AttendanceController extends Controller
             if ($request->hasFile('verification_snapshot')) {
                 $path = $request->file('verification_snapshot')->store('verification_snapshots', 'public');
                 $lunchSnapshotPath = $path;
+                $attendance->lunch_break_verification_snapshot = $path;
             }
 
             $attendance->save();
@@ -1303,13 +1304,21 @@ class AttendanceController extends Controller
         $column = match ($type) {
             'morning' => 'verification_snapshot',
             'afternoon' => 'afternoon_verification_snapshot',
+            'lunch' => 'lunch_break_verification_snapshot',
             'timeout' => 'timeout_verification_snapshot',
             default => null,
         };
-        if (! $column || ! $attendance->{$column}) {
+        if (! $column) {
             abort(404);
         }
-        $path = $attendance->{$column};
+
+        $path = match ($type) {
+            'lunch' => $attendance->resolvedLunchBreakVerificationSnapshot(),
+            default => $attendance->{$column},
+        };
+        if (! $path) {
+            abort(404);
+        }
 
         if (Auth::guard('student')->check()) {
             if ($attendance->student_id !== Auth::guard('student')->id()) {
@@ -1367,6 +1376,7 @@ class AttendanceController extends Controller
 
             $logs = Attendance::valid()->where('student_id', $studentId)
                 ->whereBetween('date', [$weekRange['start_date'], $weekRange['end_date']])
+                ->with('lunchBreakSnapshotEvents')
                 ->orderBy('date', 'desc')
                 ->get();
             $weekLabel = $weekRange['label'];
@@ -1379,6 +1389,7 @@ class AttendanceController extends Controller
             $logs = Attendance::valid()->where('student_id', $studentId)
                 ->whereYear('date', $year)
                 ->whereMonth('date', $month)
+                ->with('lunchBreakSnapshotEvents')
                 ->orderBy('date', 'desc')
                 ->get();
         }
@@ -1421,6 +1432,7 @@ class AttendanceController extends Controller
 
             $logs = Attendance::valid()->where('student_id', $studentId)
                 ->whereBetween('date', [$weekRange['start_date'], $weekRange['end_date']])
+                ->with('lunchBreakSnapshotEvents')
                 ->orderBy('date')
                 ->get();
         } else {
@@ -1433,6 +1445,7 @@ class AttendanceController extends Controller
             $logs = Attendance::valid()->where('student_id', $studentId)
                 ->whereYear('date', $year)
                 ->whereMonth('date', $month)
+                ->with('lunchBreakSnapshotEvents')
                 ->orderBy('date')
                 ->get();
         }
@@ -1659,7 +1672,7 @@ class AttendanceController extends Controller
             $end = Carbon::parse($weekRange['end_date']);
             $weekStart = $weekRange['start_date'];
             $weekEnd = $weekRange['end_date'];
-            $logs = \App\Models\Attendance::valid()->with('student')
+            $logs = \App\Models\Attendance::valid()->with(['student', 'lunchBreakSnapshotEvents'])
                 ->whereIn('student_id', $studentIds)
                 ->whereBetween('date', [$weekStart, $weekEnd])
                 ->orderBy('date', 'desc')
@@ -1675,7 +1688,7 @@ class AttendanceController extends Controller
         } else {
             $filter = 'month';
             [$year, $monthNum] = explode('-', $month);
-            $logs = \App\Models\Attendance::valid()->with('student')
+            $logs = \App\Models\Attendance::valid()->with(['student', 'lunchBreakSnapshotEvents'])
                 ->whereIn('student_id', $studentIds)
                 ->whereYear('date', $year)
                 ->whereMonth('date', $monthNum)

@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="{{ asset('css/norsu-dtr-system.css') }}">
     <link rel="stylesheet" href="{{ asset('css/norsu-dtr-classic-ui.css') }}">
     <link rel="stylesheet" href="{{ asset('css/norsu-dtr-dialogs.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/norsu-dtr-modal-buttons.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/norsu-dtr-theme-toggle.css') }}">
     <link rel="stylesheet" href="{{ asset('css/hide-native-password-reveal.css') }}">
     <script>
         (function () {
@@ -79,13 +81,7 @@
         .sidebar-nav a:hover { background: var(--dtr-hover-bg); color: var(--dtr-text); }
         .sidebar-nav a.active { background: var(--dtr-primary-soft); color: var(--dtr-primary); }
         .sidebar-footer { padding: 1rem; border-top: 1px solid var(--dtr-sidebar-border); }
-        .theme-toggle-wrap { margin-bottom: 0.75rem; }
-        .theme-toggle-btn, .btn-logout { width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 0.9rem; background: transparent; border: 1px solid var(--dtr-sidebar-border); border-radius: var(--dtr-radius); color: var(--dtr-text); font-size: 0.9rem; font-weight: 500; cursor: pointer; text-decoration: none; }
-        .theme-toggle-btn { justify-content: space-between; background: var(--dtr-card-bg); }
-        .theme-toggle-label { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.82rem; font-weight: 600; }
-        .theme-switch { width: 42px; height: 24px; border-radius: 999px; background: #cbd5e1; border: 1px solid rgba(15,23,42,0.15); padding: 2px; display: inline-flex; align-items: center; }
-        .theme-switch-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.2); transform: translateX(0); transition: transform 0.3s ease; }
-        html[data-theme="dark"] .theme-switch-thumb { transform: translateX(18px); }
+        .btn-logout { width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 0.9rem; background: transparent; border: 1px solid var(--dtr-sidebar-border); border-radius: var(--dtr-radius); color: var(--dtr-text); font-size: 0.9rem; font-weight: 500; cursor: pointer; text-decoration: none; }
         .main-content { flex: 1; margin-left: var(--sidebar-width); min-height: 100vh; min-width: 0; padding: clamp(1rem, 4vw, 1.5rem); width: 100%; }
         .main-content, .main-content p, .main-content h1, .main-content h2, .main-content h3, .main-content h4, .main-content h5, .main-content h6, .main-content label, .main-content small, .main-content li, .main-content td, .main-content th { color: var(--dtr-text); }
         .main-content .text-muted, .main-content .text-secondary, .main-content .form-text, .main-content .text-body-secondary { color: var(--dtr-muted) !important; }
@@ -157,15 +153,17 @@
         </nav>
         <div class="sidebar-footer">
             <div class="theme-toggle-wrap">
-                <button type="button" class="theme-toggle-btn" id="themeToggle" aria-pressed="false" aria-label="Toggle dark mode">
-                    <span class="theme-toggle-label"><i class="bi bi-sun-fill" id="themeIcon"></i><span id="themeLabel">Light mode</span></span>
+                <button type="button" class="theme-toggle-btn" id="themeToggle" aria-pressed="false" aria-label="Switch to dark mode">
+                    <span class="theme-toggle-label"><i class="bi bi-sun" id="themeIcon" aria-hidden="true"></i><span id="themeLabel">Light</span></span>
                     <span class="theme-switch" aria-hidden="true"><span class="theme-switch-thumb"></span></span>
                 </button>
             </div>
             <form action="{{ route('student.logout') }}" method="POST" class="d-inline w-100" id="studentLogoutForm">@csrf<button type="submit" class="btn-logout w-100"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></button></form>
         </div>
     </aside>
-    <main class="main-content">@yield('content')</main>
+    <main class="main-content">@yield('content')
+        @include('partials.norsu-page-messages')
+    </main>
 </div>
 <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('js/norsu-dtr-dialogs.js') }}"></script>
@@ -182,7 +180,15 @@
 (function () {
     var toggle = document.getElementById('themeToggle'), icon = document.getElementById('themeIcon'), label = document.getElementById('themeLabel');
     if (!toggle || !icon || !label) return;
-    function applyTheme(theme) { var isDark = theme === 'dark'; document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('norsu-theme', theme); toggle.setAttribute('aria-pressed', isDark ? 'true' : 'false'); icon.className = isDark ? 'bi bi-moon-stars-fill' : 'bi bi-sun-fill'; label.textContent = isDark ? 'Dark mode' : 'Light mode'; }
+    function applyTheme(theme) {
+        var isDark = theme === 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('norsu-theme', theme);
+        toggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+        toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+        icon.className = 'bi ' + (isDark ? 'bi-moon-stars' : 'bi-sun');
+        label.textContent = isDark ? 'Dark' : 'Light';
+    }
     toggle.addEventListener('click', function () { applyTheme((document.documentElement.getAttribute('data-theme') || 'light') === 'dark' ? 'light' : 'dark'); });
     applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
 })();

@@ -167,13 +167,84 @@
             0 0 0 3px color-mix(in srgb, var(--dtr-primary) 45%, transparent),
             0 2px 12px color-mix(in srgb, #000 45%, transparent);
     }
+
+    /* Verification snapshot buttons — clean, modern, theme-aware */
+    .dtr-attendance-history .btn-snapshot {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        text-decoration: none;
+        white-space: nowrap;
+        border: 1px solid color-mix(in srgb, var(--dtr-primary) 35%, var(--dtr-border-soft) 65%);
+        color: color-mix(in srgb, var(--dtr-primary) 85%, var(--dtr-text) 15%);
+        background:
+            linear-gradient(180deg,
+                color-mix(in srgb, var(--dtr-primary) 12%, var(--dtr-card-bg) 88%) 0%,
+                color-mix(in srgb, var(--dtr-primary) 8%, var(--dtr-card-bg) 92%) 100%);
+        box-shadow:
+            0 1px 2px color-mix(in srgb, #0f172a 6%, transparent),
+            0 0 0 1px color-mix(in srgb, #fff 50%, transparent) inset;
+        transition: all 0.15s ease;
+    }
+    .dtr-attendance-history .btn-snapshot i {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    .dtr-attendance-history .btn-snapshot:hover {
+        color: color-mix(in srgb, var(--dtr-primary) 95%, var(--dtr-heading) 5%);
+        border-color: color-mix(in srgb, var(--dtr-primary) 55%, var(--dtr-border-soft) 45%);
+        background:
+            linear-gradient(180deg,
+                color-mix(in srgb, var(--dtr-primary) 22%, var(--dtr-card-bg) 78%) 0%,
+                color-mix(in srgb, var(--dtr-primary) 12%, var(--dtr-card-bg) 88%) 100%);
+        box-shadow:
+            0 2px 6px color-mix(in srgb, var(--dtr-primary) 18%, transparent),
+            0 0 0 1px color-mix(in srgb, #fff 35%, transparent) inset;
+        transform: translateY(-1px);
+    }
+    .dtr-attendance-history .btn-snapshot:active {
+        transform: translateY(0);
+    }
+    html[data-theme="dark"] .dtr-attendance-history .btn-snapshot {
+        color: #7dd3fc;
+        border-color: color-mix(in srgb, var(--dtr-primary) 45%, #334155 55%);
+        background:
+            linear-gradient(180deg,
+                color-mix(in srgb, var(--dtr-primary) 28%, #0f172a 72%) 0%,
+                color-mix(in srgb, var(--dtr-primary) 16%, #0c1222 84%) 100%);
+        box-shadow:
+            0 2px 8px color-mix(in srgb, #000 40%, transparent),
+            0 0 0 1px color-mix(in srgb, #fff 6%, transparent) inset;
+    }
+    html[data-theme="dark"] .dtr-attendance-history .btn-snapshot:hover {
+        color: #bae6fd;
+        border-color: color-mix(in srgb, var(--dtr-primary) 65%, #334155 35%);
+        background:
+            linear-gradient(180deg,
+                color-mix(in srgb, var(--dtr-primary) 38%, #0f172a 62%) 0%,
+                color-mix(in srgb, var(--dtr-primary) 22%, #0c1222 78%) 100%);
+        box-shadow:
+            0 4px 12px color-mix(in srgb, var(--dtr-primary) 15%, transparent),
+            0 0 0 1px color-mix(in srgb, #fff 8%, transparent) inset;
+    }
+
     .dtr-attendance-history .table-responsive {
         border-radius: 10px;
         overflow-x: auto;
         border: 1px solid var(--attendance-border);
         background: var(--attendance-surface);
     }
-    .dtr-attendance-history .table-responsive .table { min-width: 920px; margin-bottom: 0; }
+    /* Fit card width first; horizontal scroll only on very small viewports */
+    .dtr-attendance-history .table-responsive .table { width: 100%; min-width: 0; max-width: 100%; margin-bottom: 0; table-layout: fixed; }
+    .dtr-attendance-history .table-dtr-layout col.col-log-date { width: 9%; min-width: 4.25rem; }
+    .dtr-attendance-history .table-dtr-layout col.col-log-time { width: 13%; min-width: 0; }
+    .dtr-attendance-history .table-dtr-layout col.col-log-hours { width: 14%; min-width: 0; }
+    .dtr-attendance-history .table-dtr-layout col.col-log-snaps { width: auto; min-width: 0; }
     .dtr-attendance-history .table-dtr-layout thead th {
         text-align: center;
         vertical-align: middle;
@@ -187,17 +258,19 @@
         background: var(--attendance-surface-soft);
         color: var(--attendance-muted);
         font-weight: 600;
-        font-size: 0.6875rem;
+        font-size: 0.625rem;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        padding: 0.875rem 1.125rem;
+        padding: 0.5rem 0.35rem;
         border-bottom: 1px solid var(--attendance-border);
+        vertical-align: bottom;
+        line-height: 1.2;
     }
     .dtr-attendance-history .table tbody td {
-        padding: 0.875rem 1.125rem;
+        padding: 0.5rem 0.35rem;
         vertical-align: middle;
         border-bottom: 1px solid var(--attendance-border);
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         color: var(--attendance-text);
     }
     .dtr-attendance-history .table tbody tr:last-child td { border-bottom: none; }
@@ -442,42 +515,37 @@
             @else
                 <div class="table-responsive">
                     <table class="table align-middle table-dtr-layout">
+                        <colgroup>
+                            <col class="col-log-date">
+                            <col class="col-log-time">
+                            <col class="col-log-time">
+                            <col class="col-log-time">
+                            <col class="col-log-time">
+                            <col class="col-log-hours">
+                            <col class="col-log-snaps">
+                        </colgroup>
                         <thead>
                             <tr>
-                                <th rowspan="2">Date</th>
-                                <th colspan="2">A.M.</th>
-                                <th colspan="2">P.M.</th>
-                                <th colspan="2">Under time</th>
-                                <th rowspan="2" title="Total time after you record time out for the day">Hours<br>rendered</th>
-                                <th rowspan="2" class="text-nowrap">Verification</th>
-                            </tr>
-                            <tr class="subhead">
-                                <th>Arrival</th>
-                                <th>Departure</th>
-                                <th>Arrival</th>
-                                <th>Departure</th>
-                                <th>Hours</th>
-                                <th>Minutes</th>
+                                <th>Date</th>
+                                <th>Morning<br>Time In</th>
+                                <th>Lunch<br>Break Out</th>
+                                <th>Afternoon<br>Time In</th>
+                                <th>Time Out</th>
+                                <th>Hours<br>Rendered</th>
+                                <th class="text-nowrap">Verification<br>Snapshots</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($logs as $log)
-                                @php
-                                    $lateTotal = (int) ($log->late_minutes ?? 0) + (int) ($log->afternoon_late_minutes ?? 0);
-                                    $utH = $lateTotal > 0 ? intdiv($lateTotal, 60) : null;
-                                    $utM = $lateTotal > 0 ? $lateTotal % 60 : null;
-                                @endphp
                                 <tr>
                                     <td class="text-nowrap">{{ \Carbon\Carbon::parse($log->date)->format('m/d/y') }}</td>
-                                    <td class="dtr-time">@if($log->time_in){{ $log->time_in_12 }}@else<span class="text-muted">—</span>@endif</td>
-                                    <td class="dtr-time">@if($log->lunch_break_out){{ $log->lunch_break_out_12 }}@else<span class="text-muted">—</span>@endif</td>
-                                    <td class="dtr-time">@if($log->afternoon_time_in){{ $log->afternoon_time_in_12 }}@else<span class="text-muted">—</span>@endif</td>
-                                    <td class="dtr-time">@if($log->time_out){{ $log->time_out_12 }}@else<span class="text-muted">—</span>@endif</td>
-                                    <td class="dtr-time">@if($utH !== null){{ $utH }}@else<span class="text-muted">—</span>@endif</td>
-                                    <td class="dtr-time">@if($utM !== null){{ $utM }}@else<span class="text-muted">—</span>@endif</td>
+                                    <td class="dtr-time">@if($log->time_in)<span class="badge bg-success">{{ $log->time_in_12 }}</span>@else<span class="text-muted">—</span>@endif</td>
+                                    <td class="dtr-time">@if($log->lunch_break_out)<span class="badge bg-info">{{ $log->lunch_break_out_12 }}</span>@else<span class="text-muted">—</span>@endif</td>
+                                    <td class="dtr-time">@if($log->afternoon_time_in)<span class="badge bg-success">{{ $log->afternoon_time_in_12 }}</span>@else<span class="text-muted">—</span>@endif</td>
+                                    <td class="dtr-time">@if($log->time_out)<span class="badge bg-info">{{ $log->time_out_12 }}</span>@else<span class="text-muted">—</span>@endif</td>
                                     <td class="dtr-time">
-                                        @if($log->hours_rendered)
-                                            {{ $log->hours_rendered }}
+                                        @if($log->hours_rendered_display)
+                                            {{ $log->hours_rendered_display }}
                                         @else
                                             <span class="text-muted" title="Recorded when you time out for the day.">—</span>
                                         @endif
@@ -486,13 +554,16 @@
                                         @php
                                             $snapshots = [];
                                             if ($log->verification_snapshot) {
-                                                $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'morning'])) . '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 mb-1"><i class="bi bi-camera-fill"></i> Morning</a>';
+                                                $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'morning'])) . '" target="_blank" rel="noopener" class="btn btn-snapshot"><i class="bi bi-camera-fill"></i> Morning</a>';
+                                            }
+                                            if ($log->resolvedLunchBreakVerificationSnapshot()) {
+                                                $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'lunch'])) . '" target="_blank" rel="noopener" class="btn btn-snapshot"><i class="bi bi-camera-fill"></i> Break</a>';
                                             }
                                             if ($log->afternoon_verification_snapshot) {
-                                                $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'afternoon'])) . '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 mb-1"><i class="bi bi-camera-fill"></i> Afternoon</a>';
+                                                $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'afternoon'])) . '" target="_blank" rel="noopener" class="btn btn-snapshot"><i class="bi bi-camera-fill"></i> Afternoon</a>';
                                             }
                                             if ($log->timeout_verification_snapshot) {
-                                                $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'timeout'])) . '" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 mb-1"><i class="bi bi-camera-fill"></i> Time out</a>';
+                                                $snapshots[] = '<a href="' . e(route('student.attendance.verification_snapshot', [$log, 'timeout'])) . '" target="_blank" rel="noopener" class="btn btn-snapshot"><i class="bi bi-camera-fill"></i> Time out</a>';
                                             }
                                         @endphp
                                         @if(count($snapshots) > 0)

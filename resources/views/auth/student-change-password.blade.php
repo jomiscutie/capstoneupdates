@@ -73,6 +73,8 @@
             font-size: 0.9rem;
         }
         .btn-back:hover { color: var(--dtr-primary); }
+        .card .alert-danger { background: #fef2f2 !important; color: #7f1d1d !important; border: 1px solid #fecaca !important; }
+        .card .alert-success { background: #ecfdf5 !important; color: #14532d !important; border: 1px solid #6ee7b7 !important; }
     </style>
 </head>
 <body>

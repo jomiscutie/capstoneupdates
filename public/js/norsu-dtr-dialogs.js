@@ -47,6 +47,8 @@
         modalEl.addEventListener('hidden.bs.modal', function () {
             modalEl.classList.remove(
                 'norsu-dtr-dialog--neutral',
+                'norsu-dtr-dialog--info',
+                'norsu-dtr-dialog--success',
                 'norsu-dtr-dialog--warning',
                 'norsu-dtr-dialog--danger'
             );
@@ -94,6 +96,8 @@
         if (
             variant !== 'danger' &&
             variant !== 'warning' &&
+            variant !== 'success' &&
+            variant !== 'info' &&
             variant !== 'neutral'
         ) {
             variant = 'neutral';
@@ -123,15 +127,30 @@
 
     function defaultTitle(kind, variant) {
         if (kind === 'alert') {
-            return variant === 'danger' ? 'Something went wrong' : variant === 'warning' ? 'Please note' : 'Notice';
+            if (variant === 'danger') return 'Something went wrong';
+            if (variant === 'warning') return 'Please note';
+            if (variant === 'success') return 'Success';
+            if (variant === 'info') return 'Notice';
+            return 'Notice';
         }
         return variant === 'danger' ? 'Confirm action' : variant === 'warning' ? 'Please confirm' : 'Confirm';
     }
 
     function iconClass(variant) {
-        if (variant === 'danger') return 'bi bi-exclamation-octagon-fill';
-        if (variant === 'warning') return 'bi bi-exclamation-triangle-fill';
-        return 'bi bi-info-circle-fill';
+        if (variant === 'danger') return 'bi bi-exclamation-circle';
+        if (variant === 'warning') return 'bi bi-exclamation-triangle';
+        if (variant === 'success') return 'bi bi-check-circle';
+        if (variant === 'info') return 'bi bi-info-circle';
+        return 'bi bi-info-circle';
+    }
+
+    /** Centered dialogs for layout flash + validation (.page-msgs drain). */
+    function dialogToneClass(variant) {
+        if (variant === 'danger') return 'danger';
+        if (variant === 'warning') return 'warning';
+        if (variant === 'success') return 'success';
+        if (variant === 'info') return 'info';
+        return 'neutral';
     }
 
     function showDialog(kind, first, second) {
@@ -141,11 +160,13 @@
 
         modalEl.classList.remove(
             'norsu-dtr-dialog--neutral',
+            'norsu-dtr-dialog--info',
+            'norsu-dtr-dialog--success',
             'norsu-dtr-dialog--warning',
             'norsu-dtr-dialog--danger'
         );
         modalEl.classList.add(
-            'norsu-dtr-dialog--' + (n.variant === 'danger' ? 'danger' : n.variant === 'warning' ? 'warning' : 'neutral')
+            'norsu-dtr-dialog--' + dialogToneClass(n.variant)
         );
 
         var titleEl = modalEl.querySelector('.norsu-dtr-dialog__title');
@@ -184,7 +205,9 @@
                   ? 'norsu-dtr-dialog-btn--confirm-danger'
                   : n.variant === 'warning'
                     ? 'norsu-dtr-dialog-btn--confirm-warning'
-                    : 'norsu-dtr-dialog-btn--confirm-neutral');
+                    : n.variant === 'success'
+                      ? 'norsu-dtr-dialog-btn--confirm-success'
+                      : 'norsu-dtr-dialog-btn--confirm-neutral');
 
         return new Promise(function (resolve) {
             resolvePending = resolve;
@@ -221,7 +244,9 @@
                 }
 
                 var variant =
-                    variantAttr === 'danger' || variantAttr === 'warning'
+                    variantAttr === 'danger' ||
+                    variantAttr === 'warning' ||
+                    variantAttr === 'success'
                         ? variantAttr
                         : 'neutral';
 
@@ -258,14 +283,41 @@
         return showDialog('alert', first, second);
     }
 
+    function flushPageMessagesSequential() {
+        var raw = document.getElementById('norsu-page-msgs');
+        if (!raw) return Promise.resolve();
+        var list = [];
+        try {
+            list = JSON.parse(raw.textContent || '[]');
+        } catch (_e) {
+            return Promise.resolve();
+        }
+        if (!Array.isArray(list) || list.length === 0) return Promise.resolve();
+
+        raw.parentNode.removeChild(raw);
+
+        return list.reduce(function (chain, item) {
+            return chain.then(function () {
+                return alert({
+                    title: item.title || '',
+                    message: item.message != null ? String(item.message) : '',
+                    variant: item.variant || 'neutral',
+                    confirmText: item.confirmText != null ? String(item.confirmText) : null
+                });
+            });
+        }, Promise.resolve());
+    }
+
     window.norsuPrompt = {
         confirm: confirm,
         alert: alert,
+        flushPageMessages: flushPageMessagesSequential,
         _ready: true
     };
 
     function init() {
         attachFormConfirmDelegates();
+        flushPageMessagesSequential().catch(function () {});
     }
 
     if (document.readyState === 'loading') {

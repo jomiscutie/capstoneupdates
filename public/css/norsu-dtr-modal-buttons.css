@@ -1,0 +1,326 @@
+/**
+ * Unified ghost/outline modal & form CTAs — Student / Coordinator / Admin.
+ * Reference: muted cancel + thin-bordered transparent primary keyed to intent.
+ */
+
+:root {
+    --dtr-mbtn-radius: 8px;
+    --dtr-mbtn-min-h: 40px;
+    --dtr-mbtn-pad-x: 1rem;
+    --dtr-mbtn-fs: 0.8625rem;
+    --dtr-mbtn-fw: 600;
+    --dtr-mbtn-gap: 0.42rem;
+    --dtr-mbtn-rose: #f43f5e;
+    --dtr-mbtn-rose-ink: #e11d48;
+    --dtr-mbtn-success: #059669;
+    --dtr-mbtn-danger: #dc2626;
+    --dtr-mbtn-danger-ink: #b91c1c;
+    --dtr-mbtn-warning: #d97706;
+}
+
+/* ---- Base ---- */
+.btn.dtr-mbtn {
+    box-sizing: border-box;
+    min-height: var(--dtr-mbtn-min-h);
+    padding: 0.45rem var(--dtr-mbtn-pad-x);
+    font-size: var(--dtr-mbtn-fs);
+    font-weight: var(--dtr-mbtn-fw);
+    letter-spacing: 0.015em;
+    border-radius: var(--dtr-mbtn-radius);
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: var(--dtr-mbtn-gap);
+    line-height: 1.15;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: none !important;
+    -webkit-appearance: none;
+    appearance: none;
+    vertical-align: middle;
+    transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease, opacity 0.14s ease;
+}
+
+.btn.dtr-mbtn .bi {
+    font-size: 1em;
+    line-height: 1;
+}
+
+.btn.dtr-mbtn:disabled,
+.btn.dtr-mbtn.disabled {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+/* Overrides: classic-ui solid primaries inside main shell */
+.layout-wrap .main-content .btn.dtr-mbtn {
+    border-width: 1px;
+    border-style: solid;
+}
+
+.layout-wrap .main-content .btn.dtr-mbtn:not(:disabled):not(.disabled):active {
+    transform: translateY(0.5px);
+}
+
+/* ---- Semantic modifiers ---- */
+
+/* Cancel / dismiss — muted outline + softer label */
+.btn.dtr-mbtn.dtr-mbtn--cancel {
+    background: transparent !important;
+    color: color-mix(in srgb, var(--dtr-muted) 78%, var(--dtr-text)) !important;
+    border-color: color-mix(in srgb, var(--dtr-input-border) 88%, transparent) !important;
+}
+
+.btn.dtr-mbtn.dtr-mbtn--cancel:hover,
+.btn.dtr-mbtn.dtr-mbtn--cancel:focus {
+    background: var(--dtr-hover-bg, rgba(15, 23, 42, 0.06)) !important;
+    color: var(--dtr-heading) !important;
+    border-color: color-mix(in srgb, var(--dtr-muted) 35%, var(--dtr-input-border)) !important;
+}
+
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--cancel {
+    color: color-mix(in srgb, var(--dtr-muted) 55%, #e2e8f0) !important;
+    border-color: var(--dtr-input-border, rgba(148, 163, 184, 0.45)) !important;
+}
+
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--cancel:hover,
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--cancel:focus {
+    color: var(--dtr-text) !important;
+    border-color: rgba(148, 163, 184, 0.62) !important;
+}
+
+/* Brand / settings / admin neutral submit */
+.btn.dtr-mbtn.dtr-mbtn--brand {
+    background: transparent !important;
+    color: var(--dtr-primary, #2563eb) !important;
+    border-color: color-mix(in srgb, var(--dtr-primary) 58%, var(--dtr-input-border, rgba(148, 163, 184, 0.35))) !important;
+}
+
+.btn.dtr-mbtn.dtr-mbtn--brand:hover,
+.btn.dtr-mbtn.dtr-mbtn--brand:focus {
+    background: var(--dtr-primary-soft, rgba(37, 99, 235, 0.1)) !important;
+    color: var(--dtr-heading, #0f172a) !important;
+    border-color: color-mix(in srgb, var(--dtr-primary) 72%, transparent) !important;
+}
+
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--brand {
+    color: color-mix(in srgb, var(--dtr-primary) 78%, #e2e8f0) !important;
+}
+
+/* Request / “send” / submit-for-verification flows */
+.btn.dtr-mbtn.dtr-mbtn--rose {
+    background: transparent !important;
+    color: var(--dtr-mbtn-rose-ink) !important;
+    border-color: color-mix(in srgb, var(--dtr-mbtn-rose) 52%, var(--dtr-input-border)) !important;
+}
+
+.btn.dtr-mbtn.dtr-mbtn--rose:hover,
+.btn.dtr-mbtn.dtr-mbtn--rose:focus {
+    background: color-mix(in srgb, var(--dtr-mbtn-rose) 9%, transparent) !important;
+    border-color: var(--dtr-mbtn-rose) !important;
+    color: #be123c !important;
+}
+
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--rose {
+    color: #fda4af !important;
+    border-color: rgba(251, 113, 133, 0.55) !important;
+}
+
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--rose:hover,
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--rose:focus {
+    background: rgba(251, 113, 133, 0.1) !important;
+    border-color: rgba(252, 165, 165, 0.65) !important;
+    color: #fecaca !important;
+}
+
+/* Approve / restore / positive commit */
+.btn.dtr-mbtn.dtr-mbtn--success {
+    background: transparent !important;
+    color: var(--dtr-mbtn-success) !important;
+    border-color: color-mix(in srgb, var(--dtr-mbtn-success) 52%, var(--dtr-input-border)) !important;
+}
+
+.btn.dtr-mbtn.dtr-mbtn--success:hover,
+.btn.dtr-mbtn.dtr-mbtn--success:focus {
+    background: color-mix(in srgb, var(--dtr-mbtn-success) 9%, transparent) !important;
+    border-color: var(--dtr-mbtn-success) !important;
+    color: #047857 !important;
+}
+
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--success {
+    color: #6ee7b7 !important;
+    border-color: rgba(52, 211, 153, 0.55) !important;
+}
+
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--success:hover,
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--success:focus {
+    background: rgba(52, 211, 153, 0.1) !important;
+    border-color: rgba(52, 211, 153, 0.75) !important;
+    color: #a7f3d0 !important;
+}
+
+/* Reject / delete / invalidate */
+.btn.dtr-mbtn.dtr-mbtn--danger {
+    background: transparent !important;
+    color: var(--dtr-mbtn-danger-ink) !important;
+    border-color: color-mix(in srgb, var(--dtr-mbtn-danger) 55%, var(--dtr-input-border)) !important;
+}
+
+.btn.dtr-mbtn.dtr-mbtn--danger:hover,
+.btn.dtr-mbtn.dtr-mbtn--danger:focus {
+    background: color-mix(in srgb, var(--dtr-mbtn-danger) 10%, transparent) !important;
+    border-color: var(--dtr-mbtn-danger) !important;
+    color: #991b1b !important;
+}
+
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--danger {
+    color: #fecaca !important;
+    border-color: rgba(248, 113, 113, 0.55) !important;
+}
+
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--danger:hover,
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--danger:focus {
+    background: rgba(248, 113, 113, 0.1) !important;
+    border-color: rgba(252, 165, 165, 0.6) !important;
+    color: #fecaca !important;
+}
+
+/* Rose-tint danger (invalidate / softer destructive copy) */
+.btn.dtr-mbtn.dtr-mbtn--danger-soft {
+    background: transparent !important;
+    color: #be123c !important;
+    border-color: color-mix(in srgb, var(--dtr-mbtn-rose) 48%, var(--dtr-input-border)) !important;
+}
+
+.btn.dtr-mbtn.dtr-mbtn--danger-soft:hover,
+.btn.dtr-mbtn.dtr-mbtn--danger-soft:focus {
+    background: color-mix(in srgb, var(--dtr-mbtn-rose) 10%, transparent) !important;
+    border-color: var(--dtr-mbtn-rose) !important;
+    color: #9f1239 !important;
+}
+
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--danger-soft {
+    color: #fda4af !important;
+    border-color: rgba(251, 113, 133, 0.55) !important;
+}
+
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--danger-soft:hover,
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--danger-soft:focus {
+    background: rgba(251, 113, 133, 0.1) !important;
+    border-color: rgba(252, 165, 165, 0.65) !important;
+}
+
+/* Secondary caution */
+.btn.dtr-mbtn.dtr-mbtn--warning {
+    background: transparent !important;
+    color: #b45309 !important;
+    border-color: color-mix(in srgb, var(--dtr-mbtn-warning) 52%, var(--dtr-input-border)) !important;
+}
+
+.btn.dtr-mbtn.dtr-mbtn--warning:hover,
+.btn.dtr-mbtn.dtr-mbtn--warning:focus {
+    background: color-mix(in srgb, var(--dtr-mbtn-warning) 12%, transparent) !important;
+    border-color: var(--dtr-mbtn-warning) !important;
+    color: #92400e !important;
+}
+
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--warning {
+    color: #fde68a !important;
+    border-color: rgba(251, 191, 36, 0.42) !important;
+}
+
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--warning:hover,
+html[data-theme="dark"] .btn.dtr-mbtn.dtr-mbtn--warning:focus {
+    background: rgba(251, 191, 36, 0.1) !important;
+}
+
+/* ---- Bootstrap bridges: modal footers (cancel + primary submit) ---- */
+.modal .modal-footer {
+    gap: 0.65rem;
+}
+
+.modal .modal-footer .btn.btn-outline-secondary,
+.modal .modal-footer .btn.btn-secondary:not(.btn-sm) {
+    min-height: var(--dtr-mbtn-min-h);
+    padding: 0.45rem var(--dtr-mbtn-pad-x);
+    font-size: var(--dtr-mbtn-fs);
+    font-weight: var(--dtr-mbtn-fw);
+    letter-spacing: 0.015em;
+    border-radius: var(--dtr-mbtn-radius);
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: var(--dtr-mbtn-gap);
+    box-shadow: none !important;
+    background: transparent !important;
+    color: color-mix(in srgb, var(--dtr-muted) 78%, var(--dtr-text)) !important;
+    border: 1px solid color-mix(in srgb, var(--dtr-input-border) 88%, transparent) !important;
+}
+
+.modal .modal-footer .btn.btn-outline-secondary:hover,
+.modal .modal-footer .btn.btn-outline-secondary:focus,
+.modal .modal-footer .btn.btn-secondary:not(.btn-sm):hover,
+.modal .modal-footer .btn.btn-secondary:not(.btn-sm):focus {
+    background: var(--dtr-hover-bg, rgba(15, 23, 42, 0.06)) !important;
+    color: var(--dtr-heading) !important;
+    border-color: color-mix(in srgb, var(--dtr-muted) 35%, var(--dtr-input-border)) !important;
+}
+
+html[data-theme="dark"] .modal .modal-footer .btn.btn-outline-secondary,
+html[data-theme="dark"] .modal .modal-footer .btn.btn-secondary:not(.btn-sm) {
+    color: color-mix(in srgb, var(--dtr-muted) 55%, #e2e8f0) !important;
+    border-color: var(--dtr-input-border, rgba(148, 163, 184, 0.45)) !important;
+}
+
+/* Default affirmative in footer = brand ghost */
+.modal .modal-footer .btn.btn-primary:not(.dtr-mbtn-plain) {
+    min-height: var(--dtr-mbtn-min-h);
+    padding: 0.45rem var(--dtr-mbtn-pad-x);
+    font-size: var(--dtr-mbtn-fs);
+    font-weight: var(--dtr-mbtn-fw);
+    letter-spacing: 0.015em;
+    border-radius: var(--dtr-mbtn-radius);
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: var(--dtr-mbtn-gap);
+    box-shadow: none !important;
+    background: transparent !important;
+    color: var(--dtr-primary, #2563eb) !important;
+    border: 1px solid color-mix(in srgb, var(--dtr-primary) 58%, var(--dtr-input-border)) !important;
+}
+
+.modal .modal-footer .btn.btn-primary:not(.dtr-mbtn-plain):hover,
+.modal .modal-footer .btn.btn-primary:not(.dtr-mbtn-plain):focus {
+    background: var(--dtr-primary-soft, rgba(37, 99, 235, 0.1)) !important;
+    color: var(--dtr-heading, #0f172a) !important;
+    border-color: color-mix(in srgb, var(--dtr-primary) 72%, transparent) !important;
+}
+
+/* Rose override (submit request flows) — must trail default primary rule */
+.modal .modal-footer .btn.btn-primary.dtr-mbtn--rose,
+.layout-wrap .main-content .btn.btn-primary.dtr-mbtn--rose {
+    color: var(--dtr-mbtn-rose-ink) !important;
+    border-color: color-mix(in srgb, var(--dtr-mbtn-rose) 52%, var(--dtr-input-border)) !important;
+    background: transparent !important;
+}
+
+.modal .modal-footer .btn.btn-primary.dtr-mbtn--rose:hover,
+.modal .modal-footer .btn.btn-primary.dtr-mbtn--rose:focus,
+.layout-wrap .main-content .btn.btn-primary.dtr-mbtn--rose:hover,
+.layout-wrap .main-content .btn.btn-primary.dtr-mbtn--rose:focus {
+    background: color-mix(in srgb, var(--dtr-mbtn-rose) 9%, transparent) !important;
+    border-color: var(--dtr-mbtn-rose) !important;
+    color: #be123c !important;
+}
+
+html[data-theme="dark"] .modal .modal-footer .btn.btn-primary.dtr-mbtn--rose,
+html[data-theme="dark"] .layout-wrap .main-content .btn.btn-primary.dtr-mbtn--rose {
+    color: #fda4af !important;
+    border-color: rgba(251, 113, 133, 0.55) !important;
+}
+
+.btn.dtr-mbtn:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--dtr-primary) 35%, transparent);
+    outline-offset: 2px;
+}

@@ -102,12 +102,6 @@
         @endif
     </div>
 
-    @if(session('error'))
-        <div class="alert alert-danger mx-auto mb-4 report-shell">
-            <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
-        </div>
-    @endif
-
     <div class="report-shell">
         <div class="report-card">
             <div class="report-card-header">

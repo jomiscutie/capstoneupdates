@@ -353,13 +353,6 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show">
-            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     <div class="students-card card">
         <div class="card-body">
             <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">

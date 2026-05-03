@@ -254,39 +254,9 @@
     .settings-page #setPasswordModal .modal-footer {
         border-top: 1px solid #475569;
         padding: 0.9rem 1.15rem 1rem;
-        gap: 0.55rem;
+        gap: 0.65rem;
+        justify-content: flex-end;
         background: #0b1a36;
-    }
-    .settings-page #changePasswordModal .modal-footer .btn,
-    .settings-page #setPasswordModal .modal-footer .btn {
-        padding: 0.54rem 1rem;
-        font-size: 0.92rem;
-        font-weight: 600;
-        border-radius: 10px;
-        min-width: 86px;
-    }
-    .settings-page #changePasswordModal .modal-footer .btn-secondary,
-    .settings-page #setPasswordModal .modal-footer .btn-secondary {
-        background: #64748b;
-        border: 1px solid #64748b;
-        color: #f8fafc;
-    }
-    .settings-page #changePasswordModal .modal-footer .btn-secondary:hover,
-    .settings-page #setPasswordModal .modal-footer .btn-secondary:hover {
-        background: #5b6c83;
-        border-color: #5b6c83;
-    }
-    .settings-page #changePasswordModal .modal-footer .btn-primary,
-    .settings-page #setPasswordModal .modal-footer .btn-primary {
-        background: #2563eb;
-        border-color: #2563eb;
-        color: #fff;
-        box-shadow: 0 10px 24px -14px rgba(37, 99, 235, 0.7);
-    }
-    .settings-page #changePasswordModal .modal-footer .btn-primary:hover,
-    .settings-page #setPasswordModal .modal-footer .btn-primary:hover {
-        background: #1d4ed8;
-        border-color: #1d4ed8;
     }
     /* Password visibility toggle */
     .settings-page .password-toggle-wrap { position: relative; display: block; }
@@ -486,31 +456,6 @@
 <div class="settings-page" data-max-batch="{{ \App\Services\StudentDeletionService::MAX_BATCH }}">
     <h1 class="page-title">Settings</h1>
     <p class="page-sub">Account and student configurations.</p>
-
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show">
-            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show">
-            <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-    @if(session('info'))
-        <div class="alert alert-info alert-dismissible fade show">
-            <i class="bi bi-info-circle me-2"></i>{{ session('info') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-    @if($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show">
-            <i class="bi bi-exclamation-triangle me-2"></i>{{ $errors->first() }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
 
     <div class="card mb-4 account-card">
         <div class="card-body">
