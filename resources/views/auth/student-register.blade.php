@@ -13,20 +13,20 @@
       --login-purple-dark: #5a4bb8;
       --login-muted: #64748b;
       --login-border: #e5e7eb;
-      --login-radius: 8px;
-      --login-radius-lg: 12px;
+      --login-radius: 6px;
+      --login-radius-lg: 8px;
       --login-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --login-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       --auth-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      --register-action-min-h: 2.45rem;
-      --register-action-pad-y: 0.42rem;
-      --register-action-pad-x: 0.88rem;
-      --register-action-fs: 0.875rem;
-      /* Unified registration type scale (html 16px base) */
-      --register-fs-section: 0.72rem;
-      --register-fs-label: 0.8125rem;
-      --register-fs-body: 0.875rem;
-      --register-fs-title: 1.125rem;
+      --register-action-min-h: 2.1rem;
+      --register-action-pad-y: 0.35rem;
+      --register-action-pad-x: 0.75rem;
+      --register-action-fs: 0.8rem;
+      /* Compact registration type scale */
+      --register-fs-section: 0.7rem;
+      --register-fs-label: 0.82rem;
+      --register-fs-body: 0.88rem;
+      --register-fs-title: 1.1rem;
       --register-input-border: #e8eaed;
       --register-input-border-hover: #d1d5db;
       --register-consent-border: #e8ecf2;
@@ -37,23 +37,25 @@
       background:
         radial-gradient(ellipse 140% 80% at 50% -20%, rgba(255, 255, 255, 0.14), transparent 50%),
         linear-gradient(158deg, #5342a8 0%, var(--login-purple) 42%, #4b3daf 100%);
-      min-height: 100vh;
-      min-height: 100dvh;
+      height: 100vh;
+      height: 100dvh;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: center;
       font-family: var(--login-font);
-      padding: clamp(0.35rem, 1.2vw, 0.55rem) clamp(0.45rem, 2vw, 0.85rem) clamp(0.5rem, 1.5vw, 0.75rem);
+      padding: 0.75rem;
       color: #1e293b;
-      overflow: auto;
+      overflow: hidden;
     }
     @keyframes authPageIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes authPanelSlide { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
     @keyframes authIllustrationIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
 
     .login-wrapper {
-      width: 100%;
-      max-width: min(1320px, calc(100vw - 1.25rem));
+      width: 95%;
+      max-width: min(1400px, calc(100vw - 1.5rem));
+      max-height: calc(100vh - 1.5rem);
+      max-height: calc(100dvh - 1.5rem);
       background: #fff;
       border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.22);
@@ -61,31 +63,33 @@
         0 4px 6px rgba(0, 0, 0, 0.04),
         0 22px 50px rgba(43, 32, 99, 0.28);
       overflow: hidden;
-      display: block;
+      display: flex;
+      flex-direction: column;
       animation: authPageIn 0.28s var(--auth-ease) forwards;
     }
 
     .login-form-panel {
-      padding: 0.72rem clamp(1.2rem, 3.6vw, 1.72rem) 0.82rem;
+      padding: 0.5rem 0.75rem;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
       overflow-y: auto;
+      flex: 1;
       animation: authPanelSlide 0.28s var(--auth-ease) both;
     }
     .login-form-panel .form-inner { width: 100%; max-width: 100%; margin: 0 auto; }
     .auth-tabs {
       display: flex;
-      gap: 0.26rem;
-      padding: 0.26rem;
-      margin-bottom: 0.45rem;
+      gap: 0.2rem;
+      padding: 0.2rem;
+      margin-bottom: 0.3rem;
       border-radius: var(--login-radius-lg);
       border: 1px solid var(--login-border);
       background: #f1f5f9;
     }
     .auth-tab {
       flex: 1;
-      padding: 0.38rem 0.5rem;
+      padding: 0.3rem 0.4rem;
       border-radius: calc(var(--login-radius) - 1px);
       text-align: center;
       font-size: var(--register-fs-body);
@@ -97,7 +101,7 @@
     .auth-tab.active {
       background: var(--login-purple);
       color: #fff;
-      box-shadow: 0 2px 10px rgba(109, 93, 209, 0.35);
+      box-shadow: 0 2px 8px rgba(109, 93, 209, 0.3);
     }
     .auth-tab:not(.active):hover { background: #fff; color: #334155; }
     .auth-tab:focus-visible {
@@ -105,28 +109,28 @@
       outline-offset: 2px;
     }
 
-    .login-form-panel .welcome { margin-bottom: 0.42rem; }
+    .login-form-panel .welcome { margin-bottom: 0.25rem; }
     .login-form-panel .welcome h1 {
       font-size: var(--register-fs-title);
       font-weight: 700;
       color: #111827;
-      margin-bottom: 0.1rem;
-      line-height: 1.22;
+      margin-bottom: 0.05rem;
+      line-height: 1.2;
     }
     .login-form-panel .welcome h1 span { color: var(--login-purple); }
-    .login-form-panel .welcome p { font-size: var(--register-fs-label); color: var(--login-muted); line-height: 1.32; margin-bottom: 0; }
+    .login-form-panel .welcome p { font-size: var(--register-fs-label); color: var(--login-muted); line-height: 1.3; margin-bottom: 0; }
 
     .alert {
       border-radius: var(--login-radius);
       font-size: var(--register-fs-body);
-      margin-bottom: 0.38rem;
+      margin-bottom: 0.25rem;
       border: 1px solid transparent;
-      border-left-width: 4px;
-      padding: 0.36rem 0.52rem;
+      border-left-width: 3px;
+      padding: 0.25rem 0.5rem;
     }
     .alert ul {
       margin-bottom: 0;
-      max-height: 90px;
+      max-height: 60px;
       overflow: auto;
       padding-left: 1rem;
     }
@@ -158,52 +162,60 @@
     #registerForm {
       display: flex;
       flex-direction: column;
-      gap: 0.68rem;
+      gap: 0.4rem;
       align-items: stretch;
     }
     .register-stack {
       display: flex;
       flex-direction: column;
-      gap: 0.48rem;
+      gap: 0.3rem;
       width: 100%;
       min-width: 0;
     }
     .register-section-heading {
       margin: 0;
       padding: 0 0 0.2rem;
-      font-size: var(--register-fs-section);
-      font-weight: 800;
+      font-size: 0.7rem;
+      font-weight: 900;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #5b5a6e;
-      line-height: 1.25;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+      color: #111827;
+      line-height: 1.2;
+      border-bottom: 1.5px solid rgba(15, 23, 42, 0.12);
       width: 100%;
     }
-    /* Full-width divider between major form sections */
+    /* Compact divider between sections */
     hr.register-section-rule {
       display: block;
       width: 100%;
       height: 0;
-      margin: 0.42rem 0 0.34rem;
+      margin: 0.25rem 0 0.2rem;
       padding: 0;
       border: none;
-      border-top: 2px solid #301934;
+      border-top: 1px solid #301934;
       background: none;
       flex-shrink: 0;
+      opacity: 0.5;
     }
     .register-field-columns {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.4rem clamp(1.28rem, 3.4vw, 1.65rem);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.2rem 0.5rem;
       align-items: start;
       width: 100%;
       min-width: 0;
     }
+    .register-field-columns > .form-group {
+      min-width: 0;
+    }
+    .register-field-columns.register-password-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      max-width: 66%;
+    }
     .register-col {
       display: flex;
       flex-direction: column;
-      gap: 0.36rem;
+      gap: 0.2rem;
       min-width: 0;
     }
     .form-group {
@@ -217,27 +229,28 @@
       font-weight: 600;
       color: #374151;
       font-size: var(--register-fs-label);
-      margin-bottom: 0.1rem;
+      margin-bottom: 0.05rem;
       display: block;
       line-height: 1.2;
       word-break: break-word;
     }
-    .form-label i { margin-right: 0.22rem; color: #94a3b8; font-size: 0.92em; }
+    .form-label i { margin-right: 0.15rem; color: #94a3b8; font-size: 0.85em; }
     .input-wrapper { position: relative; }
     .input-icon {
       position: absolute;
-      left: 0.68rem;
+      left: 0.55rem;
       top: 50%;
       transform: translateY(-50%);
       color: #6b7280;
-      font-size: 0.9375rem;
+      font-size: 0.85rem;
       z-index: 2;
     }
     .form-control,
     .form-select {
       width: 100%;
-      min-height: 2.0625rem;
-      padding: 0.3rem 0.58rem 0.3rem 2.02rem;
+      min-height: 1.85rem;
+      height: 1.85rem;
+      padding: 0.25rem 0.45rem 0.25rem 1.7rem;
       border: 1px solid var(--register-input-border);
       border-radius: var(--login-radius);
       font-size: var(--register-fs-body);
@@ -260,8 +273,9 @@
     .form-select {
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
       background-repeat: no-repeat;
-      background-position: right 0.65rem center;
-      background-size: 14px 11px;
+      background-position: right 0.5rem center;
+      background-size: 12px 10px;
+      padding-right: 1.5rem;
     }
     .form-select.ghost-disabled,
     .form-select.ghost-disabled:hover,
@@ -272,19 +286,19 @@
       box-shadow: none;
       cursor: not-allowed;
     }
-    .input-wrapper.has-password-toggle .form-control { padding-right: 2.48rem; }
+    .input-wrapper.has-password-toggle .form-control { padding-right: 2rem; }
     .password-toggle-btn {
       position: absolute;
-      right: 0.28rem;
+      right: 0.2rem;
       top: 50%;
       transform: translateY(-50%);
-      width: 1.72rem;
-      height: 1.72rem;
+      width: 1.4rem;
+      height: 1.4rem;
       border: none;
       background: none;
       color: #94a3b8;
       cursor: pointer;
-      border-radius: 6px;
+      border-radius: 4px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -292,24 +306,24 @@
     }
     .password-toggle-btn:hover { color: var(--login-purple); }
     .login-hint { display: none !important; }
-    .form-text { font-size: var(--register-fs-label); color: var(--login-muted); margin-top: 0.12rem; }
+    .form-text { font-size: var(--register-fs-label); color: var(--login-muted); margin-top: 0.08rem; }
     .password-rules {
-      margin-top: 0.16rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(8.125rem, 1fr));
-      gap: 0.1rem 0.38rem;
-      font-size: var(--register-fs-label);
+      margin-top: 0.1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.15rem 0.5rem;
+      font-size: 0.7rem;
       color: #64748b;
     }
     .password-rule {
       display: inline-flex;
       align-items: center;
-      gap: 0.26rem;
-      line-height: 1.2;
+      gap: 0.15rem;
+      line-height: 1.1;
       min-width: 0;
     }
     .password-rule i {
-      font-size: 0.95em;
+      font-size: 0.7em;
       color: #94a3b8;
     }
     .password-rule.ok {
@@ -322,10 +336,10 @@
     .date-range-group {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.3rem;
+      gap: 0.2rem;
     }
     .date-range-group .form-control {
-      padding-left: 2.02rem;
+      padding-left: 1.6rem;
       cursor: pointer;
       pointer-events: auto;
       position: relative;
@@ -335,33 +349,33 @@
     .consent-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.42rem;
+      gap: 0.25rem;
       align-items: stretch;
     }
     .consent-box {
       border: 1px solid var(--register-consent-border);
       border-radius: var(--login-radius);
       background: #fff;
-      padding: 0.3rem 0.4rem;
+      padding: 0.2rem 0.3rem;
       height: 100%;
       display: flex;
       align-items: flex-start;
     }
     .consent-box .form-check {
       margin: 0;
-      font-size: var(--register-fs-label) !important;
+      font-size: 0.72rem !important;
       color: var(--login-muted);
-      line-height: 1.22;
+      line-height: 1.2;
       display: flex;
       align-items: flex-start;
-      gap: 0.38rem;
+      gap: 0.25rem;
     }
     .consent-box .form-check-input {
-      margin: 0.1rem 0 0;
+      margin: 0.05rem 0 0;
       flex: 0 0 auto;
-      width: 0.92rem;
-      height: 0.92rem;
-      border: 1.5px solid #64748b;
+      width: 0.75rem;
+      height: 0.75rem;
+      border: 1px solid #64748b;
       background-color: #fff;
       cursor: pointer;
     }
@@ -377,14 +391,14 @@
       flex: 1 1 auto;
       color: #334155;
       cursor: pointer;
-      line-height: 1.32;
+      line-height: 1.25;
       word-break: break-word;
       overflow-wrap: anywhere;
     }
     .consent-label-row {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.25rem;
       flex-wrap: wrap;
     }
     .consent-see-more-btn {
@@ -392,13 +406,13 @@
       background: rgba(109, 93, 209, 0.08);
       color: var(--login-purple);
       border-radius: 999px;
-      padding: 0.12rem 0.52rem;
-      font-size: var(--register-fs-label);
+      padding: 0.08rem 0.4rem;
+      font-size: 0.7rem;
       font-weight: 600;
       line-height: 1.1;
       display: inline-flex;
       align-items: center;
-      gap: 0.2rem;
+      gap: 0.15rem;
       cursor: pointer;
     }
     .consent-see-more-btn:hover {
@@ -410,7 +424,7 @@
     .register-actions {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.42rem;
+      gap: 0.25rem;
       align-items: start;
     }
     .register-actions > .btn-register {
@@ -422,10 +436,10 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.38rem;
+      gap: 0.25rem;
     }
     .register-actions > .btn-register .bi {
-      font-size: 1.05em;
+      font-size: 1em;
       opacity: 0.96;
     }
     .btn-register {
@@ -433,35 +447,35 @@
       min-height: var(--register-action-min-h);
       padding: var(--register-action-pad-y) var(--register-action-pad-x);
       background: var(--login-purple);
-      border: 1.5px solid transparent;
+      border: 1px solid transparent;
       border-radius: var(--login-radius);
       color: #fff;
       font-weight: 600;
       font-size: var(--register-action-fs);
-      line-height: 1.35;
+      line-height: 1.3;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(109, 93, 209, 0.22);
+      box-shadow: 0 2px 4px rgba(109, 93, 209, 0.2);
       transition: background var(--login-transition), box-shadow var(--login-transition), transform 0.12s ease;
     }
     #registerForm .btn.btn-register {
       box-sizing: border-box !important;
       min-height: var(--register-action-min-h) !important;
       padding: var(--register-action-pad-y) var(--register-action-pad-x) !important;
-      border: 1.5px solid transparent !important;
+      border: 1px solid transparent !important;
       font-size: var(--register-action-fs) !important;
-      line-height: 1.35 !important;
+      line-height: 1.3 !important;
     }
     .btn-register:hover {
       background: var(--login-purple-dark);
       color: #fff;
-      box-shadow: 0 3px 12px rgba(109, 93, 209, 0.28);
+      box-shadow: 0 2px 8px rgba(109, 93, 209, 0.25);
     }
     .btn-register:active { transform: translateY(1px); }
     .register-alt-action {
       margin: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.22rem;
+      gap: 0.15rem;
       align-items: stretch;
     }
     .btn-register-alt {
@@ -469,7 +483,7 @@
       width: 100%;
       min-height: var(--register-action-min-h);
       padding: var(--register-action-pad-y) var(--register-action-pad-x);
-      border: 1.5px solid var(--register-consent-border);
+      border: 1px solid var(--register-consent-border);
       border-radius: var(--login-radius);
       background: #fff;
       color: #334155;
@@ -478,7 +492,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.38rem;
+      gap: 0.25rem;
       cursor: pointer;
       transition: border-color var(--login-transition), background var(--login-transition), color var(--login-transition), box-shadow var(--login-transition);
     }
@@ -487,21 +501,21 @@
       margin: 0;
       text-align: center;
       color: #64748b;
-      font-size: var(--register-fs-label);
-      line-height: 1.4;
+      font-size: 0.7rem;
+      line-height: 1.3;
     }
     .password-match-indicator {
-      margin-top: 0.16rem;
-      font-size: var(--register-fs-label);
+      margin-top: 0.1rem;
+      font-size: 0.7rem;
       font-weight: 600;
       display: inline-flex;
       align-items: center;
-      gap: 0.26rem;
+      gap: 0.15rem;
       color: #64748b;
-      min-height: 0.88rem;
+      min-height: 0.75rem;
     }
     .password-match-indicator i {
-      font-size: 0.95em;
+      font-size: 0.85em;
       opacity: 0.9;
     }
     .password-match-indicator.match {
@@ -516,8 +530,8 @@
       width: 100%;
     }
     .login-link {
-      margin-top: 0.42rem;
-      padding-top: 0.4rem;
+      margin-top: 0.25rem;
+      padding-top: 0.25rem;
       border-top: 1px solid var(--login-border);
       font-size: var(--register-fs-body);
       color: var(--login-muted);
@@ -525,11 +539,11 @@
     .login-link p { margin: 0; }
     .login-link a { color: var(--login-purple); font-weight: 600; text-decoration: none; }
     .login-link a:hover { color: var(--login-purple-dark); }
-    .switch-login { margin-top: 0.38rem; }
+    .switch-login { margin-top: 0.2rem; }
     .divider {
       position: relative;
       text-align: center;
-      margin: 0.32rem 0;
+      margin: 0.2rem 0;
     }
     .divider::before {
       content: '';
@@ -543,25 +557,25 @@
     .divider span {
       position: relative;
       background: #fff;
-      padding: 0 0.4rem;
+      padding: 0 0.3rem;
       color: var(--login-muted);
-      font-size: var(--register-fs-label);
+      font-size: 0.7rem;
     }
     .switch-login {
       display: flex;
       flex-direction: column;
-      gap: 0.38rem;
+      gap: 0.2rem;
     }
     .btn-switch {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.38rem;
-      padding: 0.4rem 0.65rem;
-      min-height: 2.38rem;
+      gap: 0.25rem;
+      padding: 0.3rem 0.5rem;
+      min-height: 2rem;
       width: 100%;
       background: #fafbfc;
-      border: 1.5px solid var(--login-border);
+      border: 1px solid var(--login-border);
       border-radius: var(--login-radius);
       color: #374151;
       font-weight: 600;
@@ -573,15 +587,19 @@
       background: #fff;
       border-color: #cfd6e6;
       color: #111827;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
     }
     .btn-switch i { color: var(--login-purple); }
 
     @media (max-width: 991px) {
-      .login-wrapper { max-width: min(780px, calc(100vw - 1.25rem)); }
+      .login-wrapper { max-width: min(780px, calc(100vw - 1rem)); }
       .register-field-columns {
-        grid-template-columns: 1fr;
-        gap: 0.4rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.25rem;
+      }
+      .register-field-columns.register-password-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-width: 100%;
       }
       .consent-grid,
       .register-actions {
@@ -591,14 +609,21 @@
 
     @media (max-width: 576px) {
       .login-wrapper {
-        border-radius: 12px;
+        border-radius: 8px;
         max-width: 100%;
       }
-      .password-rules {
+      .register-field-columns {
         grid-template-columns: 1fr;
       }
-      .login-form-panel { padding: 0.68rem 0.95rem 0.75rem; }
-      body { padding: 0.42rem 0.45rem 0.5rem; }
+      .register-field-columns.register-password-row {
+        grid-template-columns: 1fr;
+      }
+      .password-rules {
+        flex-direction: column;
+        gap: 0.1rem;
+      }
+      .login-form-panel { padding: 0.4rem 0.6rem; }
+      body { padding: 0.25rem; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition-duration: 0.01ms !important; }
@@ -636,170 +661,159 @@
         <input type="hidden" id="oldMajorValue" value="{{ old('major') }}">
 
         <div class="register-stack">
-          <h2 class="register-section-heading" id="register-heading-personal">Personal information</h2>
+          <h2 class="register-section-heading" id="register-heading-personal">Personal Information</h2>
           <div class="register-field-columns" role="group" aria-labelledby="register-heading-personal">
-            <div class="register-col">
-              <div class="form-group">
-                <label class="form-label" for="regStudentNo"><i class="bi bi-card-text"></i>Student Number</label>
-                <div class="input-wrapper">
-                  <i class="bi bi-card-text input-icon" aria-hidden="true"></i>
-                  <input id="regStudentNo" type="text" name="student_no" class="form-control" value="{{ old('student_no') }}" placeholder="e.g. 202212345" inputmode="numeric" pattern="[0-9]*" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'')" maxlength="50" title="Official ID — digits only." required />
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="regLastName"><i class="bi bi-person"></i>Last Name</label>
-                <div class="input-wrapper">
-                  <i class="bi bi-person input-icon" aria-hidden="true"></i>
-                  <input id="regLastName" type="text" name="last_name" class="form-control register-name-field" value="{{ old('last_name') }}" placeholder="Family name" maxlength="100" autocomplete="family-name" inputmode="text" autocapitalize="words" spellcheck="false" title="Letters only" required />
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="regSuffix"><i class="bi bi-person-badge"></i>Suffix</label>
-                <div class="input-wrapper">
-                  <i class="bi bi-person-badge input-icon" aria-hidden="true"></i>
-                  <select id="regSuffix" name="suffix" class="form-select" autocomplete="honorific-suffix">
-                    <option value="">No suffix</option>
-                    @foreach(['JR', 'SR', 'II', 'III', 'IV', 'V'] as $suffixOption)
-                    <option value="{{ $suffixOption }}" {{ old('suffix') == $suffixOption ? 'selected' : '' }}>{{ $suffixOption }}</option>
-                    @endforeach
-                  </select>
-                </div>
+            <div class="form-group">
+              <label class="form-label" for="regStudentNo"><i class="bi bi-card-text"></i>Student Number</label>
+              <div class="input-wrapper">
+                <i class="bi bi-card-text input-icon" aria-hidden="true"></i>
+                <input id="regStudentNo" type="text" name="student_no" class="form-control" value="{{ old('student_no') }}" placeholder="e.g. 202212345" inputmode="numeric" pattern="[0-9]*" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'')" maxlength="50" title="Official ID — digits only." required />
               </div>
             </div>
-            <div class="register-col">
-              <div class="form-group">
-                <label class="form-label" for="regFirstName"><i class="bi bi-person"></i>First Name</label>
-                <div class="input-wrapper">
-                  <i class="bi bi-person input-icon" aria-hidden="true"></i>
-                  <input id="regFirstName" type="text" name="first_name" class="form-control register-name-field" value="{{ old('first_name') }}" placeholder="Given name" maxlength="100" autocomplete="given-name" inputmode="text" autocapitalize="words" spellcheck="false" title="Letters only" required />
-                </div>
+            <div class="form-group">
+              <label class="form-label" for="regLastName"><i class="bi bi-person"></i>Last Name</label>
+              <div class="input-wrapper">
+                <i class="bi bi-person input-icon" aria-hidden="true"></i>
+                <input id="regLastName" type="text" name="last_name" class="form-control register-name-field" value="{{ old('last_name') }}" placeholder="Family name" maxlength="100" autocomplete="family-name" inputmode="text" autocapitalize="words" spellcheck="false" title="Letters only" required />
               </div>
-              <div class="form-group">
-                <label class="form-label" for="regMiddleName"><i class="bi bi-person"></i>Middle Name</label>
-                <div class="input-wrapper">
-                  <i class="bi bi-person input-icon" aria-hidden="true"></i>
-                  <input id="regMiddleName" type="text" name="middle_name" class="form-control register-name-field" value="{{ old('middle_name') }}" placeholder="Optional" maxlength="100" autocomplete="additional-name" inputmode="text" autocapitalize="words" spellcheck="false" />
-                </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regFirstName"><i class="bi bi-person"></i>First Name</label>
+              <div class="input-wrapper">
+                <i class="bi bi-person input-icon" aria-hidden="true"></i>
+                <input id="regFirstName" type="text" name="first_name" class="form-control register-name-field" value="{{ old('first_name') }}" placeholder="Given name" maxlength="100" autocomplete="given-name" inputmode="text" autocapitalize="words" spellcheck="false" title="Letters only" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regMiddleName"><i class="bi bi-person"></i>Middle Name</label>
+              <div class="input-wrapper">
+                <i class="bi bi-person input-icon" aria-hidden="true"></i>
+                <input id="regMiddleName" type="text" name="middle_name" class="form-control register-name-field" value="{{ old('middle_name') }}" placeholder="Optional" maxlength="100" autocomplete="additional-name" inputmode="text" autocapitalize="words" spellcheck="false" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regSuffix"><i class="bi bi-person-badge"></i>Suffix</label>
+              <div class="input-wrapper">
+                <i class="bi bi-person-badge input-icon" aria-hidden="true"></i>
+                <select id="regSuffix" name="suffix" class="form-select" autocomplete="honorific-suffix">
+                  <option value="">No suffix</option>
+                  @foreach(['JR', 'SR', 'II', 'III', 'IV', 'V'] as $suffixOption)
+                  <option value="{{ $suffixOption }}" {{ old('suffix') == $suffixOption ? 'selected' : '' }}>{{ $suffixOption }}</option>
+                  @endforeach
+                </select>
               </div>
             </div>
           </div>
 
           <hr class="register-section-rule" aria-hidden="true" />
 
-          <h2 class="register-section-heading" id="register-heading-academic">Academic information</h2>
+          <h2 class="register-section-heading" id="register-heading-academic">Academic Information</h2>
           <div class="register-field-columns" role="group" aria-labelledby="register-heading-academic">
-            <div class="register-col">
-              <div class="form-group" id="majorGroup">
-                <label class="form-label" for="majorSelect"><i class="bi bi-journal-bookmark"></i>Major</label>
-                <div class="input-wrapper">
-                  <i class="bi bi-journal-bookmark input-icon" aria-hidden="true"></i>
-                  <select name="major" id="majorSelect" class="form-select">
-                    <option value="">Select Major</option>
-                  </select>
-                </div>
+            <div class="form-group" id="majorGroup">
+              <label class="form-label" for="majorSelect"><i class="bi bi-journal-bookmark"></i>Major</label>
+              <div class="input-wrapper">
+                <i class="bi bi-journal-bookmark input-icon" aria-hidden="true"></i>
+                <select name="major" id="majorSelect" class="form-select">
+                  <option value="">Select Major</option>
+                </select>
               </div>
-              <div class="form-group">
-                <label class="form-label"><i class="bi bi-journal-text"></i>School Year</label>
-                <input type="hidden" name="school_year" id="schoolYearValue" value="{{ old('school_year') }}">
-                <div class="date-range-group">
-                  <div class="input-wrapper">
-                    <i class="bi bi-calendar3 input-icon" aria-hidden="true"></i>
-                    <input type="date" id="schoolYearStart" class="form-control" required aria-label="School year start">
-                  </div>
-                  <div class="input-wrapper">
-                    <i class="bi bi-calendar3 input-icon" aria-hidden="true"></i>
-                    <input type="date" id="schoolYearEnd" class="form-control" required aria-label="School year end">
-                  </div>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="regOffice"><i class="bi bi-building"></i>Assigned Office</label>
-                <div class="input-wrapper">
-                  <i class="bi bi-building input-icon" aria-hidden="true"></i>
-                  <select id="regOffice" name="assigned_office" class="form-select" title="Optional now; set or request later in Student settings.">
-                    @php($officeOld = old('assigned_office'))
-                    <option value="" {{ $officeOld === null || $officeOld === '' ? 'selected' : '' }}>No assigned office yet</option>
-                    @foreach(\App\Models\Student::getOfficeOptions() as $officeOption)
-                    <option value="{{ $officeOption }}" {{ (string) $officeOld === (string) $officeOption ? 'selected' : '' }}>{{ $officeOption }}</option>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="programSelect"><i class="bi bi-book"></i>Program / Course</label>
+              <div class="input-wrapper">
+                <i class="bi bi-book input-icon" aria-hidden="true"></i>
+                <select name="course" id="programSelect" class="form-select" required>
+                  @foreach(\App\Models\Student::getProgramCatalog() as $collegeLabel => $programOptions)
+                  <optgroup label="{{ $collegeLabel }}">
+                    @foreach($programOptions as $programOption)
+                    <option value="{{ $programOption }}" {{ old('course') == $programOption ? 'selected' : '' }}>{{ $programOption }}</option>
                     @endforeach
-                  </select>
+                  </optgroup>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regTerm"><i class="bi bi-calendar3"></i>Term</label>
+              <div class="input-wrapper">
+                <i class="bi bi-calendar3 input-icon" aria-hidden="true"></i>
+                <select id="regTerm" name="term" class="form-select" required>
+                  <option value="">Select Term</option>
+                  @foreach(\App\Models\Student::TERMS as $termOption)
+                  <option value="{{ $termOption }}" {{ old('term') == $termOption ? 'selected' : '' }}>{{ $termOption }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label"><i class="bi bi-journal-text"></i>School Year</label>
+              <input type="hidden" name="school_year" id="schoolYearValue" value="{{ old('school_year') }}">
+              <div class="date-range-group">
+                <div class="input-wrapper">
+                  <i class="bi bi-calendar3 input-icon" aria-hidden="true"></i>
+                  <input type="date" id="schoolYearStart" class="form-control" required aria-label="School year start">
+                </div>
+                <div class="input-wrapper">
+                  <i class="bi bi-calendar3 input-icon" aria-hidden="true"></i>
+                  <input type="date" id="schoolYearEnd" class="form-control" required aria-label="School year end">
                 </div>
               </div>
             </div>
-            <div class="register-col">
-              <div class="form-group">
-                <label class="form-label" for="programSelect"><i class="bi bi-book"></i>Program / Course</label>
-                <div class="input-wrapper">
-                  <i class="bi bi-book input-icon" aria-hidden="true"></i>
-                  <select name="course" id="programSelect" class="form-select" required>
-                    @foreach(\App\Models\Student::getProgramCatalog() as $collegeLabel => $programOptions)
-                    <optgroup label="{{ $collegeLabel }}">
-                      @foreach($programOptions as $programOption)
-                      <option value="{{ $programOption }}" {{ old('course') == $programOption ? 'selected' : '' }}>{{ $programOption }}</option>
-                      @endforeach
-                    </optgroup>
-                    @endforeach
-                  </select>
-                </div>
+            <div class="form-group">
+              <label class="form-label" for="regSection"><i class="bi bi-grid-3x3-gap"></i>Section</label>
+              <div class="input-wrapper">
+                <i class="bi bi-grid-3x3-gap input-icon" aria-hidden="true"></i>
+                <select id="regSection" name="section" class="form-select" required>
+                  <option value="">Select Section</option>
+                  @foreach(\App\Models\Student::getSectionOptions() as $sectionOption)
+                  @continue(strcasecmp(trim((string) $sectionOption), 'All') === 0 || strcasecmp(trim((string) $sectionOption), 'Section All') === 0)
+                  <option value="{{ $sectionOption }}" {{ old('section') == $sectionOption ? 'selected' : '' }}>
+                    {{ in_array($sectionOption, \App\Models\Student::SECTIONS, true) ? 'Section '.$sectionOption : $sectionOption }}
+                  </option>
+                  @endforeach
+                </select>
               </div>
-              <div class="form-group">
-                <label class="form-label" for="regTerm"><i class="bi bi-calendar3"></i>Term</label>
-                <div class="input-wrapper">
-                  <i class="bi bi-calendar3 input-icon" aria-hidden="true"></i>
-                  <select id="regTerm" name="term" class="form-select" required>
-                    <option value="">Select Term</option>
-                    @foreach(\App\Models\Student::TERMS as $termOption)
-                    <option value="{{ $termOption }}" {{ old('term') == $termOption ? 'selected' : '' }}>{{ $termOption }}</option>
-                    @endforeach
-                  </select>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="regSection"><i class="bi bi-grid-3x3-gap"></i>Section</label>
-                <div class="input-wrapper">
-                  <i class="bi bi-grid-3x3-gap input-icon" aria-hidden="true"></i>
-                  <select id="regSection" name="section" class="form-select" required>
-                    <option value="">Select Section</option>
-                    @foreach(\App\Models\Student::getSectionOptions() as $sectionOption)
-                    @continue(strcasecmp(trim((string) $sectionOption), 'All') === 0 || strcasecmp(trim((string) $sectionOption), 'Section All') === 0)
-                    <option value="{{ $sectionOption }}" {{ old('section') == $sectionOption ? 'selected' : '' }}>
-                      {{ in_array($sectionOption, \App\Models\Student::SECTIONS, true) ? 'Section '.$sectionOption : $sectionOption }}
-                    </option>
-                    @endforeach
-                  </select>
-                </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regOffice"><i class="bi bi-building"></i>Assigned Office</label>
+              <div class="input-wrapper">
+                <i class="bi bi-building input-icon" aria-hidden="true"></i>
+                <select id="regOffice" name="assigned_office" class="form-select" title="Optional now; set or request later in Student settings.">
+                  @php($officeOld = old('assigned_office'))
+                  <option value="" {{ $officeOld === null || $officeOld === '' ? 'selected' : '' }}>No assigned office yet</option>
+                  @foreach(\App\Models\Student::getOfficeOptions() as $officeOption)
+                  <option value="{{ $officeOption }}" {{ (string) $officeOld === (string) $officeOption ? 'selected' : '' }}>{{ $officeOption }}</option>
+                  @endforeach
+                </select>
               </div>
             </div>
           </div>
 
-          <div class="register-field-columns register-password-row" role="group" aria-label="Password">
-            <div class="register-col">
-              <div class="form-group">
-                <label class="form-label" for="passwordInput"><i class="bi bi-lock"></i>Password</label>
-                <div class="input-wrapper has-password-toggle">
-                  <i class="bi bi-key input-icon" aria-hidden="true"></i>
-                  <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Enter password" minlength="8" autocomplete="new-password" required />
-                  <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password"><i class="bi bi-eye" aria-hidden="true"></i></button>
-                </div>
-                <div class="password-rules" id="passwordRules" aria-live="polite">
-                  <span class="password-rule" data-rule="length"><i class="bi bi-circle" aria-hidden="true"></i> 8+ characters</span>
-                  <span class="password-rule" data-rule="uppercase"><i class="bi bi-circle" aria-hidden="true"></i> Uppercase (A-Z)</span>
-                  <span class="password-rule" data-rule="lowercase"><i class="bi bi-circle" aria-hidden="true"></i> Lowercase (a-z)</span>
-                  <span class="password-rule" data-rule="number"><i class="bi bi-circle" aria-hidden="true"></i> Number (0-9)</span>
-                  <span class="password-rule" data-rule="symbol"><i class="bi bi-circle" aria-hidden="true"></i> Symbol (! @ # …)</span>
-                </div>
+          <h2 class="register-section-heading" id="register-heading-password">Account Security</h2>
+          <div class="register-field-columns register-password-row" role="group" aria-labelledby="register-heading-password">
+            <div class="form-group">
+              <label class="form-label" for="passwordInput"><i class="bi bi-lock"></i>Password</label>
+              <div class="input-wrapper has-password-toggle">
+                <i class="bi bi-key input-icon" aria-hidden="true"></i>
+                <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Enter password" minlength="8" autocomplete="new-password" required />
+                <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password"><i class="bi bi-eye" aria-hidden="true"></i></button>
+              </div>
+              <div class="password-rules" id="passwordRules" aria-live="polite">
+                <span class="password-rule" data-rule="length"><i class="bi bi-circle" aria-hidden="true"></i> 8+ chars</span>
+                <span class="password-rule" data-rule="uppercase"><i class="bi bi-circle" aria-hidden="true"></i> ABC</span>
+                <span class="password-rule" data-rule="lowercase"><i class="bi bi-circle" aria-hidden="true"></i> abc</span>
+                <span class="password-rule" data-rule="number"><i class="bi bi-circle" aria-hidden="true"></i> 123</span>
+                <span class="password-rule" data-rule="symbol"><i class="bi bi-circle" aria-hidden="true"></i> !@#</span>
               </div>
             </div>
-            <div class="register-col">
-              <div class="form-group">
-                <label class="form-label" for="passwordConfirmationInput"><i class="bi bi-lock-fill"></i>Confirm Password</label>
-                <div class="input-wrapper has-password-toggle">
-                  <i class="bi bi-key-fill input-icon" aria-hidden="true"></i>
-                  <input type="password" name="password_confirmation" id="passwordConfirmationInput" class="form-control" placeholder="Confirm password" minlength="8" autocomplete="new-password" required />
-                  <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password"><i class="bi bi-eye" aria-hidden="true"></i></button>
-                </div>
-                <div id="passwordMatchIndicator" class="password-match-indicator" aria-live="polite"></div>
+            <div class="form-group">
+              <label class="form-label" for="passwordConfirmationInput"><i class="bi bi-lock-fill"></i>Confirm Password</label>
+              <div class="input-wrapper has-password-toggle">
+                <i class="bi bi-key-fill input-icon" aria-hidden="true"></i>
+                <input type="password" name="password_confirmation" id="passwordConfirmationInput" class="form-control" placeholder="Confirm password" minlength="8" autocomplete="new-password" required />
+                <button type="button" class="password-toggle-btn" data-password-toggle aria-label="Show password"><i class="bi bi-eye" aria-hidden="true"></i></button>
               </div>
+              <div id="passwordMatchIndicator" class="password-match-indicator" aria-live="polite"></div>
             </div>
           </div>
         </div>

@@ -522,11 +522,11 @@
             @endif
         </div>
 
-        <!-- Today & Manila time -->
+        <!-- Today's Time & Date -->
         <div class="card-section">
             <div class="card-header">
                 <i class="bi bi-calendar3"></i>
-                <h4>Today &amp; Manila time</h4>
+                <h4>Today's Time &amp; Date</h4>
             </div>
 
             @if(session('success'))
