@@ -158,6 +158,9 @@
         text-transform: uppercase; letter-spacing: 0.06em; margin: 0;
     }
     .settings-page .bulk-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
         min-width: 120px; font-size: 0.875rem; font-weight: 600; color: var(--dtr-text);
         padding: 0.6rem 0.85rem; border-radius: 10px; background: var(--dtr-card-bg); border: 1px solid var(--dtr-border-soft);
     }
@@ -497,7 +500,7 @@
                             @endif
                         </div>
                         <button type="submit" class="btn btn-primary btn-search">
-                            <i class="bi bi-search me-1"></i> Search
+                            <i class="bi bi-search" aria-hidden="true"></i> Search
                         </button>
                     </form>
                     <p class="search-hint mb-0">Tip: you can use * or % in the search box for simple wildcards.</p>
@@ -512,15 +515,18 @@
                     <div class="bulk-card">
                         <div class="bulk-field">
                             <label>Selected students</label>
-                            <div class="bulk-count"><span id="selectedCount">0</span> selected</div>
+                            <div class="bulk-count">
+                                <span id="selectedCount">0</span>
+                                <span class="bulk-count-label">selected</span>
+                            </div>
                         </div>
                         <div class="bulk-field">
                             <label for="bulkRequiredHours">Required hours</label>
                             <input type="number" id="bulkRequiredHours" name="required_ojt_hours" value="{{ old('required_ojt_hours', 120) }}" min="1" max="9999" step="0.5" class="form-control" style="width: 8rem;">
                         </div>
                         <div class="bulk-actions">
-                            <button type="submit" class="btn btn-primary" id="applyBulkButton">
-                                <i class="bi bi-lightning-charge me-1"></i> Apply to selected
+                            <button type="submit" class="btn btn-primary dtr-apply-ghost" id="applyBulkButton">
+                                <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i><span class="dtr-apply-ghost__text">Apply to selected</span>
                             </button>
                             <button type="button" class="btn-student-delete js-coordinator-batch-delete" id="coordinatorBulkDeleteBtn" disabled aria-disabled="true">
                                 <i class="bi bi-trash"></i> Delete selected

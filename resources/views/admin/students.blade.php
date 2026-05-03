@@ -33,7 +33,7 @@
                         <option value="{{ $sectionOption }}" {{ ($selectedSection ?? '') === $sectionOption ? 'selected' : '' }}>{{ $sectionOption }}</option>
                     @endforeach
                 </select>
-                <button type="submit" class="btn btn-primary btn-search"><i class="bi bi-search me-1"></i> Search</button>
+                <button type="submit" class="btn btn-primary btn-search"><i class="bi bi-search" aria-hidden="true"></i> Search</button>
                 @if(!empty($search) || !empty($selectedTerm) || !empty($selectedSection))
                     <a href="{{ route('admin.students') }}" class="btn btn-outline-secondary btn-search">Clear</a>
                 @endif
@@ -50,11 +50,10 @@
                         <p class="bulk-sub mb-0">Use this for whole sections or newly enrolled groups. Existing active terms will be completed automatically.</p>
                     </div>
                     <div class="bulk-meta">
-                        <span class="selected-pill"><span id="selectedStudentsCount">0</span> selected</span>
-                        <label class="select-shown-toggle">
-                            <input type="checkbox" id="selectAllStudents">
-                            <span>Select all shown</span>
-                        </label>
+                        <span class="selected-pill">
+                            <span id="selectedStudentsCount">0</span>
+                            <span class="selected-pill-label">selected</span>
+                        </span>
                     </div>
                 </div>
 
@@ -105,12 +104,12 @@
                 </div>
 
                 <div class="bulk-actions">
-                    <p class="bulk-note mb-0">Set any fields you want to update. Leave blank/skip to keep existing values.</p>
-                    <div class="d-flex flex-wrap gap-2 align-items-center">
-                        <button type="submit" class="btn btn-primary" id="bulkAssignSubmit" disabled>
-                            <i class="bi bi-layers me-1"></i>Assign to selected
+                    
+                    <div class="d-flex flex-wrap gap-3 align-items-center bulk-actions-btns">
+                        <button type="submit" class="btn bulk-assign-toolbar-btn bulk-assign-toolbar-btn--primary" id="bulkAssignSubmit" disabled>
+                            <i class="bi bi-layers" aria-hidden="true"></i> Assign to selected
                         </button>
-                        <button type="button" class="btn-admin-remove-ghost" id="adminBulkDeleteBtn" disabled aria-disabled="true">
+                        <button type="button" class="btn bulk-assign-toolbar-btn bulk-assign-toolbar-btn--danger" id="adminBulkDeleteBtn" disabled aria-disabled="true">
                             <i class="bi bi-trash" aria-hidden="true"></i> Delete selected
                         </button>
                     </div>
@@ -415,6 +414,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 0.35rem;
     min-width: 104px;
     padding: 0.46rem 0.85rem;
     border-radius: 999px;
@@ -425,16 +425,6 @@
     font-weight: 700;
 }
 
-.select-shown-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--dtr-text);
-    font-size: 0.88rem;
-    font-weight: 600;
-}
-
-.select-shown-toggle input,
 .checkbox-cell .form-check-input {
     width: 1rem;
     height: 1rem;
@@ -456,6 +446,124 @@
 .bulk-actions .d-flex {
     align-items: center;
     justify-content: flex-end;
+}
+
+/* Bulk bar CTAs — matching pill ghosts: indigo assign + muted red delete (beats classic-ui .btn-primary) */
+.layout-wrap .main-content .bulk-assign-toolbar-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    padding: 0.55rem 1.25rem !important;
+    min-height: 42px !important;
+    border-radius: 999px !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.015em !important;
+    line-height: 1.25 !important;
+    font-family: inherit !important;
+    box-sizing: border-box !important;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.18s ease, transform 0.12s ease, box-shadow 0.2s ease !important;
+}
+.layout-wrap .main-content .bulk-assign-toolbar-btn i {
+    font-size: 1.05rem !important;
+    line-height: 1 !important;
+}
+.layout-wrap .main-content .bulk-assign-toolbar-btn--primary {
+    border: 1px solid color-mix(in srgb, #6366f1 58%, var(--dtr-input-border) 42%) !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    color: color-mix(in srgb, #4f46e5 88%, var(--dtr-heading) 12%) !important;
+}
+.layout-wrap .main-content .bulk-assign-toolbar-btn--primary:hover:not(:disabled),
+.layout-wrap .main-content .bulk-assign-toolbar-btn--primary:focus-visible:not(:disabled) {
+    background-color: color-mix(in srgb, #6366f1 14%, var(--dtr-card-bg) 86%) !important;
+    border-color: color-mix(in srgb, #4f46e5 72%, var(--dtr-input-border) 28%) !important;
+    color: color-mix(in srgb, #4338ca 94%, var(--dtr-heading) 6%) !important;
+}
+.layout-wrap .main-content .bulk-assign-toolbar-btn--primary:focus-visible {
+    outline: none !important;
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--dtr-card-bg) 100%, transparent),
+        0 0 0 4px color-mix(in srgb, #818cf8 36%, transparent) !important;
+}
+.layout-wrap .main-content .bulk-assign-toolbar-btn--primary:active:not(:disabled) {
+    transform: scale(0.985);
+}
+.layout-wrap .main-content .bulk-assign-toolbar-btn--primary:disabled {
+    opacity: 0.45 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+html[data-theme="dark"] .layout-wrap .main-content .bulk-assign-toolbar-btn--primary {
+    border-color: color-mix(in srgb, #a5b4fc 52%, rgba(79, 70, 229, 0.45) 48%) !important;
+    background-color: color-mix(in srgb, #312e81 26%, transparent) !important;
+    color: color-mix(in srgb, #e0e7ff 78%, #c7d2fe 22%) !important;
+}
+html[data-theme="dark"] .layout-wrap .main-content .bulk-assign-toolbar-btn--primary:hover:not(:disabled),
+html[data-theme="dark"] .layout-wrap .main-content .bulk-assign-toolbar-btn--primary:focus-visible:not(:disabled) {
+    background-color: color-mix(in srgb, #4338ca 42%, transparent) !important;
+    border-color: color-mix(in srgb, #a5b4fc 62%, var(--dtr-input-border) 38%) !important;
+    color: #f5f7ff !important;
+}
+html[data-theme="dark"] .layout-wrap .main-content .bulk-assign-toolbar-btn--primary:focus-visible {
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--dtr-card-bg) 100%, transparent),
+        0 0 0 4px color-mix(in srgb, #818cf8 38%, transparent) !important;
+}
+.layout-wrap .main-content .bulk-assign-toolbar-btn--danger {
+    border: 1px solid color-mix(in srgb, #9f1239 65%, var(--dtr-input-border) 35%) !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    color: color-mix(in srgb, #9f1239 88%, var(--dtr-heading) 12%) !important;
+    box-shadow: none !important;
+}
+.layout-wrap .main-content .bulk-assign-toolbar-btn--danger:hover:not(:disabled),
+.layout-wrap .main-content .bulk-assign-toolbar-btn--danger:focus-visible:not(:disabled) {
+    background-color: color-mix(in srgb, #9f1239 12%, var(--dtr-card-bg) 88%) !important;
+    border-color: color-mix(in srgb, #881337 75%, var(--dtr-input-border) 25%) !important;
+    color: color-mix(in srgb, #881337 95%, var(--dtr-heading) 5%) !important;
+}
+.layout-wrap .main-content .bulk-assign-toolbar-btn--danger:focus-visible {
+    outline: none !important;
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--dtr-card-bg) 100%, transparent),
+        0 0 0 4px color-mix(in srgb, #f43f5e 28%, transparent) !important;
+}
+.layout-wrap .main-content .bulk-assign-toolbar-btn--danger:active:not(:disabled) {
+    transform: scale(0.985);
+}
+.layout-wrap .main-content .bulk-assign-toolbar-btn--danger:disabled {
+    opacity: 0.45 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+html[data-theme="dark"] .layout-wrap .main-content .bulk-assign-toolbar-btn--danger {
+    border-color: color-mix(in srgb, #f87171 55%, rgba(127, 29, 29, 0.5) 45%) !important;
+    color: color-mix(in srgb, #fecdd3 70%, #fda4af 30%) !important;
+    background-color: color-mix(in srgb, #450a0a 22%, transparent) !important;
+}
+html[data-theme="dark"] .layout-wrap .main-content .bulk-assign-toolbar-btn--danger:hover:not(:disabled),
+html[data-theme="dark"] .layout-wrap .main-content .bulk-assign-toolbar-btn--danger:focus-visible:not(:disabled) {
+    background-color: color-mix(in srgb, #881337 45%, transparent) !important;
+    border-color: color-mix(in srgb, #fb7185 65%, var(--dtr-input-border) 35%) !important;
+    color: #fff1f2 !important;
+}
+html[data-theme="dark"] .layout-wrap .main-content .bulk-assign-toolbar-btn--danger:focus-visible {
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--dtr-card-bg) 100%, transparent),
+        0 0 0 4px rgba(251, 113, 133, 0.35) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+    .layout-wrap .main-content .bulk-assign-toolbar-btn {
+        transition: background 0.2s ease, border-color 0.2s ease, color 0.18s ease !important;
+    }
+    .layout-wrap .main-content .bulk-assign-toolbar-btn--primary:active:not(:disabled),
+    .layout-wrap .main-content .bulk-assign-toolbar-btn--danger:active:not(:disabled) {
+        transform: none;
+    }
 }
 
 .student-table-wrap {
@@ -972,7 +1080,6 @@ html[data-theme="light"] .student-term-modal {
     }
 
     var rowCheckboxes = Array.prototype.slice.call(document.querySelectorAll('.student-select'));
-    var topSelectAll = document.getElementById('selectAllStudents');
     var tableSelectAll = document.getElementById('tableSelectAll');
     var countEl = document.getElementById('selectedStudentsCount');
     var hiddenContainer = document.getElementById('bulkStudentIds');
@@ -1016,19 +1123,12 @@ html[data-theme="light"] .student-term-modal {
         });
 
         var allChecked = selected.length > 0 && selected.length === rowCheckboxes.length;
-        if (topSelectAll) topSelectAll.checked = allChecked;
         if (tableSelectAll) tableSelectAll.checked = allChecked;
     }
 
     rowCheckboxes.forEach(function (checkbox) {
         checkbox.addEventListener('change', refreshSelectionUi);
     });
-
-    if (topSelectAll) {
-        topSelectAll.addEventListener('change', function () {
-            syncSelection(topSelectAll.checked);
-        });
-    }
 
     if (tableSelectAll) {
         tableSelectAll.addEventListener('change', function () {
@@ -1046,9 +1146,38 @@ html[data-theme="light"] .student-term-modal {
         if (!selectedCount) {
             return;
         }
+        var termSel = bulkForm.querySelector('select[name="term"]');
+        var secSel = bulkForm.querySelector('select[name="section"]');
+        var hrsEl = bulkForm.querySelector('input[name="required_ojt_hours"]');
+        var officeSel = bulkForm.querySelector('select[name="assigned_office"]');
+        var t = termSel && termSel.value;
+        var s = secSel && secSel.value;
+        var h = hrsEl && hrsEl.value && String(hrsEl.value).trim() !== '';
+        var o = officeSel && officeSel.value;
+        var sy = schoolYearHidden && schoolYearHidden.value && String(schoolYearHidden.value).trim() !== '';
+        var fullTerm = t && s && h;
+        var patchMeta = !t && !s && (h || sy);
+
+        var bulkMsg;
+        var bulkTitle = 'Bulk update';
+        if (fullTerm && o) {
+            bulkMsg = 'Assign a new OJT term and update assigned office for ' + selectedCount + ' selected student' + (selectedCount === 1 ? '' : 's') + '? Existing active terms will be completed first.';
+        } else if (fullTerm) {
+            bulkMsg = 'Assign this OJT term to ' + selectedCount + ' selected student' + (selectedCount === 1 ? '' : 's') + '? Existing active terms will be completed first.';
+        } else if (patchMeta && o) {
+            bulkMsg = 'Update hours and/or school year on the active assignment, and update assigned office, for ' + selectedCount + ' selected student' + (selectedCount === 1 ? '' : 's') + '? Students without an active assignment will be skipped for hours/school year.';
+        } else if (patchMeta) {
+            bulkMsg = 'Update hours and/or school year on the current active assignment for ' + selectedCount + ' selected student' + (selectedCount === 1 ? '' : 's') + '? Students without an active assignment will be skipped for that part.';
+        } else if (o) {
+            bulkMsg = 'Apply the selected assigned office to ' + selectedCount + ' selected student' + (selectedCount === 1 ? '' : 's') + '?';
+            bulkTitle = 'Update assigned office';
+        } else {
+            bulkMsg = 'Apply this bulk update to ' + selectedCount + ' selected student' + (selectedCount === 1 ? '' : 's') + '?';
+        }
+
         var ok = await window.norsuPrompt.confirm(
-            'Assign this OJT term to ' + selectedCount + ' selected student' + (selectedCount === 1 ? '' : 's') + '? Active terms will be completed first.',
-            { variant: 'warning', title: 'Bulk term assignment', confirmText: 'Yes, assign' }
+            bulkMsg,
+            { variant: 'warning', title: bulkTitle, confirmText: 'Yes, apply' }
         );
         if (!ok) {
             return;

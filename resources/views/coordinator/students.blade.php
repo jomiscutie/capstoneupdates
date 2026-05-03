@@ -112,17 +112,6 @@
         color: var(--dtr-muted);
         margin-bottom: 0.25rem;
     }
-    .students-page .filter-apply-btn {
-        font-weight: 600;
-        border: 1px solid color-mix(in srgb, var(--dtr-primary) 65%, var(--dtr-border-soft));
-        background: linear-gradient(135deg, var(--dtr-primary), var(--dtr-primary-dark));
-        color: #fff;
-    }
-    .students-page .filter-apply-btn:hover,
-    .students-page .filter-apply-btn:focus {
-        color: #fff;
-        filter: brightness(1.05);
-    }
     .students-page .filter-action-wrap {
         padding-top: 0;
         display: flex;
@@ -449,8 +438,8 @@
                             </select>
                         </div>
                         <div class="filter-action-wrap">
-                            <button type="submit" class="btn btn-sm btn-primary filter-apply-btn">
-                                <i class="bi bi-funnel me-1"></i>Apply
+                            <button type="submit" class="btn btn-sm dtr-apply-ghost">
+                                <i class="bi bi-funnel me-1" aria-hidden="true"></i><span class="dtr-apply-ghost__text">Apply</span>
                             </button>
                         </div>
                         @if(!empty($search) || ($enrollmentFilter ?? 'all') !== 'all' || !empty($programFilter ?? '') || !empty($sectionFilter ?? '') || !empty($officeFilter ?? ''))

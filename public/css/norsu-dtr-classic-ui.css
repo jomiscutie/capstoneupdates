@@ -47,62 +47,194 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Dashboard action strips (anchors styled as CTAs — must not rely on per-page CSS) */
+/* Dashboard action cards — outline CTAs (admin + coordinator dashboards)       */
 /* -------------------------------------------------------------------------- */
 .layout-wrap .main-content .action-card .btn-minimal {
-    min-height: 40px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-height: 42px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.45rem;
-    border-radius: var(--dtr-radius, 8px);
-    padding: 0.6rem 1.15rem;
-    font-size: 0.88rem;
+    gap: 0.5rem;
+    border-radius: 11px;
+    padding: 0.55rem 1.08rem;
+    font-size: 0.875rem;
     font-weight: 600;
-    border: none;
+    letter-spacing: 0.02em;
+    line-height: 1.25;
+    border: 1px solid transparent !important;
     text-decoration: none;
-    line-height: 1;
     cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease, filter 0.2s ease;
-    background: var(--dtr-primary);
-    color: #fff !important;
+    filter: none !important;
+    box-shadow: none !important;
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.11s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-.layout-wrap .main-content .action-card .btn-minimal:hover,
-.layout-wrap .main-content .action-card .btn-minimal:focus {
-    background: var(--dtr-primary-dark, var(--dtr-primary));
-    color: #fff !important;
-    text-decoration: none;
+.layout-wrap .main-content .action-card .btn-minimal i {
+    flex-shrink: 0;
+    font-size: 1.02em;
+    line-height: 1;
 }
 
+/* Brand / neutral */
+.layout-wrap .main-content .action-card .btn-minimal:not(.btn-warning):not(.btn-danger):not(.btn-success) {
+    background: color-mix(in srgb, var(--dtr-primary) 8%, transparent) !important;
+    border-color: color-mix(in srgb, var(--dtr-primary) 48%, var(--dtr-input-border)) !important;
+    color: var(--dtr-primary-dark, var(--dtr-primary)) !important;
+}
+
+.layout-wrap .main-content .action-card .btn-minimal:not(.btn-warning):not(.btn-danger):not(.btn-success):hover,
+.layout-wrap .main-content .action-card .btn-minimal:not(.btn-warning):not(.btn-danger):not(.btn-success):focus {
+    background: color-mix(in srgb, var(--dtr-primary) 16%, transparent) !important;
+    border-color: color-mix(in srgb, var(--dtr-primary) 62%, var(--dtr-input-border)) !important;
+    color: var(--dtr-heading) !important;
+}
+
+html[data-theme="dark"]
+    .layout-wrap
+    .main-content
+    .action-card
+    .btn-minimal:not(.btn-warning):not(.btn-danger):not(.btn-success) {
+    background: color-mix(in srgb, var(--dtr-primary) 12%, transparent) !important;
+    border-color: color-mix(in srgb, var(--dtr-primary) 42%, var(--dtr-input-border)) !important;
+    color: color-mix(in srgb, var(--dtr-primary) 74%, #e0fdfa 26%) !important;
+}
+
+html[data-theme="dark"]
+    .layout-wrap
+    .main-content
+    .action-card
+    .btn-minimal:not(.btn-warning):not(.btn-danger):not(.btn-success):hover,
+html[data-theme="dark"]
+    .layout-wrap
+    .main-content
+    .action-card
+    .btn-minimal:not(.btn-warning):not(.btn-danger):not(.btn-success):focus {
+    background: color-mix(in srgb, var(--dtr-primary) 20%, transparent) !important;
+    color: #f8fafc !important;
+}
+
+/* Attention / pending — amber */
 .layout-wrap .main-content .action-card .btn-minimal.btn-warning {
-    background: #d97706;
-    color: #fff !important;
+    background: color-mix(in srgb, #d97706 9%, transparent) !important;
+    border-color: color-mix(in srgb, #d97706 52%, var(--dtr-input-border)) !important;
+    color: #9a3412 !important;
 }
 
 .layout-wrap .main-content .action-card .btn-minimal.btn-warning:hover,
 .layout-wrap .main-content .action-card .btn-minimal.btn-warning:focus {
-    background: #b45309;
+    background: color-mix(in srgb, #d97706 16%, transparent) !important;
+    border-color: color-mix(in srgb, #d97706 68%, var(--dtr-input-border)) !important;
+    color: #7c2d12 !important;
 }
 
+html[data-theme="dark"] .layout-wrap .main-content .action-card .btn-minimal.btn-warning {
+    background: color-mix(in srgb, #fbbf24 11%, transparent) !important;
+    border-color: color-mix(in srgb, #fbbf24 38%, var(--dtr-input-border)) !important;
+    color: #fde68a !important;
+}
+
+html[data-theme="dark"] .layout-wrap .main-content .action-card .btn-minimal.btn-warning:hover,
+html[data-theme="dark"] .layout-wrap .main-content .action-card .btn-minimal.btn-warning:focus {
+    background: color-mix(in srgb, #fbbf24 17%, transparent) !important;
+    color: #fffbeb !important;
+}
+
+/* Positive — emerald */
 .layout-wrap .main-content .action-card .btn-minimal.btn-success {
-    background: #059669;
-    color: #fff !important;
+    background: color-mix(in srgb, #059669 9%, transparent) !important;
+    border-color: color-mix(in srgb, #059669 52%, var(--dtr-input-border)) !important;
+    color: #065f46 !important;
 }
 
 .layout-wrap .main-content .action-card .btn-minimal.btn-success:hover,
 .layout-wrap .main-content .action-card .btn-minimal.btn-success:focus {
-    background: #047857;
+    background: color-mix(in srgb, #059669 16%, transparent) !important;
+    border-color: color-mix(in srgb, #047857 55%, var(--dtr-input-border)) !important;
+    color: #064e3b !important;
 }
 
+html[data-theme="dark"] .layout-wrap .main-content .action-card .btn-minimal.btn-success {
+    background: color-mix(in srgb, #34d399 10%, transparent) !important;
+    border-color: color-mix(in srgb, #34d399 36%, var(--dtr-input-border)) !important;
+    color: #a7f3d0 !important;
+}
+
+html[data-theme="dark"] .layout-wrap .main-content .action-card .btn-minimal.btn-success:hover,
+html[data-theme="dark"] .layout-wrap .main-content .action-card .btn-minimal.btn-success:focus {
+    background: color-mix(in srgb, #34d399 17%, transparent) !important;
+    color: #d1fae5 !important;
+}
+
+/* Destructive / review — coral-red */
 .layout-wrap .main-content .action-card .btn-minimal.btn-danger {
-    background: #dc2626;
-    color: #fff !important;
+    background: color-mix(in srgb, #f43f5e 9%, transparent) !important;
+    border-color: color-mix(in srgb, #f43f5e 52%, var(--dtr-input-border)) !important;
+    color: #be123c !important;
 }
 
 .layout-wrap .main-content .action-card .btn-minimal.btn-danger:hover,
 .layout-wrap .main-content .action-card .btn-minimal.btn-danger:focus {
-    background: #b91c1c;
+    background: color-mix(in srgb, #f43f5e 15%, transparent) !important;
+    border-color: color-mix(in srgb, #e11d48 58%, var(--dtr-input-border)) !important;
+    color: #9f1239 !important;
+}
+
+html[data-theme="dark"] .layout-wrap .main-content .action-card .btn-minimal.btn-danger {
+    background: color-mix(in srgb, #fb7185 11%, transparent) !important;
+    border-color: color-mix(in srgb, #fb7185 42%, var(--dtr-input-border)) !important;
+    color: #fecdd3 !important;
+}
+
+html[data-theme="dark"] .layout-wrap .main-content .action-card .btn-minimal.btn-danger:hover,
+html[data-theme="dark"] .layout-wrap .main-content .action-card .btn-minimal.btn-danger:focus {
+    background: color-mix(in srgb, #fb7185 18%, transparent) !important;
+    color: #ffe4e6 !important;
+}
+
+.layout-wrap .main-content .action-card .btn-minimal:focus-visible {
+    outline: none;
+    box-shadow:
+        0 0 0 2px var(--dtr-card-bg),
+        0 0 0 4px color-mix(in srgb, var(--dtr-primary) 32%, transparent);
+}
+
+.layout-wrap .main-content .action-card .btn-minimal.btn-warning:focus-visible {
+    box-shadow:
+        0 0 0 2px var(--dtr-card-bg),
+        0 0 0 4px color-mix(in srgb, #f59e0b 38%, transparent);
+}
+
+.layout-wrap .main-content .action-card .btn-minimal.btn-success:focus-visible {
+    box-shadow:
+        0 0 0 2px var(--dtr-card-bg),
+        0 0 0 4px color-mix(in srgb, #059669 35%, transparent);
+}
+
+.layout-wrap .main-content .action-card .btn-minimal.btn-danger:focus-visible {
+    box-shadow:
+        0 0 0 2px var(--dtr-card-bg),
+        0 0 0 4px color-mix(in srgb, #f43f5e 38%, transparent);
+}
+
+.layout-wrap .main-content .action-card .btn-minimal:active {
+    transform: scale(0.985);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .layout-wrap .main-content .action-card .btn-minimal {
+        transition: none;
+    }
+    .layout-wrap .main-content .action-card .btn-minimal:active {
+        transform: none;
+    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -207,12 +339,6 @@ body:has(.layout-wrap)::before {
 .coordinator-form-section {
     background: var(--dtr-surface-soft) !important;
     box-shadow: none !important;
-}
-
-.btn-create-submit {
-    background: var(--dtr-primary) !important;
-    border: 1px solid var(--dtr-primary-dark, var(--dtr-primary)) !important;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
 }
 
 /* Manual attendance filters (were forced “dark neon” even in light mode) */

@@ -2,7 +2,7 @@
  * NORSU OJT DTR — Service worker (static shell + safe offline handling)
  * v6: cache-first static assets; do not cache authenticated HTML; offline fallback page.
  */
-const CACHE_NAME = 'norsu-dtr-v14';
+const CACHE_NAME = 'norsu-dtr-v20';
 const STATIC_ASSETS = [
   '/',
   '/offline.html',
@@ -11,9 +11,13 @@ const STATIC_ASSETS = [
   '/css/auth-tokens.css',
   '/css/norsu-dtr-system.css',
   '/css/norsu-dtr-classic-ui.css',
+  '/css/norsu-dtr-apply-ghost.css',
   '/css/norsu-dtr-dialogs.css',
   '/css/norsu-dtr-modal-buttons.css',
   '/css/norsu-dtr-theme-toggle.css',
+  '/css/norsu-dtr-search-fields.css',
+  '/css/norsu-dtr-search-submit.css',
+  '/css/norsu-dtr-toolbar-cta-ghost.css',
   '/js/norsu-dtr-dialogs.js',
   '/js/face-recognition.js',
   '/js/offline-queue.js',

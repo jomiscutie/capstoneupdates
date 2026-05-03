@@ -13,6 +13,7 @@ use App\Models\Student;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AdminOversightController extends Controller
 {
@@ -53,17 +54,73 @@ class AdminOversightController extends Controller
             'review_note' => 'nullable|string|max:1000',
         ]);
 
-        if ($attendance->invalidation_status !== 'requested') {
+        if (! $this->processInvalidationReview(
+            $attendance,
+            (string) $validated['decision'],
+            isset($validated['review_note']) ? (string) $validated['review_note'] : ''
+        )) {
             return back()->with('info', 'This request was already reviewed.');
         }
 
+        return back()->with(
+            'success',
+            'Invalidation request '.($validated['decision'] === 'approve' ? 'approved' : 'rejected').'.'
+        );
+    }
+
+    public function bulkReviewInvalidations(Request $request)
+    {
+        $validated = $request->validate([
+            'attendance_ids' => ['required', 'array', 'min:1', 'max:50'],
+            'attendance_ids.*' => ['integer', 'distinct'],
+            'decision' => ['required', 'in:approve,reject'],
+            'review_note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $ids = collect($validated['attendance_ids'])->map(fn ($id) => (int) $id)->unique()->values()->all();
+        $decision = (string) $validated['decision'];
+        $sharedNote = (string) ($validated['review_note'] ?? '');
+        $rows = Attendance::query()->whereIn('id', $ids)->get();
+
+        $processed = 0;
+        DB::transaction(function () use ($rows, $decision, $sharedNote, &$processed) {
+            foreach ($rows as $attendance) {
+                if ($this->processInvalidationReview($attendance, $decision, $sharedNote)) {
+                    $processed++;
+                }
+            }
+        });
+
+        if ($processed === 0) {
+            return back()->with('info', 'No pending invalidation requests were updated. Select requested rows only.');
+        }
+
+        $skipped = max(0, count($ids) - $processed);
+
+        return back()->with(
+            $decision === 'approve' ? 'success' : 'warning',
+            'Bulk '.($decision === 'approve' ? 'approve' : 'reject').': '.$processed.' processed'
+                .($skipped ? '; '.$skipped.' skipped (not pending).' : '.')
+        );
+    }
+
+    /**
+     * Apply coordinator invalidation decision. Returns false if the row was not in "requested" status.
+     */
+    private function processInvalidationReview(Attendance $attendance, string $decision, string $reviewNoteRaw): bool
+    {
+        if ($attendance->invalidation_status !== 'requested') {
+            return false;
+        }
+
         $admin = Auth::guard('admin')->user();
-        $attendance->invalidation_status = $validated['decision'] === 'approve' ? 'approved' : 'rejected';
-        $attendance->invalidation_review_note = trim((string) ($validated['review_note'] ?? '')) ?: null;
+        $reviewNoteTrimmed = trim($reviewNoteRaw);
+        $attendance->invalidation_status = $decision === 'approve' ? 'approved' : 'rejected';
+        $attendance->invalidation_review_note = $reviewNoteTrimmed !== '' ? $reviewNoteTrimmed : null;
         $attendance->invalidation_reviewed_by = $admin?->id;
         $attendance->invalidation_reviewed_at = now('Asia/Manila');
 
-        if ($validated['decision'] === 'approve') {
+        if ($decision === 'approve') {
             $attendance->is_invalid = true;
             $attendance->invalidated_at = $attendance->invalidated_at ?: now('Asia/Manila');
         } else {
@@ -75,7 +132,7 @@ class AdminOversightController extends Controller
         AuditLog::create([
             'actor_type' => 'admin',
             'actor_id' => $admin?->id,
-            'action' => $validated['decision'] === 'approve'
+            'action' => $decision === 'approve'
                 ? 'attendance_invalidation_approved'
                 : 'attendance_invalidation_rejected',
             'target_type' => 'attendance',
@@ -87,7 +144,7 @@ class AdminOversightController extends Controller
             ],
         ]);
 
-        return back()->with('success', 'Invalidation request '.($validated['decision'] === 'approve' ? 'approved' : 'rejected').'.');
+        return true;
     }
 
     public function restoreAttendance(Request $request, Attendance $attendance)

@@ -22,37 +22,102 @@
                 <input type="search" id="inv-filter-q" name="q" value="{{ $q }}" class="form-control form-control-sm inv-queue-filter-control" placeholder="Name, student no, or course" autocomplete="off" enterkeyhint="search">
             </div>
             <div class="inv-queue-filter-field inv-queue-filter-field--action">
-                <button type="submit" class="btn btn-sm inv-queue-filter-submit">Apply</button>
+                <button type="submit" class="btn btn-sm dtr-apply-ghost"><span class="dtr-apply-ghost__text">Apply</span></button>
             </div>
         </form>
     </div>
 </div>
 
-<div class="card">
+<div class="card inv-review-queue-card">
     <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-sm align-middle">
+        @if($status === 'requested' && $records->count() > 0)
+            <form method="POST" action="{{ route('admin.invalidations.bulk.review') }}" id="invBulkReviewForm" class="inv-bulk-form">
+                @csrf
+                <input type="hidden" name="decision" id="invBulkDecisionInput" value="">
+                <div class="inv-bulk-toolbar">
+                    <p class="inv-bulk-hint mb-0">Select rows, then approve or reject. One note applies to all selected requests.</p>
+                    <textarea name="review_note" id="invBulkReviewNote" class="form-control form-control-sm inv-bulk-note" rows="2" maxlength="1000" placeholder="Review note (optional)"></textarea>
+                    <div class="inv-bulk-actions-inline" role="group" aria-label="Bulk invalidation actions">
+                        <button type="button" class="adm-q-bulk-btn adm-q-bulk-btn--approve" data-inv-bulk="approve" title="Approve selected" aria-label="Bulk approve invalidation requests">
+                            <i class="bi bi-check2" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="adm-q-bulk-btn adm-q-bulk-btn--reject" data-inv-bulk="reject" title="Reject selected" aria-label="Bulk reject invalidation requests">
+                            <i class="bi bi-x-lg" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        @endif
+
+        <div class="inv-queue-table-frame">
+        <div class="table-responsive inv-queue-scroll">
+            <table class="table align-middle mb-0 inv-queue-table">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Student</th>
-                        <th>Requested by</th>
-                        <th>Reason</th>
-                        <th>Status</th>
-                            <th class="inv-col-actions text-center">Actions</th>
+                        @if($status === 'requested')
+                            <th scope="col" class="inv-queue-select-col">
+                                <span class="inv-queue-checkbox-wrap">
+                                    <input type="checkbox" id="invSelectAllShown" aria-label="Select all shown pending requests">
+                                </span>
+                            </th>
+                        @endif
+                        <th scope="col" class="inv-th-data">Date</th>
+                        <th scope="col" class="inv-th-data">Student</th>
+                        <th scope="col" class="inv-th-data">Requested by</th>
+                        <th scope="col" class="inv-th-data inv-queue-reason-th">Reason</th>
+                        <th scope="col" class="inv-th-data inv-th-status">Status</th>
+                        <th scope="col" class="inv-col-actions text-center">Review</th>
                     </tr>
                 </thead>
                 <tbody>
+                    @php($invEmptyCols = $status === 'requested' ? 7 : 6)
                     @forelse($records as $row)
                         <tr>
-                            <td>{{ \Carbon\Carbon::parse($row->date)->format('M d, Y') }}</td>
-                            <td>
-                                <div class="fw-semibold">{{ $row->student->name ?? 'Unknown' }}</div>
-                                <div class="small text-muted">{{ $row->student->student_no ?? '-' }}</div>
+                            @if($status === 'requested')
+                                <td class="inv-queue-select-col">
+                                    @if($row->invalidation_status === 'requested')
+                                        <span class="inv-queue-checkbox-wrap">
+                                            <input type="checkbox"
+                                                   class="inv-row-select"
+                                                   name="attendance_ids[]"
+                                                   value="{{ $row->id }}"
+                                                   form="invBulkReviewForm"
+                                                   aria-label="Select invalidation {{ $row->id }}">
+                                        </span>
+                                    @else
+                                        <span class="inv-queue-checkbox-placeholder" aria-hidden="true"></span>
+                                    @endif
+                                </td>
+                            @endif
+                            <td class="inv-queue-date-cell">
+                                <div class="inv-queue-cell-primary">{{ \Carbon\Carbon::parse($row->date)->format('M d, Y') }}</div>
+                                @if($row->invalidation_requested_at)
+                                    <div class="inv-queue-cell-sub small text-muted">Filed {{ $row->invalidation_requested_at->timezone(config('app.timezone'))->format('M d, g:i A') }}</div>
+                                @endif
                             </td>
-                            <td>{{ $row->invalidatedByCoordinator->name ?? '-' }}</td>
-                            <td style="max-width: 320px;">{{ $row->invalidation_reason }}</td>
-                            <td>
+                            <td class="inv-queue-student-cell">
+                                <div class="inv-queue-cell-primary">{{ $row->student->name ?? 'Unknown' }}</div>
+                                <div class="inv-queue-cell-sub small text-muted">
+                                    {{ $row->student->student_no ?? '-' }}@if(!empty($row->student?->course)) — {{ $row->student->course }} @endif
+                                </div>
+                            </td>
+                            <td class="inv-queue-requested-by-cell small">
+                                @php($invReqBy = trim((string) ($row->invalidatedByCoordinator->name ?? '')))
+                                @if($invReqBy !== '')
+                                    <span class="inv-requested-by-text" title="{{ e($invReqBy) }}">{{ $invReqBy }}</span>
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
+                            <td class="inv-queue-reason-cell">
+                                @php($invReasonRaw = trim((string) ($row->invalidation_reason ?: '')))
+                                @if($invReasonRaw !== '')
+                                    <span class="inv-reason-pill" title="{{ e($invReasonRaw) }}">{{ $invReasonRaw }}</span>
+                                @else
+                                    <span class="inv-reason-pill inv-reason-pill--empty">—</span>
+                                @endif
+                            </td>
+                            <td class="inv-queue-status-cell">
                                 @php($invSlug = \Illuminate\Support\Str::slug((string) $row->invalidation_status, '-'))
                                 <span class="inv-status-chip inv-status-chip--{{ $invSlug !== '' ? $invSlug : 'unknown' }}" title="{{ ucfirst((string) $row->invalidation_status) }}">{{ ucfirst((string) $row->invalidation_status) }}</span>
                             </td>
@@ -108,10 +173,11 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-muted">No invalidation records found.</td></tr>
+                        <tr><td colspan="{{ $invEmptyCols }}" class="text-muted text-center py-5">No invalidation records found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
+        </div>
         </div>
         <div class="mt-3">{{ $records->links() }}</div>
     </div>
@@ -173,8 +239,7 @@
         margin-bottom: 0.28rem;
         line-height: 1.2;
     }
-    .inv-queue-filter-control,
-    .inv-queue-filter-submit {
+    .inv-queue-filter-control {
         min-height: var(--inv-filter-h);
         height: var(--inv-filter-h);
         font-size: 0.8125rem;
@@ -209,25 +274,6 @@
     .inv-queue-filter-form select.inv-queue-filter-control option {
         background: var(--dtr-card-solid);
         color: var(--dtr-text);
-    }
-    .inv-queue-filter-submit {
-        padding: 0 0.95rem;
-        font-weight: 600;
-        border: 1px solid color-mix(in srgb, var(--dtr-primary) 42%, var(--dtr-border-soft));
-        background: transparent;
-        color: var(--dtr-primary);
-        white-space: nowrap;
-        line-height: 1.2;
-        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-    }
-    .inv-queue-filter-submit:hover {
-        background: var(--dtr-primary-soft);
-        border-color: color-mix(in srgb, var(--dtr-primary) 55%, var(--dtr-border-soft));
-        color: var(--dtr-heading);
-    }
-    .inv-queue-filter-submit:focus-visible {
-        outline: none;
-        box-shadow: 0 0 0 2px var(--dtr-primary-soft);
     }
     .admin-invalidation-modal {
         border: 1px solid var(--dtr-border-soft);
@@ -441,6 +487,237 @@
         border-color: rgba(52, 211, 153, 0.75) !important;
         color: #a7f3d0 !important;
     }
+
+    .inv-review-queue-card .inv-bulk-form {
+        margin-bottom: 1rem;
+    }
+    .inv-bulk-toolbar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.65rem 0.85rem;
+        align-items: end;
+        padding: 0.75rem 0.85rem;
+        border-radius: 12px;
+        border: 1px solid var(--dtr-border-soft);
+        background: color-mix(in srgb, var(--dtr-surface-soft) 94%, transparent);
+    }
+    @media (max-width: 719.98px) {
+        .inv-bulk-toolbar { grid-template-columns: 1fr; }
+    }
+    .inv-bulk-hint {
+        grid-column: 1 / -1;
+        font-size: 0.78rem;
+        color: var(--dtr-muted);
+        line-height: 1.4;
+        max-width: 42rem;
+    }
+    .inv-bulk-note {
+        border-radius: 10px !important;
+        font-size: 0.8375rem;
+        resize: vertical;
+        min-height: 2.5rem;
+        border-color: var(--dtr-input-border) !important;
+        background: var(--dtr-input-bg) !important;
+        color: var(--dtr-text) !important;
+    }
+    .inv-bulk-actions-inline {
+        display: inline-flex;
+        gap: 0.45rem;
+        flex-shrink: 0;
+    }
+    .adm-q-bulk-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.35rem;
+        height: 2.35rem;
+        padding: 0;
+        margin: 0;
+        border-radius: 10px;
+        border-width: 1px;
+        border-style: solid;
+        background: transparent !important;
+        cursor: pointer;
+        transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+    }
+    .adm-q-bulk-btn .bi {
+        font-size: 1.125rem;
+        line-height: 1;
+    }
+    .adm-q-bulk-btn--approve {
+        border-color: color-mix(in srgb, #059669 55%, var(--dtr-input-border));
+        color: #059669;
+    }
+    .adm-q-bulk-btn--approve:hover {
+        background: color-mix(in srgb, #059669 10%, transparent) !important;
+    }
+    .adm-q-bulk-btn--reject {
+        border-color: color-mix(in srgb, #e11d48 48%, var(--dtr-input-border));
+        color: #e11d48;
+    }
+    .adm-q-bulk-btn--reject:hover {
+        background: color-mix(in srgb, #f43f5e 10%, transparent) !important;
+    }
+    html[data-theme="dark"] .adm-q-bulk-btn--approve {
+        color: #6ee7b7;
+        border-color: rgba(52, 211, 153, 0.5);
+    }
+    html[data-theme="dark"] .adm-q-bulk-btn--reject {
+        color: #fda4af;
+        border-color: rgba(251, 113, 133, 0.5);
+    }
+
+    .inv-queue-table-frame {
+        border-radius: 12px;
+        border: 1px solid var(--dtr-border-soft);
+        overflow: hidden;
+        background: color-mix(in srgb, var(--dtr-card-bg) 98%, var(--dtr-surface-soft) 2%);
+    }
+    /*
+     * UA styles center <th>; body cells stay start-aligned — force headers to match column content edges.
+     */
+    .inv-queue-scroll .inv-queue-table thead th {
+        font-size: 0.6425rem;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: 0.065em;
+        color: var(--dtr-muted) !important;
+        background: color-mix(in srgb, var(--dtr-surface-soft) 92%, transparent) !important;
+        border-bottom: 1px solid var(--dtr-border-soft);
+        vertical-align: middle;
+        padding: 0.85rem 0.72rem;
+        text-align: start;
+    }
+    .inv-queue-scroll .inv-queue-table thead th.inv-queue-select-col,
+    .inv-queue-scroll .inv-queue-table thead th.inv-col-actions {
+        text-align: center !important;
+    }
+    .inv-queue-select-col {
+        width: 2.85rem;
+        min-width: 2.85rem;
+        text-align: center !important;
+        padding-left: 0.35rem !important;
+        padding-right: 0.35rem !important;
+    }
+    .inv-queue-checkbox-wrap {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .inv-queue-checkbox-wrap input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        margin: 0;
+        cursor: pointer;
+        width: 1.0625rem;
+        height: 1.0625rem;
+        border: 1.5px solid var(--dtr-input-border);
+        border-radius: 4px;
+        background: var(--dtr-card-bg);
+    }
+    .inv-queue-checkbox-wrap input[type="checkbox"]:checked {
+        background-color: color-mix(in srgb, var(--dtr-primary) 78%, #059669);
+        border-color: color-mix(in srgb, var(--dtr-primary) 65%, transparent);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' d='M3.8 8.2l2.9 2.9 5.6-6.3'/%3E%3C/svg%3E");
+        background-size: 0.68rem auto;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    .inv-queue-checkbox-placeholder {
+        display: inline-block;
+        width: 1.0625rem;
+        height: 1.0625rem;
+    }
+    .inv-queue-table tbody td {
+        padding: 0.92rem 0.72rem;
+        vertical-align: middle !important;
+        border-bottom: 1px solid var(--dtr-border-soft);
+    }
+    /* Match header edge to body edge for typed columns */
+    .inv-queue-table tbody td.inv-queue-date-cell,
+    .inv-queue-table tbody td.inv-queue-student-cell,
+    .inv-queue-table tbody td.inv-queue-requested-by-cell,
+    .inv-queue-table tbody td.inv-queue-reason-cell,
+    .inv-queue-table tbody td.inv-queue-status-cell {
+        text-align: start;
+        vertical-align: middle !important;
+    }
+    .inv-queue-table tbody tr:hover > td {
+        background: var(--dtr-hover-bg) !important;
+    }
+    .inv-queue-cell-primary {
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        color: var(--dtr-heading) !important;
+        font-size: 0.92rem;
+        line-height: 1.3;
+    }
+    .inv-queue-date-cell .inv-queue-cell-sub,
+    .inv-queue-student-cell .inv-queue-cell-sub {
+        margin-top: 0.15rem;
+    }
+    /* Header label lines up with text inside bordered pills/chips below (same inline inset). */
+    .inv-queue-scroll .inv-queue-table thead th.inv-queue-reason-th {
+        padding: 0.85rem 0.72rem 0.85rem calc(0.72rem + 1px + 0.95rem);
+    }
+    .inv-queue-scroll .inv-queue-table thead th.inv-th-status {
+        padding: 0.85rem 0.72rem 0.85rem calc(0.72rem + 1px + 0.72rem);
+    }
+    .inv-queue-reason-th { min-width: 7rem; }
+    .inv-queue-requested-by-cell {
+        max-width: 12rem;
+        min-width: 0;
+    }
+    .inv-requested-by-text {
+        display: block;
+        color: var(--dtr-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .inv-queue-reason-cell {
+        max-width: 18rem;
+        min-width: 0;
+    }
+    .inv-reason-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 0.45rem 0.95rem;
+        min-height: 2rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        line-height: 1.25;
+        letter-spacing: -0.01em;
+        text-align: start;
+        color: #064e3b;
+        background: color-mix(in srgb, #ecfdf5 100%, transparent);
+        border: 1px solid color-mix(in srgb, #34d399 52%, transparent);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+    }
+    .inv-reason-pill--empty {
+        font-weight: 500;
+        color: var(--dtr-muted);
+        background: color-mix(in srgb, var(--dtr-surface-soft) 94%, transparent);
+        border-color: var(--dtr-border-soft);
+        opacity: 0.92;
+    }
+    html[data-theme="dark"] .inv-reason-pill {
+        color: #d1fae5;
+        background: rgba(16, 185, 129, 0.12);
+        border-color: rgba(52, 211, 153, 0.38);
+    }
+    html[data-theme="dark"] .inv-reason-pill--empty {
+        color: var(--dtr-muted);
+        background: color-mix(in srgb, var(--dtr-card-bg) 88%, transparent);
+        border-color: var(--dtr-border-soft);
+    }
 </style>
 @endpush
 
@@ -472,5 +749,53 @@
         });
     });
 })();
+
+async function submitInvBulkInvalidations(decision) {
+    var form = document.getElementById('invBulkReviewForm');
+    if (!form) return;
+    var checked = Array.prototype.slice.call(document.querySelectorAll('.inv-row-select:checked'));
+    if (checked.length === 0) {
+        await window.norsuPrompt.alert('Select at least one pending request first.', { variant: 'warning', title: 'Nothing selected' });
+        return;
+    }
+    var ok = await window.norsuPrompt.confirm(
+        decision === 'approve'
+            ? 'Approve all selected invalidation requests? Attendance rows will be marked invalid where approved.'
+            : 'Reject all selected invalidation requests?',
+        {
+            variant: decision === 'approve' ? 'warning' : 'danger',
+            title: 'Bulk invalidation review',
+            confirmText: decision === 'approve' ? 'Yes, approve all' : 'Yes, reject all'
+        }
+    );
+    if (!ok) return;
+    var decisionInput = document.getElementById('invBulkDecisionInput');
+    if (decisionInput) decisionInput.value = decision;
+    form.submit();
+}
+
+(function setupInvBulkSelectAll() {
+    var selectAll = document.getElementById('invSelectAllShown');
+    var rowBoxes = Array.prototype.slice.call(document.querySelectorAll('.inv-row-select'));
+    if (!selectAll || rowBoxes.length === 0) return;
+    selectAll.addEventListener('change', function () {
+        rowBoxes.forEach(function (cb) {
+            cb.checked = selectAll.checked;
+        });
+    });
+    rowBoxes.forEach(function (cb) {
+        cb.addEventListener('change', function refreshInvSelectAllIndeterminate() {
+            var sel = rowBoxes.filter(function (x) { return x.checked; }).length;
+            selectAll.checked = sel > 0 && sel === rowBoxes.length;
+            selectAll.indeterminate = sel > 0 && sel < rowBoxes.length;
+        });
+    });
+})();
+
+document.querySelectorAll('[data-inv-bulk]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        submitInvBulkInvalidations(btn.getAttribute('data-inv-bulk'));
+    });
+});
 </script>
 @endpush

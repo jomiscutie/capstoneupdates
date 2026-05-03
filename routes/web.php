@@ -45,9 +45,12 @@ Route::prefix('admin')->group(function () {
         Route::get('students/archived', [AdminManagementController::class, 'archivedStudents'])->name('admin.students.archived');
         Route::post('students/restore/{id}', [AdminManagementController::class, 'restoreStudent'])->name('admin.students.restore')->middleware('throttle:30,1');
         Route::post('students/archived/{id}/remove', [AdminManagementController::class, 'forceRemoveArchivedStudent'])->name('admin.students.archived.remove')->middleware('throttle:20,1');
+        Route::post('students/archived/bulk-restore', [AdminManagementController::class, 'bulkRestoreArchivedStudents'])->name('admin.students.archived.bulk.restore')->middleware('throttle:20,1');
+        Route::post('students/archived/bulk-remove', [AdminManagementController::class, 'bulkForceRemoveArchivedStudents'])->name('admin.students.archived.bulk.remove')->middleware('throttle:10,1');
         Route::delete('students/{student}', [AdminManagementController::class, 'destroyStudent'])->name('admin.students.destroy')->middleware('throttle:30,1');
         Route::post('students/delete-batch', [AdminManagementController::class, 'bulkDestroyStudents'])->name('admin.students.delete-batch')->middleware('throttle:10,1');
         Route::get('invalidations', [AdminOversightController::class, 'invalidations'])->name('admin.invalidations');
+        Route::post('invalidations/bulk-review', [AdminOversightController::class, 'bulkReviewInvalidations'])->name('admin.invalidations.bulk.review')->middleware('throttle:20,1');
         Route::post('invalidations/{attendance}/review', [AdminOversightController::class, 'reviewInvalidation'])->name('admin.invalidations.review');
         Route::post('invalidations/{attendance}/restore', [AdminOversightController::class, 'restoreAttendance'])->name('admin.invalidations.restore');
         Route::get('manual-attendance-requests', [AdminOversightController::class, 'manualAttendanceRequests'])->name('admin.manual.requests');
@@ -60,6 +63,7 @@ Route::prefix('admin')->group(function () {
         Route::post('students/terms/batch', [AdminManagementController::class, 'batchStoreStudentTermAssignments'])->name('admin.students.terms.batch');
         Route::post('students/{student}/terms', [AdminManagementController::class, 'storeStudentTermAssignment'])->name('admin.students.terms.store');
         Route::post('students/terms/{assignment}/complete', [AdminManagementController::class, 'completeStudentTermAssignment'])->name('admin.students.terms.complete');
+        Route::post('office-requests/bulk-review', [AdminManagementController::class, 'bulkReviewOfficeAssignmentRequests'])->name('admin.office-requests.bulk.review')->middleware('throttle:20,1');
         Route::post('office-requests/{officeRequest}/review', [AdminManagementController::class, 'reviewOfficeAssignmentRequest'])->name('admin.office-requests.review');
         Route::get('settings', [AdminManagementController::class, 'settings'])->name('admin.settings');
         Route::post('settings/password', [AdminManagementController::class, 'updatePassword'])->name('admin.settings.password')->middleware('throttle:5,1');

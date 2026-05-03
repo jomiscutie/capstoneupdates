@@ -37,8 +37,8 @@
                 <p class="text-muted small mb-0">Each assignment links a coordinator to one program, school year, term, and section. Search by name, email, program, or college.</p>
             </div>
             <div class="coord-admin-toolbar-actions">
-                <button type="button" class="btn btn-primary btn-add-coordinator" data-bs-toggle="modal" data-bs-target="#createCoordinatorModal">
-                    <i class="bi bi-person-plus me-1" aria-hidden="true"></i>Add coordinator
+                <button type="button" class="btn btn-toolbar-cta-ghost btn-add-coordinator" data-bs-toggle="modal" data-bs-target="#createCoordinatorModal">
+                    <i class="bi bi-person-plus" aria-hidden="true"></i> Add coordinator
                 </button>
                 <form action="{{ route('admin.coordinators') }}" method="GET" class="search-row coordinator-search" role="search">
                     <div class="search-inner">
@@ -48,7 +48,7 @@
                             <a href="{{ route('admin.coordinators') }}" class="search-clear" aria-label="Clear search"><i class="bi bi-x-lg"></i></a>
                         @endif
                     </div>
-                    <button type="submit" class="btn btn-primary btn-search"><i class="bi bi-search me-1" aria-hidden="true"></i>Search</button>
+                    <button type="submit" class="btn btn-primary btn-search"><i class="bi bi-search" aria-hidden="true"></i> Search</button>
                     @if(!empty($search))
                         <a href="{{ route('admin.coordinators') }}" class="btn btn-outline-secondary btn-search">Clear</a>
                     @endif
@@ -344,7 +344,7 @@
                         </div>
                         @if($createFormCtx) @error('name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror @endif
                         <div class="form-field-hint">Preview name is auto-built from these fields.</div>
-                        <div class="name-preview-pill mt-2" id="coord_name_preview">—</div>
+                        <div class="name-preview-pill" id="coord_name_preview">—</div>
                         <div class="form-block">
                             <label class="form-label" for="coord_email">Email address <span class="text-danger" aria-hidden="true">*</span></label>
                             <input type="email" name="email" id="coord_email" class="form-control {{ $createFormCtx && $errors->has('email') ? 'is-invalid' : '' }}" required value="{{ $createFormCtx ? old('email') : '' }}" autocomplete="email" placeholder="Email address for login">
@@ -369,7 +369,7 @@
                                     <option value="{{ $oldCollege }}" selected>{{ $oldCollege }}</option>
                                 @endif
                             </select>
-                            <p class="form-field-hint">Optional. Shown in the directory.</p>
+                            <div class="form-field-hint">Optional. Shown in the directory.</div>
                             @if($createFormCtx) @error('college')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror @endif
                         </div>
                         <div class="form-block mb-0">
@@ -417,7 +417,7 @@
                                         aria-label="School year end"
                                     />
                                 </div>
-                                <p class="form-field-hint">Pick start and end dates from calendar.</p>
+                                <div class="form-field-hint">Pick start and end dates from calendar.</div>
                                 @if($createFormCtx) @error('school_year')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror @endif
                             </div>
                             <div class="form-block mb-0">
@@ -470,11 +470,11 @@
                     </fieldset>
                 </form>
             </div>
-            <div class="modal-footer border-0 pt-0 flex-column flex-sm-row gap-2 align-items-stretch">
+            <div class="modal-footer border-0 pt-0 flex-column flex-sm-row gap-2 align-items-center">
                 <p class="create-form-footnote text-sm-start text-center order-sm-0 order-1 mb-0 me-sm-auto flex-grow-1">Active coordinators can sign in right away.</p>
-                <button type="button" class="btn btn-outline-secondary order-sm-1" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="createCoordinatorForm" class="btn btn-create-submit order-sm-2">
-                    <i class="bi bi-check-lg me-1" aria-hidden="true"></i>Create account
+                <button type="button" class="btn dtr-mbtn dtr-mbtn--cancel order-sm-1" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="createCoordinatorForm" class="btn btn-primary dtr-mbtn order-sm-2 coord-modal-submit">
+                    <i class="bi bi-check-lg" aria-hidden="true"></i> Create account
                 </button>
             </div>
         </div>
@@ -576,9 +576,9 @@
                 </form>
             </div>
             <div class="modal-footer border-0 pt-0 coord-modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="assignmentForm" class="btn btn-primary coord-modal-submit">
-                    <i class="bi bi-check-lg me-1" aria-hidden="true"></i>Save assignment
+                <button type="button" class="btn dtr-mbtn dtr-mbtn--cancel" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="assignmentForm" class="btn btn-primary dtr-mbtn coord-modal-submit">
+                    <i class="bi bi-check-lg" aria-hidden="true"></i> Save assignment
                 </button>
             </div>
         </div>
@@ -621,9 +621,9 @@
                 </form>
             </div>
             <div class="modal-footer border-0 pt-0 coord-modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="coordinatorPasswordForm" class="btn btn-primary coord-modal-submit">
-                    <i class="bi bi-check-lg me-1" aria-hidden="true"></i>Save password
+                <button type="button" class="btn dtr-mbtn dtr-mbtn--cancel" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="coordinatorPasswordForm" class="btn btn-primary dtr-mbtn coord-modal-submit">
+                    <i class="bi bi-check-lg" aria-hidden="true"></i> Save password
                 </button>
             </div>
         </div>
@@ -780,27 +780,36 @@
     }
     .btn-add-coordinator {
         white-space: nowrap;
-        border-radius: 12px;
-        font-weight: 600;
-        padding: 0.55rem 1rem;
     }
     .create-coordinator-dialog {
         max-width: min(1120px, 96vw);
     }
     .create-coordinator-modal {
-        border-radius: 22px;
+        border-radius: 16px;
         overflow: hidden;
-        background:
-            radial-gradient(circle at top right, rgba(45, 212, 191, 0.1), transparent 36%),
-            linear-gradient(180deg, color-mix(in srgb, var(--dtr-card-solid) 94%, white 6%), var(--dtr-card-solid));
+        background: var(--dtr-card-bg) !important;
+        border: 1px solid var(--dtr-border-soft);
+        box-shadow: 0 20px 40px -14px rgba(15, 23, 42, 0.12);
+    }
+    html[data-theme="dark"] .create-coordinator-modal {
+        box-shadow: 0 24px 56px -12px rgba(0, 0, 0, 0.5);
+        border-color: color-mix(in srgb, var(--dtr-border-soft) 85%, var(--dtr-muted));
     }
     .create-coordinator-modal .modal-body {
         max-height: min(72vh, 680px);
         min-width: 0;
-        padding: 1.1rem 1.2rem 0.8rem;
+        padding: 1.25rem 1.35rem 1.05rem;
+        background: var(--dtr-card-bg);
+    }
+    .create-coordinator-modal > .modal-header {
+        padding-left: 1.35rem;
+        padding-right: 1.35rem;
+        padding-top: 1.2rem;
+        padding-bottom: 0.5rem;
+        border-bottom: none;
     }
     .create-coordinator-header--modal {
-        padding: 0.15rem 0 0.65rem;
+        padding: 0 0 0.5rem;
         border-bottom: none;
         margin-bottom: 0;
     }
@@ -810,29 +819,33 @@
         right: 1rem;
         z-index: 2;
     }
-    .create-coordinator-modal .modal-footer .btn-create-submit {
+    .create-coordinator-modal .modal-footer .btn.btn-primary.coord-modal-submit {
         min-width: 140px;
     }
     .create-coordinator-header {
         display: flex;
-        gap: 1rem;
+        gap: 0.85rem;
         align-items: flex-start;
-        padding: 0.25rem 0.2rem 1rem;
-        margin-bottom: 0.25rem;
-        border-bottom: 1px solid var(--dtr-border-soft);
+        padding: 0.1rem 0 1rem;
+        margin-bottom: 0;
+        border-bottom: 1px solid color-mix(in srgb, var(--dtr-border-soft) 92%, transparent);
     }
     .create-coordinator-header-icon {
         flex: 0 0 auto;
-        width: 52px;
-        height: 52px;
-        border-radius: 16px;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(145deg, var(--dtr-primary-soft), rgba(103,232,249,0.1));
+        background: color-mix(in srgb, var(--dtr-primary) 10%, var(--dtr-card-bg)) !important;
         color: var(--dtr-primary);
-        font-size: 1.45rem;
-        border: 1px solid rgba(45,212,191,0.22);
+        font-size: 1.2rem;
+        border: 1px solid color-mix(in srgb, var(--dtr-primary) 22%, var(--dtr-border-soft));
+    }
+    html[data-theme="dark"] .create-coordinator-header-icon {
+        background: color-mix(in srgb, var(--dtr-primary) 14%, var(--dtr-card-bg)) !important;
+        border-color: color-mix(in srgb, var(--dtr-primary) 28%, var(--dtr-input-border));
     }
     .create-coordinator-header-copy {
         min-width: 0;
@@ -840,75 +853,115 @@
         flex: 1 1 auto;
     }
     .create-coordinator-header .panel-kicker {
-        margin-bottom: 0.35rem;
+        margin-bottom: 0.4rem;
+        padding: 0.18rem 0.5rem;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        background: color-mix(in srgb, var(--dtr-primary) 11%, transparent);
+        color: color-mix(in srgb, var(--dtr-primary) 88%, var(--dtr-heading));
     }
     .create-coordinator-title {
         margin-top: 0 !important;
-        margin-bottom: 0.45rem !important;
+        margin-bottom: 0.4rem !important;
         text-align: left;
+        font-size: 1.15rem;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+        color: var(--dtr-heading);
     }
     .create-coordinator-lead {
         margin: 0;
         color: var(--dtr-muted);
-        font-size: 0.88rem;
-        line-height: 1.45;
+        font-size: 0.875rem;
+        line-height: 1.55;
         overflow-wrap: break-word;
         word-break: normal;
+        max-width: 52rem;
     }
     .coordinator-create-form {
-        margin-top: 1rem;
+        margin-top: 0.65rem;
         display: grid;
-        gap: 0.95rem;
+        gap: 1.1rem;
         grid-template-columns: 1fr;
     }
-    .coordinator-form-section {
+    .create-coordinator-modal fieldset.coordinator-form-section {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.85rem;
         margin: 0;
-        padding: 1.05rem 1.05rem 1.1rem;
-        border: 1px solid var(--dtr-border-soft);
-        border-radius: 18px;
-        background:
-            linear-gradient(180deg, color-mix(in srgb, var(--dtr-surface-soft) 92%, white 8%), var(--dtr-surface-soft));
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        padding: 1.15rem 1.2rem 1.2rem;
+        border-radius: 14px;
+        border: 1px solid color-mix(in srgb, var(--dtr-input-border) 52%, var(--dtr-border-soft)) !important;
+        background: color-mix(in srgb, var(--dtr-surface-soft) 75%, var(--dtr-card-bg) 25%) !important;
+        box-shadow: none !important;
         min-width: 0;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        max-width: 100%;
+        transition: border-color 0.2s ease;
     }
-    .coordinator-form-section:hover {
-        border-color: color-mix(in srgb, var(--dtr-primary) 30%, var(--dtr-border-soft));
-        box-shadow: 0 14px 28px -24px rgba(20, 184, 166, 0.45);
+    html[data-theme="dark"] .create-coordinator-modal .coordinator-form-section {
+        background: color-mix(in srgb, var(--dtr-card-bg) 92%, var(--dtr-surface-soft) 8%) !important;
+        border-color: color-mix(in srgb, var(--dtr-input-border) 55%, #64748b 45%) !important;
+        box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 4%, transparent) !important;
     }
-    .name-fields-grid {
+    .create-coordinator-modal .coordinator-form-section:hover {
+        border-color: color-mix(in srgb, var(--dtr-primary) 26%, var(--dtr-input-border)) !important;
+    }
+    .create-coordinator-modal .form-section-legend {
+        float: none;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 0 0.15rem;
+        padding: 0;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+        color: color-mix(in srgb, var(--dtr-muted) 72%, var(--dtr-primary) 28%);
+        gap: 0.42rem;
+    }
+    .create-coordinator-modal .form-section-legend i {
+        font-size: 0.95rem;
+        color: var(--dtr-primary);
+        opacity: 0.92;
+    }
+    html[data-theme="dark"] .create-coordinator-modal .form-section-legend {
+        color: color-mix(in srgb, var(--dtr-muted) 82%, var(--dtr-primary) 18%);
+        letter-spacing: 0.09em;
+    }
+    html[data-theme="dark"] .create-coordinator-modal .form-section-legend i {
+        color: color-mix(in srgb, var(--dtr-primary) 62%, var(--dtr-muted) 38%);
+        opacity: 1;
+    }
+    .create-coordinator-modal .name-fields-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.65rem;
-    }
-    .name-preview-pill {
-        border: 1px dashed var(--dtr-border-soft);
-        border-radius: 10px;
-        padding: 0.48rem 0.7rem;
-        font-size: 0.84rem;
-        color: var(--dtr-heading);
-        background: color-mix(in srgb, var(--dtr-surface-soft) 90%, transparent);
-        min-height: 2.1rem;
-        display: flex;
-        align-items: center;
-    }
-    .form-section-legend {
-        float: unset;
+        gap: 0.75rem 0.85rem;
+        align-items: start;
         width: 100%;
-        padding: 0;
-        margin: 0 0 0.85rem;
-        font-size: 0.8rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        color: var(--dtr-heading);
+        min-width: 0;
+    }
+    .create-coordinator-modal .name-preview-pill {
+        border: 1px solid color-mix(in srgb, var(--dtr-input-border) 65%, transparent);
+        border-radius: 10px;
+        padding: 0.55rem 0.78rem;
+        font-size: 0.8125rem;
+        color: var(--dtr-text);
+        background: var(--dtr-input-bg);
+        min-height: 2.35rem;
         display: flex;
         align-items: center;
-        gap: 0.45rem;
+        margin-top: 0.35rem;
+        margin-bottom: 0.95rem;
     }
-    .form-section-legend i {
-        color: var(--dtr-primary);
-        font-size: 1rem;
+    html[data-theme="dark"] .create-coordinator-modal .name-preview-pill {
+        border-color: color-mix(in srgb, var(--dtr-input-border) 62%, #94a3b8 38%);
+        background: color-mix(in srgb, var(--dtr-input-bg) 92%, var(--dtr-card-bg) 8%);
+    }
+    .create-coordinator-modal .coordinator-form-section--account .name-fields-grid ~ .form-field-hint {
+        margin-top: 0.25rem;
+        margin-bottom: 0.45rem;
     }
     .form-section-intro {
         margin: -0.35rem 0 0.85rem;
@@ -926,8 +979,12 @@
         overflow-wrap: break-word;
         word-break: normal;
     }
-    .assignment-row-create {
-        grid-template-columns: repeat(3, 1fr);
+    .create-coordinator-modal fieldset.coordinator-form-section .form-block {
+        margin-bottom: 0;
+    }
+    .create-coordinator-modal fieldset.coordinator-form-section .form-field-hint {
+        margin-top: 0.38rem;
+        margin-bottom: 0;
     }
     .password-field-wrap {
         position: relative;
@@ -968,30 +1025,20 @@
     .password-match-indicator.is-mismatch {
         color: #ef4444;
     }
-    .btn-create-submit {
-        min-height: 46px;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 0.92rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, var(--dtr-primary), var(--dtr-primary-dark));
-        border: none;
-        color: #fff;
-        box-shadow: 0 10px 28px -12px rgba(20, 184, 166, 0.65);
-    }
-    .btn-create-submit:hover {
-        color: #fff;
-        filter: brightness(1.05);
-    }
     .create-form-footnote {
-        margin: 0.65rem 0 0;
+        margin: 0;
         text-align: center;
-        font-size: 0.78rem;
+        font-size: 0.8125rem;
+        line-height: 1.4;
         color: var(--dtr-muted);
         overflow-wrap: break-word;
         word-break: normal;
+    }
+    .create-coordinator-modal .form-section-intro {
+        margin: 0 0 0.75rem;
+        font-size: 0.8125rem;
+        line-height: 1.5;
+        color: var(--dtr-muted);
     }
     .school-year-year-picker {
         font-variant-numeric: tabular-nums;
@@ -1081,6 +1128,10 @@
         width: 100%;
         min-width: 12rem;
     }
+    .create-coordinator-modal .school-year-range-grid > .form-control,
+    .create-coordinator-modal .school-year-range-grid > .form-select {
+        min-width: 0;
+    }
     .school-year-range-grid input[type="date"] {
         font-size: 0.92rem;
         letter-spacing: 0.01em;
@@ -1090,12 +1141,13 @@
     }
     .create-coordinator-modal .modal-footer {
         border-top: 1px solid var(--dtr-border-soft);
-        background: color-mix(in srgb, var(--dtr-card-solid) 90%, var(--dtr-surface-soft) 10%);
-        padding: 0.9rem 1.2rem 1rem !important;
-        margin-top: 0.2rem;
+        background: color-mix(in srgb, var(--dtr-card-bg) 97%, var(--dtr-surface-soft) 3%);
+        padding: 1rem 1.35rem 1.15rem !important;
+        margin-top: 0.15rem;
     }
     .create-coordinator-modal .modal-footer .btn {
         min-height: 44px;
+        border-radius: 12px;
     }
     @media (max-width: 575.98px) {
         .school-year-range-grid {
@@ -1105,12 +1157,12 @@
         .school-year-range-grid > .form-select {
             min-width: 0;
         }
-        .name-fields-grid {
+        .create-coordinator-modal .name-fields-grid {
             grid-template-columns: 1fr;
         }
     }
     @media (max-width: 991px) {
-        .name-fields-grid {
+        .create-coordinator-modal .name-fields-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
         .assignment-row.assignment-row-create {
@@ -1120,7 +1172,12 @@
     @media (min-width: 1200px) {
         .coordinator-create-form {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 1rem;
+            gap: 1.15rem 1.25rem;
+            align-items: start;
+        }
+        .coordinator-create-form .coordinator-form-section--assignment,
+        .coordinator-create-form .coordinator-form-section--security {
+            grid-column: 1 / -1;
         }
     }
     .panel-head {
@@ -1177,6 +1234,32 @@
         box-shadow: 0 0 0 4px rgba(45,212,191,0.14);
         color: var(--dtr-text);
     }
+    .create-coordinator-modal .coordinator-form.coordinator-create-form {
+        margin-top: 0;
+        gap: 1.12rem;
+    }
+    .create-coordinator-modal .coordinator-form .form-control,
+    .create-coordinator-modal .coordinator-form .form-select {
+        min-height: 46px;
+        border-radius: 11px;
+        box-shadow: none;
+    }
+    .create-coordinator-modal .coordinator-form .form-control:focus,
+    .create-coordinator-modal .coordinator-form .form-select:focus {
+        background: var(--dtr-input-bg);
+        border-color: color-mix(in srgb, var(--dtr-primary) 52%, var(--dtr-input-border));
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--dtr-primary) 15%, transparent);
+    }
+    html[data-theme="dark"] .create-coordinator-modal .coordinator-form .form-control,
+    html[data-theme="dark"] .create-coordinator-modal .coordinator-form .form-select {
+        border-color: color-mix(in srgb, var(--dtr-input-border) 72%, #94a3b8 28%);
+        background: var(--dtr-input-bg);
+    }
+    html[data-theme="dark"] .create-coordinator-modal .coordinator-form .form-control:focus,
+    html[data-theme="dark"] .create-coordinator-modal .coordinator-form .form-select:focus {
+        border-color: color-mix(in srgb, var(--dtr-primary) 48%, var(--dtr-input-border));
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--dtr-primary) 22%, transparent);
+    }
     .assignment-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -1184,6 +1267,15 @@
     }
     .assignment-row-modal {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .assignment-row.assignment-row-create {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        align-items: start;
+        min-width: 0;
+    }
+    .assignment-row.assignment-row-create > .form-block {
+        min-width: 0;
     }
     /*
      * Horizontal scroll only: overflow-y must not be `visible` with overflow-x auto — CSS computes y as `auto`,
@@ -1955,6 +2047,10 @@
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }
+    .coord-modal-footer .btn.dtr-mbtn {
+        min-height: 44px;
+        border-radius: 12px;
+    }
     .coord-modal-submit {
         min-width: 9.5rem;
         font-weight: 600;
@@ -2006,9 +2102,9 @@
             padding-right: 0.95rem;
         }
     }
-    @media (max-width: 1199px) {
-        .assignment-row-create {
-            grid-template-columns: 1fr 1fr;
+    @media (min-width: 992px) and (max-width: 1199px) {
+        .assignment-row.assignment-row-create {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
     @media (max-width: 639px) {
@@ -2017,9 +2113,8 @@
         }
     }
     @media (max-width: 767.98px) {
-        .assignment-row,
-        .assignment-row-create {
-            grid-template-columns: 1fr;
+        .assignment-row {
+            grid-template-columns: minmax(0, 1fr);
         }
         .admin-coordinators-roster .assignment-stack--bounded {
             max-height: 9rem;

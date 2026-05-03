@@ -246,22 +246,14 @@
         min-height: 40px;
         height: 40px;
         box-sizing: border-box;
-        padding: 0.35rem 0.65rem;
+        padding: 0.35rem 0.72rem;
         font-size: 0.875rem;
-        border: 1px solid var(--dtr-input-border);
-        border-radius: 10px;
+        border: 1px solid color-mix(in srgb, var(--dtr-input-border) 88%, var(--dtr-muted));
+        border-radius: 12px;
         background: var(--dtr-input-bg);
         color: var(--attendance-text);
     }
-    .dtr-attendance .coord-toolbar-input:focus {
-        border-color: var(--dtr-primary);
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--dtr-primary) 22%, transparent);
-        outline: none;
-        background: var(--dtr-input-bg);
-    }
-    html[data-theme="dark"] .dtr-attendance .coord-toolbar-input:focus {
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--dtr-primary) 28%, transparent);
-    }
+    /* Focus ring + motion: norsu-dtr-search-fields.css (.coord-toolbar-input) */
     .dtr-attendance .search-inner.coord-toolbar-search-inner {
         position: relative;
         flex: 1 1 200px;
@@ -275,19 +267,12 @@
         box-sizing: border-box;
         padding: 0.4rem 2.25rem 0.4rem 2.5rem;
         font-size: 0.875rem;
-        border: 1px solid var(--dtr-input-border);
-        border-radius: 10px;
+        border: 1px solid color-mix(in srgb, var(--dtr-input-border) 88%, var(--dtr-muted));
+        border-radius: 12px;
         background: var(--dtr-input-bg);
         color: var(--attendance-text);
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .dtr-attendance .coord-logs-toolbar .search-input::placeholder { color: var(--attendance-muted); }
-    .dtr-attendance .coord-logs-toolbar .search-input:focus {
-        outline: none;
-        border-color: var(--dtr-primary);
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--dtr-primary) 22%, transparent);
-        background: var(--dtr-input-bg);
-    }
     .dtr-attendance .search-icon {
         position: absolute; left: 0.65rem; top: 50%; transform: translateY(-50%);
         color: var(--attendance-muted); font-size: 0.9rem; pointer-events: none;
@@ -305,30 +290,35 @@
         position: relative;
         display: inline-flex;
         align-items: stretch;
-        gap: 0;
-        border-radius: 10px;
-        overflow: hidden;
-        border: 1px solid var(--attendance-border);
-        background: var(--attendance-surface-soft);
+        gap: 2px;
+        padding: 3px;
+        border-radius: 12px;
+        overflow: visible;
+        border: 1px solid color-mix(in srgb, var(--dtr-input-border) 85%, var(--dtr-muted));
+        background: color-mix(in srgb, var(--attendance-surface-soft) 65%, transparent);
         min-height: 40px;
+        box-sizing: border-box;
     }
     .dtr-attendance .filter-tabs label {
         margin: 0;
         cursor: pointer;
-        padding: 0 1rem;
-        font-size: 0.875rem;
-        font-weight: 500;
+        padding: 0 1.05rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
         display: inline-flex;
         align-items: center;
-        min-height: 40px;
+        justify-content: center;
+        min-height: 34px;
+        border-radius: 9px;
         color: var(--attendance-muted);
-        transition: color 0.2s, background 0.2s;
+        transition: color 0.18s ease, background 0.18s ease;
         letter-spacing: 0.02em;
     }
     .dtr-attendance .filter-tabs input { position: absolute; opacity: 0; }
     .dtr-attendance .filter-tabs input:checked + label {
-        background: var(--attendance-surface); color: var(--dtr-primary);
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+        background: color-mix(in srgb, var(--dtr-primary) 18%, var(--attendance-surface));
+        color: var(--dtr-primary);
+        box-shadow: none;
     }
     .dtr-attendance .filter-panel { display: none; }
     .dtr-attendance .coord-toolbar-period .filter-panel.active {
@@ -337,33 +327,92 @@
         gap: 0.5rem;
     }
     .dtr-attendance .card-body form.row { align-items: flex-end; }
-    .dtr-attendance .card-body form.row.g-3 > .col-auto > .btn-primary.btn-sm { box-sizing: border-box; min-height: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; padding: 0 0.75rem; font-weight: 600; font-size: 0.8125rem; border-radius: 10px; letter-spacing: 0.01em; }
-    .dtr-attendance .btn-search.coord-toolbar-submit {
-        letter-spacing: 0.01em;
+    /* Row CTA — “View attendance” (Search uses shared norsu-dtr-search-submit.css) */
+    .layout-wrap .main-content .dtr-attendance .btn.btn-primary.btn-view-attendance.coord-accent-btn {
+        flex-shrink: 0;
         min-height: 40px;
         height: 40px;
-        padding: 0 1.1rem;
+        padding: 0 1.22rem;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 10px;
+        gap: 0.5rem;
+        border-radius: 12px !important;
+        border: 1px solid color-mix(in srgb, var(--dtr-primary-dark, var(--dtr-primary)) 55%, transparent) !important;
         font-weight: 600;
         font-size: 0.875rem;
-        flex-shrink: 0;
+        letter-spacing: 0.02em;
+        color: #fff !important;
+        background: linear-gradient(
+            165deg,
+            color-mix(in srgb, var(--dtr-primary) 82%, #fff 18%) 0%,
+            var(--dtr-primary) 48%,
+            var(--dtr-primary-dark, var(--dtr-primary)) 100%
+        ) !important;
+        box-shadow:
+            0 3px 14px color-mix(in srgb, var(--dtr-primary) 34%, transparent),
+            inset 0 1px 0 rgba(255, 255, 255, 0.14);
+        transition:
+            filter 0.18s ease,
+            box-shadow 0.18s ease,
+            transform 0.18s ease,
+            border-color 0.18s ease;
+        text-decoration: none;
+        box-sizing: border-box;
+    }
+    .layout-wrap .main-content .dtr-attendance .btn.btn-primary.btn-view-attendance.coord-accent-btn:hover,
+    .layout-wrap .main-content .dtr-attendance .btn.btn-primary.btn-view-attendance.coord-accent-btn:focus-visible {
+        color: #fff !important;
+        filter: brightness(1.055);
+        box-shadow:
+            0 6px 22px color-mix(in srgb, var(--dtr-primary) 42%, transparent),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16);
+        transform: translateY(-0.5px);
+    }
+    .layout-wrap .main-content .dtr-attendance .btn.btn-primary.btn-view-attendance.coord-accent-btn:active {
+        transform: translateY(0);
+        box-shadow:
+            0 2px 10px color-mix(in srgb, var(--dtr-primary) 28%, transparent),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+    .layout-wrap .main-content .dtr-attendance .btn.btn-primary.btn-sm.btn-view-attendance.coord-accent-btn {
+        min-height: 40px;
+        height: 40px;
+        padding-left: 1.05rem;
+        padding-right: 1.05rem;
+        font-size: 0.875rem;
     }
     .dtr-attendance .view-student-bar {
-        display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem;
-        padding: 0.75rem 1.25rem; margin-bottom: 1.25rem;
-        background: var(--attendance-surface-soft); border: 1px solid var(--attendance-border);
-        border-radius: 10px; font-size: 0.875rem;
+        display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem;
+        padding: 0.75rem 1.15rem; margin-bottom: 1.25rem;
+        background: color-mix(in srgb, var(--attendance-surface-soft) 88%, var(--attendance-surface));
+        border: 1px solid color-mix(in srgb, var(--attendance-border) 92%, var(--dtr-muted));
+        border-radius: 12px; font-size: 0.875rem;
         letter-spacing: 0.01em;
     }
     .dtr-attendance .view-student-bar .view-student-label { color: var(--attendance-text); font-weight: 500; }
     .dtr-attendance .view-student-bar .view-student-name { color: var(--dtr-primary); font-weight: 600; }
-    .dtr-attendance .view-student-bar .btn-show-all {
-        padding: 0.375rem 0.75rem; font-size: 0.8125rem; font-weight: 600;
-        border-radius: 8px; letter-spacing: 0.02em;
-        flex-shrink: 0; display: inline-flex; align-items: center;
+    .dtr-attendance .view-student-bar .btn-outline-primary.btn-show-all {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 36px;
+        padding: 0 0.95rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        border-radius: 12px !important;
+        border: 1px solid color-mix(in srgb, var(--dtr-primary) 42%, var(--dtr-input-border)) !important;
+        background: transparent !important;
+        color: var(--dtr-primary) !important;
+        box-shadow: none !important;
+    }
+    .dtr-attendance .view-student-bar .btn-outline-primary.btn-show-all:hover,
+    .dtr-attendance .view-student-bar .btn-outline-primary.btn-show-all:focus-visible {
+        background: color-mix(in srgb, var(--dtr-primary) 10%, transparent) !important;
+        border-color: color-mix(in srgb, var(--dtr-primary) 58%, var(--dtr-input-border)) !important;
+        color: var(--dtr-primary) !important;
     }
     .dtr-attendance .btn-view-log {
         padding: 0.375rem 0.75rem; font-size: 0.8125rem; font-weight: 500;
@@ -386,9 +435,8 @@
         font-variant-numeric: tabular-nums; flex: 1; min-width: 0;
     }
     .dtr-attendance .student-list .btn-view-attendance {
-        padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 600;
-        border-radius: 10px; letter-spacing: 0.02em;
-        flex-shrink: 0; margin-left: auto; display: inline-flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        margin-left: auto;
     }
     .dtr-attendance .text-center.py-4.text-muted .fs-2 { color: var(--attendance-muted); opacity: 0.45; }
     .dtr-attendance .text-muted.mb-0 { font-size: 0.9375rem; color: var(--attendance-muted); }
@@ -543,69 +591,43 @@
         background: var(--dtr-hover-bg);
     }
 
-    /* Verification snapshot buttons — clean, modern, theme-aware */
+    /* Snapshot links — ghost outline aligned with toolbar (minimal) */
     .dtr-attendance .btn-snapshot {
         display: inline-flex;
         align-items: center;
-        gap: 0.35rem;
-        padding: 0.4rem 0.75rem;
-        border-radius: 8px;
-        font-size: 0.8125rem;
+        gap: 0.4rem;
+        padding: 0.38rem 0.72rem;
+        border-radius: 12px;
+        font-size: 0.78125rem;
         font-weight: 600;
-        letter-spacing: 0.01em;
+        letter-spacing: 0.015em;
         text-decoration: none;
         white-space: nowrap;
-        border: 1px solid color-mix(in srgb, var(--dtr-primary) 35%, var(--dtr-border-soft) 65%);
-        color: color-mix(in srgb, var(--dtr-primary) 85%, var(--dtr-text) 15%);
-        background:
-            linear-gradient(180deg,
-                color-mix(in srgb, var(--dtr-primary) 12%, var(--dtr-card-bg) 88%) 0%,
-                color-mix(in srgb, var(--dtr-primary) 8%, var(--dtr-card-bg) 92%) 100%);
-        box-shadow:
-            0 1px 2px color-mix(in srgb, #0f172a 6%, transparent),
-            0 0 0 1px color-mix(in srgb, #fff 50%, transparent) inset;
-        transition: all 0.15s ease;
+        border: 1px solid color-mix(in srgb, var(--dtr-primary) 42%, var(--dtr-input-border));
+        color: var(--dtr-primary);
+        background: transparent;
+        box-shadow: none;
+        transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
     }
     .dtr-attendance .btn-snapshot i {
-        font-size: 0.9rem;
-        opacity: 0.9;
+        font-size: 0.88rem;
+        opacity: 0.92;
+        line-height: 1;
     }
-    .dtr-attendance .btn-snapshot:hover {
-        color: color-mix(in srgb, var(--dtr-primary) 95%, var(--dtr-heading) 5%);
-        border-color: color-mix(in srgb, var(--dtr-primary) 55%, var(--dtr-border-soft) 45%);
-        background:
-            linear-gradient(180deg,
-                color-mix(in srgb, var(--dtr-primary) 22%, var(--dtr-card-bg) 78%) 0%,
-                color-mix(in srgb, var(--dtr-primary) 12%, var(--dtr-card-bg) 88%) 100%);
-        box-shadow:
-            0 2px 6px color-mix(in srgb, var(--dtr-primary) 18%, transparent),
-            0 0 0 1px color-mix(in srgb, #fff 35%, transparent) inset;
-        transform: translateY(-1px);
-    }
-    .dtr-attendance .btn-snapshot:active {
-        transform: translateY(0);
+    .dtr-attendance .btn-snapshot:hover,
+    .dtr-attendance .btn-snapshot:focus-visible {
+        border-color: color-mix(in srgb, var(--dtr-primary) 62%, var(--dtr-input-border));
+        background: color-mix(in srgb, var(--dtr-primary) 9%, transparent);
+        color: var(--dtr-primary-dark, var(--dtr-primary));
     }
     html[data-theme="dark"] .dtr-attendance .btn-snapshot {
-        color: #7dd3fc;
-        border-color: color-mix(in srgb, var(--dtr-primary) 45%, #334155 55%);
-        background:
-            linear-gradient(180deg,
-                color-mix(in srgb, var(--dtr-primary) 28%, #0f172a 72%) 0%,
-                color-mix(in srgb, var(--dtr-primary) 16%, #0c1222 84%) 100%);
-        box-shadow:
-            0 2px 8px color-mix(in srgb, #000 40%, transparent),
-            0 0 0 1px color-mix(in srgb, #fff 6%, transparent) inset;
+        color: color-mix(in srgb, var(--dtr-primary) 88%, #e0f7fa);
+        border-color: color-mix(in srgb, var(--dtr-primary) 48%, #475569);
     }
-    html[data-theme="dark"] .dtr-attendance .btn-snapshot:hover {
-        color: #bae6fd;
-        border-color: color-mix(in srgb, var(--dtr-primary) 65%, #334155 35%);
-        background:
-            linear-gradient(180deg,
-                color-mix(in srgb, var(--dtr-primary) 38%, #0f172a 62%) 0%,
-                color-mix(in srgb, var(--dtr-primary) 22%, #0c1222 78%) 100%);
-        box-shadow:
-            0 4px 12px color-mix(in srgb, var(--dtr-primary) 15%, transparent),
-            0 0 0 1px color-mix(in srgb, #fff 8%, transparent) inset;
+    html[data-theme="dark"] .dtr-attendance .btn-snapshot:hover,
+    html[data-theme="dark"] .dtr-attendance .btn-snapshot:focus-visible {
+        background: color-mix(in srgb, var(--dtr-primary) 12%, transparent);
+        border-color: color-mix(in srgb, var(--dtr-primary) 58%, #64748b);
     }
 </style>
 @endpush
@@ -713,7 +735,7 @@
                         @endif
                     </div>
                     <button type="submit" class="btn btn-primary btn-search coord-toolbar-submit">
-                        <i class="bi bi-search me-1"></i> Search
+                        <i class="bi bi-search" aria-hidden="true"></i> Search
                     </button>
                 </form>
                 <p class="search-hint mb-0">Select time period and search by name or student number.</p>
@@ -922,8 +944,8 @@
                 <li>
                     <span class="student-name">{{ $student->name ?? '-' }}</span>
                     <span class="student-no">{{ $student->student_no ?? '—' }}</span>
-                    <a href="{{ route('coordinator.attendance.logs', $viewParams) }}" class="btn btn-primary btn-sm btn-view-attendance">
-                        <i class="bi bi-person-lines-fill me-1"></i>View attendance
+                    <a href="{{ route('coordinator.attendance.logs', $viewParams) }}" class="btn btn-primary btn-sm btn-view-attendance coord-accent-btn">
+                        <i class="bi bi-person-lines-fill" aria-hidden="true"></i> View attendance
                     </a>
                 </li>
                 @endforeach

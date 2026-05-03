@@ -29,7 +29,7 @@
                         </select>
                     </div>
                     <div class="orc-filter-actions">
-                        <button type="submit" class="orc-btn-filter">Apply</button>
+                        <button type="submit" class="btn btn-sm dtr-apply-ghost"><span class="dtr-apply-ghost__text">Apply</span></button>
                         @if(!empty($search) || (($status ?? 'pending') !== 'pending'))
                             <a href="{{ route('admin.office-requests') }}" class="orc-btn-reset">Reset</a>
                         @endif
@@ -37,10 +37,32 @@
                 </form>
             </div>
 
-            <div class="d-none d-lg-block office-table-wrap">
+            @if(($status ?? 'pending') === 'pending' && $requests->count() > 0)
+                <form method="POST" action="{{ route('admin.office-requests.bulk.review') }}" id="orcBulkReviewForm" class="orc-bulk-form mb-3">
+                    @csrf
+                    <input type="hidden" name="decision" id="orcBulkDecisionInput" value="">
+                    <div class="orc-bulk-toolbar">
+                        <p class="orc-bulk-hint mb-0">Select pending rows, then approve or reject. Admin remarks apply to all selected requests.</p>
+                        <textarea name="admin_remarks" id="orcBulkAdminRemarks" class="form-control form-control-sm orc-bulk-note" rows="2" maxlength="1000" placeholder="Admin remarks (optional)"></textarea>
+                        <div class="orc-bulk-actions-inline" role="group" aria-label="Bulk office actions">
+                            <button type="button" class="adm-q-bulk-btn adm-q-bulk-btn--approve" data-orc-bulk="approve" title="Approve selected" aria-label="Bulk approve office requests">
+                                <i class="bi bi-check2" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" class="adm-q-bulk-btn adm-q-bulk-btn--reject" data-orc-bulk="reject" title="Reject selected" aria-label="Bulk reject office requests">
+                                <i class="bi bi-x-lg" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            @endif
+
+            <div class="d-none d-lg-block office-table-wrap orc-queue-table-frame">
                 <div class="table-responsive office-requests-scroll">
                     <table class="table align-middle mb-0 office-requests-table">
                         <colgroup>
+                            @if(($status ?? 'pending') === 'pending')
+                                <col class="orc-col-select" style="width: 2.75rem">
+                            @endif
                             <col style="width: 18%">
                             <col style="width: 14%">
                             <col style="width: 16%">
@@ -51,6 +73,13 @@
                         </colgroup>
                         <thead>
                             <tr>
+                                @if(($status ?? 'pending') === 'pending')
+                                    <th scope="col" class="orc-queue-select-col text-center">
+                                        <span class="orc-queue-checkbox-wrap">
+                                            <input type="checkbox" id="orcSelectAllShown" aria-label="Select all shown pending requests">
+                                        </span>
+                                    </th>
+                                @endif
                                 <th scope="col">Student</th>
                                 <th scope="col">Current</th>
                                 <th scope="col">Requested</th>
@@ -61,11 +90,30 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @php($orcDeskCols = ($status ?? 'pending') === 'pending' ? 8 : 7)
                             @forelse($requests as $officeRequest)
                                 <tr>
-                                    <td>
-                                        <div class="fw-semibold text-truncate-alt">{{ $officeRequest->student?->name ?: 'Unknown student' }}</div>
-                                        <div class="small text-muted">{{ $officeRequest->student?->student_no ?: '-' }}</div>
+                                    @if(($status ?? 'pending') === 'pending')
+                                        <td class="orc-queue-select-col text-center align-middle">
+                                            @if($officeRequest->status === \App\Models\OfficeAssignmentRequest::STATUS_PENDING)
+                                                <span class="orc-queue-checkbox-wrap">
+                                                    <input type="checkbox"
+                                                           class="orc-row-select"
+                                                           name="request_ids[]"
+                                                           value="{{ $officeRequest->id }}"
+                                                           form="orcBulkReviewForm"
+                                                           aria-label="Select office request {{ $officeRequest->id }}">
+                                                </span>
+                                            @else
+                                                <span class="orc-queue-checkbox-placeholder" aria-hidden="true"></span>
+                                            @endif
+                                        </td>
+                                    @endif
+                                    <td class="orc-queue-student-cell">
+                                        <div class="orc-queue-cell-primary fw-semibold text-truncate-alt">{{ $officeRequest->student?->name ?: 'Unknown student' }}</div>
+                                        <div class="orc-queue-cell-sub small text-muted text-truncate-alt">
+                                            {{ $officeRequest->student?->student_no ?: '-' }}@if(!empty($officeRequest->student?->course)) — {{ $officeRequest->student->course }} @endif
+                                        </div>
                                     </td>
                                     <td class="small text-muted text-truncate-alt">{{ \Illuminate\Support\Str::limit($officeRequest->old_office ?: 'Not assigned', 42) }}</td>
                                     <td><span class="office-pill text-truncate-alt d-inline-flex max-w-100">{{ $officeRequest->requested_office }}</span></td>
@@ -104,7 +152,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted py-5">No office requests match this filter.</td>
+                                    <td colspan="{{ $orcDeskCols }}" class="text-center text-muted py-5">No office requests match this filter.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -117,9 +165,19 @@
                 @forelse($requests as $officeRequest)
                     <article class="office-req-card">
                         <div class="orc-card-head">
-                            <div>
+                            @if(($status ?? 'pending') === 'pending' && $officeRequest->status === \App\Models\OfficeAssignmentRequest::STATUS_PENDING)
+                                <span class="orc-queue-checkbox-wrap orc-card-select">
+                                    <input type="checkbox"
+                                           class="orc-row-select"
+                                           name="request_ids[]"
+                                           value="{{ $officeRequest->id }}"
+                                           form="orcBulkReviewForm"
+                                           aria-label="Select office request {{ $officeRequest->id }}">
+                                </span>
+                            @endif
+                            <div class="orc-card-head-main">
                                 <div class="fw-semibold">{{ $officeRequest->student?->name ?: 'Unknown student' }}</div>
-                                <div class="small text-muted">{{ $officeRequest->student?->student_no ?: '-' }}</div>
+                                <div class="small text-muted">{{ $officeRequest->student?->student_no ?: '-' }}@if(!empty($officeRequest->student?->course)) · {{ $officeRequest->student->course }} @endif</div>
                             </div>
                             <span class="badge office-status-badge status-{{ $officeRequest->status }}">{{ ucfirst($officeRequest->status) }}</span>
                         </div>
@@ -281,25 +339,6 @@
     @media (max-width: 639.98px) {
         .office-requests-page .orc-filter-actions { padding-top: 0.15rem; }
     }
-    .office-requests-page .orc-btn-filter {
-        height: var(--orc-fh);
-        padding: 0 1rem;
-        font-size: 0.815rem;
-        font-weight: 600;
-        border-radius: 10px;
-        border: 1px solid color-mix(in srgb, var(--dtr-primary) 38%, var(--dtr-border-soft));
-        background: transparent;
-        color: var(--dtr-primary);
-        cursor: pointer;
-        white-space: nowrap;
-        transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease;
-        box-shadow: none !important;
-    }
-    .office-requests-page .orc-btn-filter:hover {
-        background: color-mix(in srgb, var(--dtr-primary) 10%, transparent);
-        border-color: color-mix(in srgb, var(--dtr-primary) 52%, var(--dtr-border-soft));
-        color: var(--dtr-heading);
-    }
     .office-requests-page .orc-btn-reset {
         height: var(--orc-fh);
         display: inline-flex;
@@ -318,12 +357,148 @@
         border-color: var(--dtr-border-soft);
         color: var(--dtr-text);
     }
+    /* Bulk selection (matches invalidation queue pattern) */
+    .office-requests-page .orc-bulk-form {
+        margin-bottom: 0.85rem;
+    }
+    .office-requests-page .orc-bulk-toolbar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.65rem 0.85rem;
+        align-items: end;
+        padding: 0.75rem 0.85rem;
+        border-radius: 12px;
+        border: 1px solid var(--dtr-border-soft);
+        background: color-mix(in srgb, var(--dtr-surface-soft) 94%, transparent);
+    }
+    @media (max-width: 719.98px) {
+        .office-requests-page .orc-bulk-toolbar { grid-template-columns: 1fr; }
+    }
+    .office-requests-page .orc-bulk-hint {
+        grid-column: 1 / -1;
+        font-size: 0.78rem;
+        color: var(--dtr-muted);
+        line-height: 1.4;
+        max-width: 42rem;
+    }
+    .office-requests-page .orc-bulk-note {
+        border-radius: 10px !important;
+        font-size: 0.8375rem;
+        resize: vertical;
+        min-height: 2.5rem;
+        border-color: var(--dtr-input-border) !important;
+        background: var(--dtr-input-bg) !important;
+        color: var(--dtr-text) !important;
+    }
+    .office-requests-page .orc-bulk-actions-inline {
+        display: inline-flex;
+        gap: 0.45rem;
+        flex-shrink: 0;
+    }
+    .office-requests-page .adm-q-bulk-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.35rem;
+        height: 2.35rem;
+        padding: 0;
+        margin: 0;
+        border-radius: 10px;
+        border-width: 1px;
+        border-style: solid;
+        background: transparent !important;
+        cursor: pointer;
+        transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+    }
+    .office-requests-page .adm-q-bulk-btn .bi {
+        font-size: 1.125rem;
+        line-height: 1;
+    }
+    .office-requests-page .adm-q-bulk-btn--approve {
+        border-color: color-mix(in srgb, #059669 55%, var(--dtr-input-border));
+        color: #059669;
+    }
+    .office-requests-page .adm-q-bulk-btn--approve:hover {
+        background: color-mix(in srgb, #059669 10%, transparent) !important;
+    }
+    .office-requests-page .adm-q-bulk-btn--reject {
+        border-color: color-mix(in srgb, #e11d48 48%, var(--dtr-input-border));
+        color: #e11d48;
+    }
+    .office-requests-page .adm-q-bulk-btn--reject:hover {
+        background: color-mix(in srgb, #f43f5e 10%, transparent) !important;
+    }
+    html[data-theme="dark"] .office-requests-page .adm-q-bulk-btn--approve {
+        color: #6ee7b7;
+        border-color: rgba(52, 211, 153, 0.5);
+    }
+    html[data-theme="dark"] .office-requests-page .adm-q-bulk-btn--reject {
+        color: #fda4af;
+        border-color: rgba(251, 113, 133, 0.5);
+    }
+    .office-requests-page .orc-queue-table-frame {
+        border-radius: 12px;
+        border: 1px solid var(--dtr-border-soft);
+        overflow: hidden;
+        background: color-mix(in srgb, var(--dtr-card-bg) 98%, var(--dtr-surface-soft) 2%);
+    }
+    .office-requests-page .orc-queue-select-col {
+        width: 2.85rem;
+        min-width: 2.85rem;
+        text-align: center !important;
+        padding-left: 0.35rem !important;
+        padding-right: 0.35rem !important;
+        vertical-align: middle !important;
+    }
+    .office-requests-page .orc-queue-checkbox-wrap {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .office-requests-page .orc-queue-checkbox-wrap input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        margin: 0;
+        cursor: pointer;
+        width: 1.0625rem;
+        height: 1.0625rem;
+        border: 1.5px solid var(--dtr-input-border);
+        border-radius: 4px;
+        background: var(--dtr-card-bg);
+    }
+    .office-requests-page .orc-queue-checkbox-wrap input[type="checkbox"]:checked {
+        background-color: color-mix(in srgb, var(--dtr-primary) 78%, #059669);
+        border-color: color-mix(in srgb, var(--dtr-primary) 65%, transparent);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' d='M3.8 8.2l2.9 2.9 5.6-6.3'/%3E%3C/svg%3E");
+        background-size: 0.68rem auto;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    .office-requests-page .orc-queue-checkbox-placeholder {
+        display: inline-block;
+        width: 1.0625rem;
+        height: 1.0625rem;
+    }
+    .office-requests-page .orc-queue-cell-primary {
+        letter-spacing: -0.015em;
+        font-size: 0.92rem;
+        line-height: 1.3;
+        color: var(--dtr-heading);
+    }
+    .office-requests-page .orc-queue-student-cell .orc-queue-cell-sub {
+        margin-top: 0.15rem;
+    }
     /* Table */
     .office-requests-page .office-table-wrap {
         border-radius: 12px;
         border: 1px solid var(--dtr-border-soft);
         overflow: hidden;
         background: color-mix(in srgb, var(--dtr-card-bg) 94%, transparent);
+    }
+    .office-requests-page .office-table-wrap.orc-queue-table-frame {
+        border: none;
+        background: transparent;
+        box-shadow: none;
     }
     .office-requests-page .office-requests-scroll { margin: 0; }
     .office-requests-page .office-requests-table {
@@ -469,8 +644,16 @@
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
-        gap: 0.75rem;
+        gap: 0.65rem;
         margin-bottom: 0.65rem;
+    }
+    .office-requests-page .orc-card-head-main {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    .office-requests-page .orc-card-select {
+        flex: 0 0 auto;
+        padding-top: 0.12rem;
     }
     .office-requests-page .orc-card-dl {
         margin: 0;
@@ -531,5 +714,58 @@
         });
     });
 })();
+
+async function submitOrcBulkOfficeReviews(decision) {
+    var form = document.getElementById('orcBulkReviewForm');
+    if (!form) return;
+    var checked = Array.prototype.slice.call(document.querySelectorAll('.orc-row-select:checked'));
+    if (checked.length === 0) {
+        if (window.norsuPrompt && window.norsuPrompt.alert) {
+            await window.norsuPrompt.alert('Select at least one pending request first.', { variant: 'warning', title: 'Nothing selected' });
+        }
+        return;
+    }
+    var ok = true;
+    if (window.norsuPrompt && window.norsuPrompt.confirm) {
+        ok = await window.norsuPrompt.confirm(
+            decision === 'approve'
+                ? 'Approve all selected office assignment requests? The requested office will apply immediately for each student.'
+                : 'Reject all selected office assignment requests?',
+            {
+                variant: decision === 'approve' ? 'warning' : 'danger',
+                title: 'Bulk office review',
+                confirmText: decision === 'approve' ? 'Yes, approve all' : 'Yes, reject all'
+            }
+        );
+    }
+    if (!ok) return;
+    var decisionInput = document.getElementById('orcBulkDecisionInput');
+    if (decisionInput) decisionInput.value = decision;
+    form.submit();
+}
+
+(function setupOrcBulkSelectAll() {
+    var selectAll = document.getElementById('orcSelectAllShown');
+    var rowBoxes = Array.prototype.slice.call(document.querySelectorAll('.orc-row-select'));
+    if (!selectAll || rowBoxes.length === 0) return;
+    selectAll.addEventListener('change', function () {
+        rowBoxes.forEach(function (cb) {
+            cb.checked = selectAll.checked;
+        });
+    });
+    rowBoxes.forEach(function (cb) {
+        cb.addEventListener('change', function refreshOrcSelectAllIndeterminate() {
+            var sel = rowBoxes.filter(function (x) { return x.checked; }).length;
+            selectAll.checked = sel > 0 && sel === rowBoxes.length;
+            selectAll.indeterminate = sel > 0 && sel < rowBoxes.length;
+        });
+    });
+})();
+
+document.querySelectorAll('[data-orc-bulk]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        submitOrcBulkOfficeReviews(btn.getAttribute('data-orc-bulk'));
+    });
+});
 </script>
 @endpush

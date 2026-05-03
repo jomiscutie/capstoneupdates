@@ -86,12 +86,6 @@
         border-color: var(--dtr-primary);
         box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.2);
     }
-    .dtr-attendance-history .filter-form .btn-primary {
-        padding: 0.5rem 1rem;
-        font-weight: 600;
-        font-size: 0.875rem;
-        border-radius: 10px;
-    }
     /* Download PDF — high visibility, theme-adaptive (not default outline) */
     .recent-logs-download-btn {
         display: inline-flex;
@@ -491,7 +485,7 @@
                     </div>
                 </div>
                 <div class="col-auto d-flex flex-wrap align-items-center gap-2 filter-actions">
-                    <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+                    <button type="submit" class="btn btn-sm dtr-apply-ghost"><span class="dtr-apply-ghost__text">Apply</span></button>
                     <a
                         href="#"
                         id="recentLogsDownloadLink"

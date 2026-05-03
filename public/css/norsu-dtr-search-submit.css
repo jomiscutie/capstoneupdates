@@ -1,0 +1,129 @@
+/**
+ * Unified “Search” toolbar actions across student/coordinator/admin (layout-wrap).
+ * Minimal tonal fill + crisp border — distinct from saturated solid primaries elsewhere.
+ */
+
+.layout-wrap .main-content .btn.btn-primary.btn-search {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    min-height: 40px !important;
+    padding: 0 1.2rem !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    letter-spacing: 0.02em !important;
+    line-height: 1.2 !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: color-mix(in srgb, var(--dtr-primary) 52%, var(--dtr-input-border) 48%) !important;
+    background-color: color-mix(in srgb, var(--dtr-primary) 11%, var(--dtr-card-bg) 89%) !important;
+    background-image: none !important;
+    color: var(--dtr-primary-dark, var(--dtr-primary)) !important;
+    box-shadow: none !important;
+    transition:
+        border-color 0.2s cubic-bezier(0.33, 1, 0.68, 1),
+        background-color 0.2s cubic-bezier(0.33, 1, 0.68, 1),
+        color 0.18s ease,
+        transform 0.14s cubic-bezier(0.33, 1, 0.68, 1),
+        box-shadow 0.2s ease !important;
+}
+
+.layout-wrap .main-content .btn.btn-primary.btn-search i {
+    font-size: 1rem !important;
+    line-height: 1 !important;
+    opacity: 0.92 !important;
+}
+
+.layout-wrap .main-content .btn.btn-primary.btn-search:hover,
+.layout-wrap .main-content .btn.btn-primary.btn-search:focus {
+    border-color: color-mix(in srgb, var(--dtr-primary) 72%, var(--dtr-input-border) 28%) !important;
+    background-color: color-mix(in srgb, var(--dtr-primary) 20%, var(--dtr-card-bg) 80%) !important;
+    color: var(--dtr-heading) !important;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--dtr-primary) 18%, transparent) !important;
+}
+
+.layout-wrap .main-content .btn.btn-primary.btn-search:focus-visible {
+    outline: none !important;
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--dtr-card-bg) 100%, transparent),
+        0 0 0 4px color-mix(in srgb, var(--dtr-primary) 38%, transparent) !important;
+}
+
+.layout-wrap .main-content .btn.btn-primary.btn-search:active {
+    transform: scale(0.985);
+    border-color: color-mix(in srgb, var(--dtr-primary) 82%, var(--dtr-input-border) 18%) !important;
+    background-color: color-mix(in srgb, var(--dtr-primary) 26%, var(--dtr-card-bg) 74%) !important;
+}
+
+/* Dark: soften contrast against deep surfaces */
+html[data-theme="dark"] .layout-wrap .main-content .btn.btn-primary.btn-search {
+    border-color: color-mix(in srgb, var(--dtr-primary) 48%, var(--dtr-input-border) 52%) !important;
+    background-color: color-mix(in srgb, var(--dtr-primary) 18%, var(--dtr-card-bg) 82%) !important;
+    color: color-mix(in srgb, var(--dtr-primary) 58%, #e8ecff 42%) !important;
+}
+
+html[data-theme="dark"] .layout-wrap .main-content .btn.btn-primary.btn-search:hover,
+html[data-theme="dark"] .layout-wrap .main-content .btn.btn-primary.btn-search:focus {
+    border-color: color-mix(in srgb, var(--dtr-primary) 62%, var(--dtr-input-border) 38%) !important;
+    background-color: color-mix(in srgb, var(--dtr-primary) 28%, var(--dtr-card-bg) 72%) !important;
+    color: #f1f5f9 !important;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--dtr-primary) 22%, transparent) !important;
+}
+
+html[data-theme="dark"] .layout-wrap .main-content .btn.btn-primary.btn-search:focus-visible {
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--dtr-card-bg) 100%, transparent),
+        0 0 0 4px color-mix(in srgb, var(--dtr-primary) 45%, transparent) !important;
+}
+
+html[data-theme="dark"] .layout-wrap .main-content .btn.btn-primary.btn-search:active {
+    background-color: color-mix(in srgb, var(--dtr-primary) 34%, var(--dtr-card-bg) 66%) !important;
+}
+
+/* Companion “Clear” — quiet outline, same height rhythm */
+.layout-wrap .main-content .btn.btn-outline-secondary.btn-search {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.4rem !important;
+    min-height: 40px !important;
+    padding: 0 1rem !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    letter-spacing: 0.015em !important;
+    border-color: color-mix(in srgb, var(--dtr-input-border) 88%, var(--dtr-muted) 12%) !important;
+    color: var(--dtr-muted) !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+    transition:
+        border-color 0.18s ease,
+        color 0.18s ease,
+        background-color 0.18s ease,
+        transform 0.12s ease !important;
+}
+
+.layout-wrap .main-content .btn.btn-outline-secondary.btn-search:hover,
+.layout-wrap .main-content .btn.btn-outline-secondary.btn-search:focus {
+    border-color: color-mix(in srgb, var(--dtr-text) 22%, var(--dtr-input-border) 78%) !important;
+    color: var(--dtr-heading) !important;
+    background-color: var(--dtr-hover-bg) !important;
+}
+
+.layout-wrap .main-content .btn.btn-outline-secondary.btn-search:active {
+    transform: scale(0.985);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .layout-wrap .main-content .btn.btn-primary.btn-search,
+    .layout-wrap .main-content .btn.btn-outline-secondary.btn-search {
+        transition: none !important;
+    }
+    .layout-wrap .main-content .btn.btn-primary.btn-search:active,
+    .layout-wrap .main-content .btn.btn-outline-secondary.btn-search:active {
+        transform: none;
+    }
+}

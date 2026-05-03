@@ -8,12 +8,13 @@
 
 <div class="card mb-3">
     <div class="card-body">
-        <form method="GET" class="row g-2">
+        <form method="GET" class="row g-2" role="search">
             <div class="col-md-10">
-                <input type="text" class="form-control" name="q" value="{{ $q }}" placeholder="Search by name, student no, or course">
+                <label for="faceEnrollSearchQ" class="visually-hidden">Search students</label>
+                <input type="text" id="faceEnrollSearchQ" class="form-control" name="q" value="{{ $q }}" placeholder="Search by name, student no, or course" autocomplete="off" aria-label="Search by name, student no, or course">
             </div>
             <div class="col-md-2 d-grid">
-                <button class="btn btn-primary">Search</button>
+                <button type="submit" class="btn btn-primary btn-search"><i class="bi bi-search" aria-hidden="true"></i> Search</button>
             </div>
         </form>
     </div>

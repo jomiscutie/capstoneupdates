@@ -9,6 +9,7 @@
 
     <div class="card mb-4">
         <div class="card-body">
+            @php($archBulkActive = $students->count() > 0)
             <div class="toolbar mb-3">
                 <div>
                     <h2 class="h5 mb-1">Archived roster</h2>
@@ -22,79 +23,125 @@
                             <a href="{{ route('admin.students.archived') }}" class="search-clear" aria-label="Clear search"><i class="bi bi-x-lg"></i></a>
                         @endif
                     </div>
-                    <button type="submit" class="btn btn-primary btn-search"><i class="bi bi-search me-1"></i>Search</button>
+                    <button type="submit" class="btn btn-primary btn-search"><i class="bi bi-search" aria-hidden="true"></i> Search</button>
                     @if(!empty($search))
                         <a href="{{ route('admin.students.archived') }}" class="btn btn-outline-secondary btn-search">Clear</a>
                     @endif
                 </form>
             </div>
 
-            <div class="table-responsive student-table-wrap archived-table-wrap">
-                <table class="table align-middle mb-0 archived-students-table">
-                    <colgroup>
-                        <col class="arch-col-student-no">
-                        <col class="arch-col-name">
-                        <col class="arch-col-course">
-                        <col class="arch-col-archived-at">
-                        <col class="arch-col-actions">
-                    </colgroup>
-                    <thead>
-                        <tr>
-                            <th scope="col" class="text-center text-nowrap">Student No</th>
-                            <th scope="col" class="text-center text-nowrap">Name</th>
-                            <th scope="col" class="text-center text-nowrap">Course</th>
-                            <th scope="col" class="arch-col-archived-at text-center text-nowrap">Archived at</th>
-                            <th scope="col" class="arch-col-actions text-center text-nowrap">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($students as $student)
+            @if($archBulkActive)
+                <form id="archBulkRestoreForm" method="POST" action="{{ route('admin.students.archived.bulk.restore') }}" class="d-none" aria-hidden="true">
+                    @csrf
+                </form>
+                <form id="archBulkRemoveForm" method="POST" action="{{ route('admin.students.archived.bulk.remove') }}" class="d-none" aria-hidden="true">
+                    @csrf
+                </form>
+                <div class="arch-bulk-toolbar mb-3">
+                    <p class="arch-bulk-hint mb-0">Select archived students, then bulk restore or permanently remove. Optional remarks apply to every removal in one batch.</p>
+                    <div class="arch-bulk-note-block">
+                        <label for="archBulkRemoveRemarks" class="arch-bulk-remarks-label">Remarks <span class="text-muted fw-normal">(bulk remove only)</span></label>
+                        <textarea name="remarks" form="archBulkRemoveForm" id="archBulkRemoveRemarks" class="form-control form-control-sm arch-bulk-note" rows="2" maxlength="1000" placeholder="Optional context for permanent removals…"></textarea>
+                    </div>
+                    <div class="arch-bulk-actions-inline" role="group" aria-label="Bulk archive actions">
+                        <button type="button" class="adm-q-bulk-btn adm-q-bulk-btn--approve" data-arch-bulk="restore" title="Restore selected" aria-label="Bulk restore selected students to the active list">
+                            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="adm-q-bulk-btn adm-q-bulk-btn--reject" data-arch-bulk="remove" title="Permanently remove selected" aria-label="Bulk permanently remove selected archived students">
+                            <i class="bi bi-trash3" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            @endif
+
+            <div class="arch-queue-table-frame">
+                <div class="table-responsive student-table-wrap archived-table-wrap">
+                    <table class="table align-middle mb-0 archived-students-table">
+                        <colgroup>
+                            @if($archBulkActive)
+                                <col class="arch-col-select" style="width: 2.75rem">
+                            @endif
+                            <col class="arch-col-student">
+                            <col class="arch-col-archived-at">
+                            <col class="arch-col-actions" style="width: 5.25rem">
+                        </colgroup>
+                        <thead>
                             <tr>
-                                <td class="fw-semibold text-center">{{ $student->student_no }}</td>
-                                <td class="text-center">{{ $student->name }}</td>
-                                <td class="text-center"><span class="text-muted">{{ $student->course ?: '—' }}</span></td>
-                                <td class="arch-col-archived-at text-center">
-                                    @if($student->deleted_at)
-                                        <span class="text-muted arch-archived-meta">{{ $student->deleted_at->timezone(config('app.timezone'))->format('M j, Y') }}</span>
-                                        <span class="text-muted arch-archived-time d-block small">{{ $student->deleted_at->timezone(config('app.timezone'))->format('g:i A') }}</span>
-                                    @else
-                                        <span class="text-muted">—</span>
+                                @if($archBulkActive)
+                                    <th scope="col" class="arch-queue-select-col text-center">
+                                        <span class="arch-queue-checkbox-wrap">
+                                            <input type="checkbox" id="archSelectAllShown" aria-label="Select all archived students on this page">
+                                        </span>
+                                    </th>
+                                @endif
+                                <th scope="col">Student</th>
+                                <th scope="col" class="arch-th-archived">Archived at</th>
+                                <th scope="col" class="text-center arch-th-actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php($archEmptyCols = $archBulkActive ? 4 : 3)
+                            @forelse($students as $student)
+                                <tr>
+                                    @if($archBulkActive)
+                                        <td class="arch-queue-select-col text-center align-middle">
+                                            <span class="arch-queue-checkbox-wrap">
+                                                <input type="checkbox"
+                                                       class="arch-row-select"
+                                                       value="{{ $student->id }}"
+                                                       aria-label="Select archived student {{ e($student->student_no) }}">
+                                            </span>
+                                        </td>
                                     @endif
-                                </td>
-                                <td class="arch-col-actions text-center">
-                                    <div class="arch-action-stack">
-                                    <form method="POST" action="{{ route('admin.students.restore', ['id' => $student->id]) }}" class="arch-restore-form m-0" data-norsu-confirm="Restore student {{ e($student->student_no) }} to the active list?">
-                                        @csrf
-                                        <button
-                                            type="submit"
-                                            class="arch-btn-restore arch-action-btn"
-                                            title="Restore to active list"
-                                            aria-label="Restore student {{ e($student->student_no) }}, {{ e($student->name) }}, to the active list"
-                                        >
-                                            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-                                        </button>
-                                    </form>
-                                    <button
-                                        type="button"
-                                        class="arch-btn-remove arch-action-btn js-open-archive-remove-modal"
-                                        data-remove-url="{{ route('admin.students.archived.remove', ['id' => $student->id]) }}"
-                                        data-student-no="{{ $student->student_no }}"
-                                        data-student-name="{{ $student->name }}"
-                                        title="Permanently remove from archive"
-                                        aria-label="Permanently remove archived student {{ e($student->student_no) }}, {{ e($student->name) }}"
-                                    >
-                                        <i class="bi bi-trash3" aria-hidden="true"></i>
-                                    </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-muted text-center py-5 arch-empty-cell">No archived students match this search.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                                    <td class="arch-queue-student-cell">
+                                        <div class="arch-queue-cell-primary">{{ $student->name }}</div>
+                                        <div class="arch-queue-cell-sub small text-muted">
+                                            {{ $student->student_no }}@if(!empty($student->course)) — {{ $student->course }} @endif
+                                        </div>
+                                    </td>
+                                    <td class="arch-queue-date-cell">
+                                        @if($student->deleted_at)
+                                            <div class="arch-queue-cell-primary">{{ $student->deleted_at->timezone(config('app.timezone'))->format('M d, Y') }}</div>
+                                            <div class="arch-queue-cell-sub small text-muted">{{ $student->deleted_at->timezone(config('app.timezone'))->format('g:i A') }}</div>
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="arch-col-actions text-center align-middle">
+                                        <div class="arch-action-stack">
+                                            <form method="POST" action="{{ route('admin.students.restore', ['id' => $student->id]) }}" class="arch-restore-form m-0" data-norsu-confirm="Restore student {{ e($student->student_no) }} to the active list?">
+                                                @csrf
+                                                <button
+                                                    type="submit"
+                                                    class="arch-btn-restore arch-action-btn"
+                                                    title="Restore to active list"
+                                                    aria-label="Restore student {{ e($student->student_no) }}, {{ e($student->name) }}, to the active list"
+                                                >
+                                                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                                                </button>
+                                            </form>
+                                            <button
+                                                type="button"
+                                                class="arch-btn-remove arch-action-btn js-open-archive-remove-modal"
+                                                data-remove-url="{{ route('admin.students.archived.remove', ['id' => $student->id]) }}"
+                                                data-student-no="{{ $student->student_no }}"
+                                                data-student-name="{{ $student->name }}"
+                                                title="Permanently remove from archive"
+                                                aria-label="Permanently remove archived student {{ e($student->student_no) }}, {{ e($student->name) }}"
+                                            >
+                                                <i class="bi bi-trash3" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="{{ $archEmptyCols }}" class="text-muted text-center py-5 arch-empty-cell">No archived students match this search.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             @if($students->hasPages())
@@ -208,37 +255,203 @@
             width: 100%;
         }
     }
+    .archived-students-page .arch-queue-table-frame {
+        border-radius: 12px;
+        border: 1px solid var(--dtr-border-soft);
+        overflow: hidden;
+        background: color-mix(in srgb, var(--dtr-card-bg) 98%, var(--dtr-surface-soft) 2%);
+        margin-bottom: 0;
+    }
+    .archived-students-page .student-table-wrap.archived-table-wrap {
+        border: none;
+        border-radius: 0;
+        background: transparent;
+    }
     .archived-students-page .archived-table-wrap {
-        border-radius: 16px;
+        margin-bottom: 0;
     }
     .archived-students-page .archived-students-table {
         table-layout: fixed;
         width: 100%;
+        margin-bottom: 0 !important;
     }
-    .archived-students-page col.arch-col-student-no { width: 9rem; }
-    .archived-students-page col.arch-col-name { width: 22%; }
-    .archived-students-page col.arch-col-course { width: 20%; }
-    .archived-students-page col.arch-col-archived-at { width: 9.75rem; }
-    .archived-students-page col.arch-col-actions { width: 5.25rem; }
-    .archived-students-page .archived-students-table thead th,
-    .archived-students-page .archived-students-table tbody td {
-        text-align: center !important;
-        vertical-align: middle;
-        padding-left: 0.65rem;
-        padding-right: 0.65rem;
+    .archived-students-page .arch-col-student {
+        width: auto;
     }
     .archived-students-page .archived-students-table thead th {
-        font-size: 0.72rem;
-        font-weight: 700;
+        font-size: 0.6425rem;
+        font-weight: 750;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.065em;
         color: var(--dtr-muted) !important;
+        background: color-mix(in srgb, var(--dtr-surface-soft) 92%, transparent) !important;
         border-bottom: 1px solid var(--dtr-border-soft);
+        vertical-align: middle;
+        padding: 0.85rem 0.72rem;
+    }
+    .archived-students-page .arch-th-actions,
+    .archived-students-page .arch-th-archived {
+        white-space: nowrap;
+    }
+    .archived-students-page .archived-students-table tbody td {
+        padding: 0.92rem 0.72rem;
+        vertical-align: middle !important;
+        border-bottom: 1px solid var(--dtr-border-soft);
+    }
+    .archived-students-page .archived-students-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .archived-students-page .archived-students-table tbody tr:hover > td {
+        background: var(--dtr-hover-bg) !important;
+    }
+    .archived-students-page .arch-queue-cell-primary {
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        color: var(--dtr-heading) !important;
+        font-size: 0.92rem;
+        line-height: 1.3;
+    }
+    .archived-students-page .arch-queue-cell-sub {
+        margin-top: 0.15rem;
+    }
+    .archived-students-page .arch-queue-student-cell,
+    .archived-students-page .arch-queue-date-cell {
+        vertical-align: middle !important;
     }
     .archived-students-page .arch-col-actions {
         white-space: nowrap;
         padding-left: 0.35rem !important;
         padding-right: 0.35rem !important;
+        text-align: center !important;
+    }
+    /* Bulk toolbar */
+    .archived-students-page .arch-bulk-toolbar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.65rem 0.85rem;
+        align-items: end;
+        padding: 0.75rem 0.85rem;
+        border-radius: 12px;
+        border: 1px solid var(--dtr-border-soft);
+        background: color-mix(in srgb, var(--dtr-surface-soft) 94%, transparent);
+    }
+    @media (max-width: 719.98px) {
+        .archived-students-page .arch-bulk-toolbar { grid-template-columns: 1fr; }
+    }
+    .archived-students-page .arch-bulk-hint {
+        grid-column: 1 / -1;
+        font-size: 0.78rem;
+        color: var(--dtr-muted);
+        line-height: 1.4;
+        max-width: 42rem;
+    }
+    .archived-students-page .arch-bulk-note-block {
+        grid-column: 1 / 2;
+        min-width: 0;
+    }
+    .archived-students-page .arch-bulk-actions-inline {
+        grid-column: 2;
+        display: inline-flex;
+        gap: 0.45rem;
+        flex-shrink: 0;
+        align-self: end;
+    }
+    @media (max-width: 719.98px) {
+        .archived-students-page .arch-bulk-note-block { grid-column: 1 / -1; }
+        .archived-students-page .arch-bulk-actions-inline {
+            grid-column: 1 / -1;
+            justify-content: flex-end;
+        }
+    }
+    .archived-students-page .arch-bulk-remarks-label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--dtr-muted);
+        margin-bottom: 0.3rem;
+    }
+    .archived-students-page .arch-bulk-note {
+        border-radius: 10px !important;
+        font-size: 0.8375rem;
+        resize: vertical;
+        min-height: 2.5rem;
+        border-color: var(--dtr-input-border) !important;
+        background: var(--dtr-input-bg) !important;
+        color: var(--dtr-text) !important;
+    }
+    .archived-students-page .adm-q-bulk-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.35rem;
+        height: 2.35rem;
+        padding: 0;
+        margin: 0;
+        border-radius: 10px;
+        border-width: 1px;
+        border-style: solid;
+        background: transparent !important;
+        cursor: pointer;
+        transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+    }
+    .archived-students-page .adm-q-bulk-btn .bi {
+        font-size: 1.125rem;
+        line-height: 1;
+    }
+    .archived-students-page .adm-q-bulk-btn--approve {
+        border-color: color-mix(in srgb, #059669 55%, var(--dtr-input-border));
+        color: #059669;
+    }
+    .archived-students-page .adm-q-bulk-btn--approve:hover {
+        background: color-mix(in srgb, #059669 10%, transparent) !important;
+    }
+    .archived-students-page .adm-q-bulk-btn--reject {
+        border-color: color-mix(in srgb, #e11d48 48%, var(--dtr-input-border));
+        color: #e11d48;
+    }
+    .archived-students-page .adm-q-bulk-btn--reject:hover {
+        background: color-mix(in srgb, #f43f5e 10%, transparent) !important;
+    }
+    html[data-theme="dark"] .archived-students-page .adm-q-bulk-btn--approve {
+        color: #6ee7b7;
+        border-color: rgba(52, 211, 153, 0.5);
+    }
+    html[data-theme="dark"] .archived-students-page .adm-q-bulk-btn--reject {
+        color: #fda4af;
+        border-color: rgba(251, 113, 133, 0.5);
+    }
+    .archived-students-page .arch-queue-select-col {
+        width: 2.85rem;
+        min-width: 2.85rem;
+        text-align: center !important;
+        padding-left: 0.35rem !important;
+        padding-right: 0.35rem !important;
+    }
+    .archived-students-page .arch-queue-checkbox-wrap {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .archived-students-page .arch-queue-checkbox-wrap input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        margin: 0;
+        cursor: pointer;
+        width: 1.0625rem;
+        height: 1.0625rem;
+        border: 1.5px solid var(--dtr-input-border);
+        border-radius: 4px;
+        background: var(--dtr-card-bg);
+    }
+    .archived-students-page .arch-queue-checkbox-wrap input[type="checkbox"]:checked {
+        background-color: color-mix(in srgb, var(--dtr-primary) 78%, #059669);
+        border-color: color-mix(in srgb, var(--dtr-primary) 65%, transparent);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' d='M3.8 8.2l2.9 2.9 5.6-6.3'/%3E%3C/svg%3E");
+        background-size: 0.68rem auto;
+        background-position: center;
+        background-repeat: no-repeat;
     }
     .archived-students-page .arch-action-stack {
         display: inline-flex;
@@ -248,13 +461,6 @@
         flex-wrap: nowrap;
         gap: 0.42rem;
         width: 100%;
-    }
-    .archived-students-page .arch-archived-meta {
-        font-weight: 600;
-        color: var(--dtr-text);
-    }
-    .archived-students-page .arch-archived-time {
-        margin-top: 0.15rem;
     }
     .archived-students-page .arch-restore-form {
         display: inline-flex;
@@ -455,6 +661,84 @@
 
     confirmModalEl.addEventListener('hidden.bs.modal', function () {
         allowSubmit = false;
+    });
+})();
+
+function stripArchBulkDynamicInputs(form) {
+    if (!form) return;
+    Array.prototype.slice.call(form.querySelectorAll('input[data-arch-bulk-dynamic="1"]')).forEach(function (el) {
+        el.parentNode.removeChild(el);
+    });
+}
+
+function attachArchBulkStudentIds(form, checkboxes) {
+    checkboxes.forEach(function (cb) {
+        var inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = 'student_ids[]';
+        inp.value = cb.value;
+        inp.setAttribute('data-arch-bulk-dynamic', '1');
+        form.appendChild(inp);
+    });
+}
+
+async function submitArchBulk(action) {
+    var restoreForm = document.getElementById('archBulkRestoreForm');
+    var removeForm = document.getElementById('archBulkRemoveForm');
+    var checked = Array.prototype.slice.call(document.querySelectorAll('.arch-row-select:checked'));
+    if (checked.length === 0) {
+        if (window.norsuPrompt && window.norsuPrompt.alert) {
+            await window.norsuPrompt.alert('Select at least one archived student first.', { variant: 'warning', title: 'Nothing selected' });
+        }
+        return;
+    }
+    if (action === 'restore') {
+        var okRestore = window.norsuPrompt && window.norsuPrompt.confirm
+            ? await window.norsuPrompt.confirm(
+                'Restore ' + checked.length + ' archived student(s) to the active list?',
+                { variant: 'warning', title: 'Bulk restore', confirmText: 'Yes, restore selected' }
+            )
+            : window.confirm('Restore selected students to the active list?');
+        if (!okRestore) return;
+        if (!restoreForm) return;
+        stripArchBulkDynamicInputs(restoreForm);
+        attachArchBulkStudentIds(restoreForm, checked);
+        restoreForm.submit();
+        return;
+    }
+    var okRm = window.norsuPrompt && window.norsuPrompt.confirm
+        ? await window.norsuPrompt.confirm(
+            'PERMANENTLY remove ' + checked.length + ' student record(s)? This cannot be undone.',
+            { variant: 'danger', title: 'Bulk permanent removal', confirmText: 'Yes, permanently remove' }
+        )
+        : window.confirm('Permanently remove selected students?');
+    if (!okRm || !removeForm) return;
+    stripArchBulkDynamicInputs(removeForm);
+    attachArchBulkStudentIds(removeForm, checked);
+    removeForm.submit();
+}
+
+document.querySelectorAll('[data-arch-bulk]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        submitArchBulk(btn.getAttribute('data-arch-bulk'));
+    });
+});
+
+(function setupArchBulkSelectAll() {
+    var selectAll = document.getElementById('archSelectAllShown');
+    var rowBoxes = Array.prototype.slice.call(document.querySelectorAll('.arch-row-select'));
+    if (!selectAll || rowBoxes.length === 0) return;
+    selectAll.addEventListener('change', function () {
+        rowBoxes.forEach(function (cb) {
+            cb.checked = selectAll.checked;
+        });
+    });
+    rowBoxes.forEach(function (cb) {
+        cb.addEventListener('change', function refreshArchSelectAllIndeterminate() {
+            var sel = rowBoxes.filter(function (x) { return x.checked; }).length;
+            selectAll.checked = sel > 0 && sel === rowBoxes.length;
+            selectAll.indeterminate = sel > 0 && sel < rowBoxes.length;
+        });
     });
 })();
 </script>

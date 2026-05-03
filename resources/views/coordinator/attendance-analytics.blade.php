@@ -32,7 +32,78 @@
     .dtr-analytics .compare-form .form-group { margin: 0; }
     .dtr-analytics .compare-form label { font-size: 0.8rem; font-weight: 500; color: var(--dtr-muted); margin-bottom: 0.35rem; display: block; }
     .dtr-analytics .compare-form input[type="month"] { min-width: 150px; padding: 0.5rem 0.65rem; border-radius: 8px; border: 1px solid var(--dtr-input-border); background: var(--dtr-input-bg); color: var(--dtr-text); font-size: 0.9rem; }
-    .dtr-analytics .compare-form .btn-compare { padding: 0.5rem 1.25rem; font-weight: 600; border-radius: 8px; font-size: 0.9rem; }
+    /* Compare — aligned with search-submit / minimalist primary (overrides classic-ui .btn-primary) */
+    .layout-wrap .main-content .dtr-analytics .compare-form .btn.btn-primary.btn-compare {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+        min-height: 42px !important;
+        padding: 0.5rem 1.2rem !important;
+        border-radius: 11px !important;
+        font-size: 0.875rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.02em !important;
+        line-height: 1.2 !important;
+        border: 1px solid color-mix(in srgb, var(--dtr-primary) 52%, var(--dtr-input-border)) !important;
+        background: color-mix(in srgb, var(--dtr-primary) 11%, var(--dtr-card-bg) 89%) !important;
+        background-image: none !important;
+        color: var(--dtr-primary-dark, var(--dtr-primary)) !important;
+        box-shadow: none !important;
+        transition: border-color 0.2s ease, background 0.2s ease, color 0.18s ease, transform 0.12s ease !important;
+    }
+    .layout-wrap .main-content .dtr-analytics .compare-form .btn.btn-primary.btn-compare i {
+        font-size: 1rem !important;
+        line-height: 1 !important;
+    }
+    .layout-wrap .main-content .dtr-analytics .compare-form .btn.btn-primary.btn-compare:hover,
+    .layout-wrap .main-content .dtr-analytics .compare-form .btn.btn-primary.btn-compare:focus {
+        border-color: color-mix(in srgb, var(--dtr-primary) 70%, var(--dtr-input-border)) !important;
+        background: color-mix(in srgb, var(--dtr-primary) 20%, var(--dtr-card-bg) 80%) !important;
+        color: var(--dtr-heading) !important;
+    }
+    .layout-wrap .main-content .dtr-analytics .compare-form .btn.btn-primary.btn-compare:focus-visible {
+        outline: none !important;
+        box-shadow:
+            0 0 0 2px var(--dtr-card-bg),
+            0 0 0 4px color-mix(in srgb, var(--dtr-primary) 32%, transparent) !important;
+    }
+    .layout-wrap .main-content .dtr-analytics .compare-form .btn.btn-primary.btn-compare:active {
+        transform: scale(0.985);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .layout-wrap .main-content .dtr-analytics .compare-form .btn.btn-primary.btn-compare {
+            transition: border-color 0.2s ease, background 0.2s ease, color 0.18s ease !important;
+        }
+        .layout-wrap .main-content .dtr-analytics .compare-form .btn.btn-primary.btn-compare:active {
+            transform: none;
+        }
+    }
+    html[data-theme="dark"]
+        .layout-wrap
+        .main-content
+        .dtr-analytics
+        .compare-form
+        .btn.btn-primary.btn-compare {
+        border-color: color-mix(in srgb, var(--dtr-primary) 48%, var(--dtr-input-border)) !important;
+        background: color-mix(in srgb, var(--dtr-primary) 17%, var(--dtr-card-bg) 83%) !important;
+        color: color-mix(in srgb, var(--dtr-primary) 68%, #e8ecff 32%) !important;
+    }
+    html[data-theme="dark"]
+        .layout-wrap
+        .main-content
+        .dtr-analytics
+        .compare-form
+        .btn.btn-primary.btn-compare:hover,
+    html[data-theme="dark"]
+        .layout-wrap
+        .main-content
+        .dtr-analytics
+        .compare-form
+        .btn.btn-primary.btn-compare:focus {
+        background: color-mix(in srgb, var(--dtr-primary) 26%, var(--dtr-card-bg) 74%) !important;
+        color: #f8fafc !important;
+    }
     .dtr-analytics .compare-hint { font-size: 0.8rem; color: var(--dtr-muted); margin-top: 0.5rem; }
     .dtr-analytics .comparison-table { font-size: 0.95rem; }
     .dtr-analytics .comparison-table th { font-weight: 600; color: var(--dtr-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.75rem 1rem; border-bottom: 1px solid var(--dtr-border-soft); text-align: center; }
@@ -72,7 +143,7 @@
                 @endfor
                 <div class="form-group">
                     <label>&nbsp;</label>
-                    <button type="submit" class="btn btn-primary btn-compare"><i class="bi bi-arrow-left-right me-1"></i> Compare</button>
+                    <button type="submit" class="btn btn-primary btn-compare"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Compare</button>
                 </div>
             </form>
             <p class="compare-hint">Leave unused slots empty. At least 2 months required.</p>

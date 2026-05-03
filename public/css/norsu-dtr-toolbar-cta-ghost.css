@@ -1,0 +1,100 @@
+/**
+ * Minimal toolbar CTAs (e.g. “Add coordinator”) — tonal outline, not solid primary.
+ * Use with .btn base only; do not pair with .btn-primary (classic-ui forces solid fill).
+ */
+.layout-wrap .main-content .btn.btn-toolbar-cta-ghost {
+    box-sizing: border-box;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    min-height: 40px !important;
+    padding: 0 1.15rem !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    letter-spacing: 0.02em !important;
+    line-height: 1.2 !important;
+    border: 1px solid color-mix(in srgb, var(--dtr-primary) 48%, var(--dtr-input-border) 52%) !important;
+    background-color: color-mix(in srgb, var(--dtr-primary) 8%, var(--dtr-card-bg) 92%) !important;
+    background-image: none !important;
+    color: var(--dtr-primary-dark, var(--dtr-primary)) !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    text-decoration: none !important;
+    transition:
+        border-color 0.2s cubic-bezier(0.33, 1, 0.68, 1),
+        background-color 0.2s ease,
+        color 0.18s ease,
+        transform 0.14s cubic-bezier(0.33, 1, 0.68, 1),
+        box-shadow 0.2s ease !important;
+}
+
+.layout-wrap .main-content .btn.btn-toolbar-cta-ghost i {
+    font-size: 1.05rem !important;
+    line-height: 1 !important;
+    color: color-mix(in srgb, var(--dtr-primary) 88%, var(--dtr-heading) 12%) !important;
+}
+
+.layout-wrap .main-content .btn.btn-toolbar-cta-ghost:hover,
+.layout-wrap .main-content .btn.btn-toolbar-cta-ghost:focus {
+    border-color: color-mix(in srgb, var(--dtr-primary) 68%, var(--dtr-input-border) 32%) !important;
+    background-color: color-mix(in srgb, var(--dtr-primary) 16%, var(--dtr-card-bg) 84%) !important;
+    color: var(--dtr-heading) !important;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--dtr-primary) 14%, transparent) !important;
+}
+
+.layout-wrap .main-content .btn.btn-toolbar-cta-ghost:hover i,
+.layout-wrap .main-content .btn.btn-toolbar-cta-ghost:focus i {
+    color: var(--dtr-primary) !important;
+}
+
+.layout-wrap .main-content .btn.btn-toolbar-cta-ghost:focus-visible {
+    outline: none !important;
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--dtr-card-bg) 100%, transparent),
+        0 0 0 4px color-mix(in srgb, var(--dtr-primary) 35%, transparent) !important;
+}
+
+.layout-wrap .main-content .btn.btn-toolbar-cta-ghost:active {
+    transform: scale(0.985);
+    border-color: color-mix(in srgb, var(--dtr-primary) 78%, var(--dtr-input-border) 22%) !important;
+    background-color: color-mix(in srgb, var(--dtr-primary) 22%, var(--dtr-card-bg) 78%) !important;
+}
+
+html[data-theme="dark"] .layout-wrap .main-content .btn.btn-toolbar-cta-ghost {
+    border-color: color-mix(in srgb, var(--dtr-primary) 42%, var(--dtr-input-border) 58%) !important;
+    background-color: color-mix(in srgb, var(--dtr-primary) 14%, var(--dtr-card-bg) 86%) !important;
+    color: color-mix(in srgb, var(--dtr-primary) 52%, #e8ecff 48%) !important;
+}
+
+html[data-theme="dark"] .layout-wrap .main-content .btn.btn-toolbar-cta-ghost i {
+    color: color-mix(in srgb, var(--dtr-primary) 72%, #e0f2fe 28%) !important;
+}
+
+html[data-theme="dark"] .layout-wrap .main-content .btn.btn-toolbar-cta-ghost:hover,
+html[data-theme="dark"] .layout-wrap .main-content .btn.btn-toolbar-cta-ghost:focus {
+    border-color: color-mix(in srgb, var(--dtr-primary) 58%, var(--dtr-input-border) 42%) !important;
+    background-color: color-mix(in srgb, var(--dtr-primary) 24%, var(--dtr-card-bg) 76%) !important;
+    color: #f8fafc !important;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--dtr-primary) 20%, transparent) !important;
+}
+
+html[data-theme="dark"] .layout-wrap .main-content .btn.btn-toolbar-cta-ghost:focus-visible {
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--dtr-card-bg) 100%, transparent),
+        0 0 0 4px color-mix(in srgb, var(--dtr-primary) 42%, transparent) !important;
+}
+
+html[data-theme="dark"] .layout-wrap .main-content .btn.btn-toolbar-cta-ghost:active {
+    background-color: color-mix(in srgb, var(--dtr-primary) 30%, var(--dtr-card-bg) 70%) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .layout-wrap .main-content .btn.btn-toolbar-cta-ghost {
+        transition: none !important;
+    }
+    .layout-wrap .main-content .btn.btn-toolbar-cta-ghost:active {
+        transform: none;
+    }
+}

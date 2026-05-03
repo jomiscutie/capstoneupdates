@@ -185,7 +185,7 @@ class OjtCompletionController extends Controller
                 'termAssignment' => $termAssignment,
                 'issuedAt' => $issuedAt,
             ]);
-            $pdf->setPaper('A4', 'portrait');
+            $pdf->setPaper('letter', 'landscape');
 
             $filename = 'OJT_Certificate_'.$student->student_no.'_'.now()->format('Y-m-d').'.pdf';
 

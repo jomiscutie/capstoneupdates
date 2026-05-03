@@ -10,9 +10,12 @@
     <link rel="stylesheet" href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.css') }}">
     <link rel="stylesheet" href="{{ asset('css/norsu-dtr-system.css') }}">
     <link rel="stylesheet" href="{{ asset('css/norsu-dtr-classic-ui.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/norsu-dtr-search-submit.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/norsu-dtr-apply-ghost.css') }}">
     <link rel="stylesheet" href="{{ asset('css/norsu-dtr-dialogs.css') }}">
     <link rel="stylesheet" href="{{ asset('css/norsu-dtr-modal-buttons.css') }}">
     <link rel="stylesheet" href="{{ asset('css/norsu-dtr-theme-toggle.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/norsu-dtr-search-fields.css') }}">
     <link rel="stylesheet" href="{{ asset('css/hide-native-password-reveal.css') }}">
     <script>
         (function () {

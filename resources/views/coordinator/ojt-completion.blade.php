@@ -8,53 +8,242 @@
     .ojt-page .dashboard-header > div { margin: 0 auto; width: 100%; }
     .ojt-page .dashboard-header h2,
     .ojt-page .dashboard-header p { text-align: center; }
-    .ojt-page .table thead th { background: var(--dtr-surface-soft); color: var(--dtr-muted); font-weight: 600; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.75rem 1rem; border-bottom: 1px solid var(--dtr-border-soft); }
-    .ojt-page .table td { padding: 0.75rem 1rem; vertical-align: middle; border-bottom: 1px solid var(--dtr-border-soft); }
-    .ojt-page .table tbody tr:last-child td { border-bottom: none; }
-    .ojt-page .table tbody tr:hover { background: var(--dtr-hover-bg); }
-    .ojt-page .progress {
-        height: 1.15rem;
+    .ojt-page .ojt-completion-table thead th {
+        background: var(--dtr-surface-soft);
+        color: color-mix(in srgb, var(--dtr-heading) 85%, var(--dtr-primary) 15%);
+        font-weight: 700;
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--dtr-border-soft);
+        white-space: nowrap;
+    }
+    html[data-theme="dark"] .ojt-page .ojt-completion-table thead th {
+        color: color-mix(in srgb, var(--dtr-heading) 92%, var(--dtr-primary) 8%);
+    }
+    .ojt-page .ojt-completion-table td { padding: 0.75rem 1rem; vertical-align: middle; border-bottom: 1px solid var(--dtr-border-soft); }
+    .ojt-page .ojt-completion-table tbody tr:last-child td { border-bottom: none; }
+    .ojt-page .ojt-completion-table tbody tr:hover { background: var(--dtr-hover-bg); }
+    .ojt-page .progress.ojt-progress-track {
+        height: 0.625rem;
         border-radius: 999px;
-        background: #1e293b;
-        border: 1px solid #334155;
-        box-shadow: inset 0 1px 2px rgba(0,0,0,0.35);
+        border: none;
         width: 100%;
+        overflow: hidden;
+        background: color-mix(in srgb, var(--dtr-surface-2) 82%, var(--dtr-muted) 18%);
+        box-shadow:
+            inset 0 1px 2px rgba(15, 23, 42, 0.12),
+            inset 0 -1px 1px rgba(255, 255, 255, 0.35);
+    }
+    html[data-theme="dark"] .ojt-page .progress.ojt-progress-track {
+        background: color-mix(in srgb, var(--dtr-card-bg) 52%, #0f172a 48%);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.55);
     }
     .ojt-page .progress-wrap {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.65rem;
     }
-    .ojt-page .progress-wrap .progress {
-        flex: 1 1 auto;
-        min-width: 90px;
-    }
+    .ojt-page .progress-wrap .progress { flex: 1 1 auto; min-width: 96px; }
     .ojt-page .progress-value {
-        min-width: 42px;
+        min-width: 2.75rem;
         text-align: right;
-        font-size: 0.76rem;
+        font-size: 0.8rem;
         font-weight: 700;
-        color: var(--dtr-text);
+        color: var(--dtr-heading);
         font-variant-numeric: tabular-nums;
     }
-    .ojt-page .progress-bar {
-        font-size: 0.7rem;
+    html[data-theme="dark"] .ojt-page .progress-value { color: var(--dtr-heading); }
+    .ojt-page .progress-bar.ojt-progress-fill {
+        height: 100%;
+        border-radius: inherit;
+        transition: width 0.35s ease;
+        box-shadow: none;
+        min-width: 0;
+        background-image: none;
+    }
+    .ojt-page .progress-bar.ojt-progress-fill--complete {
+        background: linear-gradient(90deg, #047857 0%, #059669 40%, #10b981 100%);
+        box-shadow: 0 0 6px color-mix(in srgb, #10b981 38%, transparent);
+    }
+    html[data-theme="dark"] .ojt-page .progress-bar.ojt-progress-fill--complete {
+        background: linear-gradient(90deg, #065f46 0%, #059669 45%, #34d399 100%);
+        box-shadow: 0 0 8px color-mix(in srgb, #34d399 22%, transparent);
+    }
+    .ojt-page .progress-bar.ojt-progress-fill--in-progress {
+        background: linear-gradient(90deg, #15803d 0%, #16a34a 55%, #22c55e 100%);
+    }
+    html[data-theme="dark"] .ojt-page .progress-bar.ojt-progress-fill--in-progress {
+        background: linear-gradient(90deg, #166534 0%, #15803d 50%, #4ade80 100%);
+    }
+    .ojt-page .progress-bar.ojt-progress-fill--empty {
+        background: transparent;
+    }
+    .ojt-page .ojt-status-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.38rem 0.75rem;
+        border-radius: 6px;
         font-weight: 600;
-        color: #f8fafc;
-        text-shadow: 0 1px 1px rgba(0,0,0,0.45);
+        font-size: 0.69rem;
+        letter-spacing: 0.045em;
+        text-transform: uppercase;
+        white-space: nowrap;
     }
-    .ojt-page .progress-bar.bg-success {
-        background: linear-gradient(90deg, #16a34a 0%, #22c55e 100%) !important;
+    .ojt-page .badge-confirmed.ojt-status-pill {
+        background: #059669;
+        color: #fff;
+        box-shadow: 0 1px 2px rgba(5, 150, 105, 0.25);
     }
-    .ojt-page .progress-bar.bg-warning {
-        background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%) !important;
+    .ojt-page .badge-reached.ojt-status-pill {
+        background: #16a34a;
+        color: #fff;
+        box-shadow: 0 1px 2px rgba(22, 163, 74, 0.25);
     }
-    .ojt-page .progress-bar.bg-secondary {
-        background: linear-gradient(90deg, #334155 0%, #475569 100%) !important;
+    .ojt-page .badge-not-reached.ojt-status-pill {
+        background: #c0392b;
+        color: #fff;
+        box-shadow: 0 1px 2px rgba(192, 57, 43, 0.28);
     }
-    .ojt-page .badge-confirmed { background: #059669; color: #fff; padding: 0.35rem 0.65rem; border-radius: 6px; font-weight: 500; }
-    .ojt-page .badge-reached { background: #16a34a; color: #fff; padding: 0.35rem 0.65rem; border-radius: 6px; font-weight: 500; }
-    .ojt-page .badge-not-reached { background: #dc2626; color: #fff; padding: 0.35rem 0.65rem; border-radius: 6px; font-weight: 500; }
+
+    /* Action column — minimalist tonal buttons (overrides Bootstrap + classic-ui) */
+    .layout-wrap .main-content .ojt-page .ojt-action-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+    }
+    .layout-wrap .main-content .ojt-page .ojt-completion-table td .ojt-action-stack .ojt-action-meta {
+        display: block;
+        max-width: 15rem;
+        margin: 0;
+        text-align: center;
+        font-size: 0.72rem;
+        line-height: 1.35;
+        color: var(--dtr-muted) !important;
+    }
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.45rem !important;
+        min-height: 35px !important;
+        padding: 0.35rem 0.95rem !important;
+        border-radius: 10px !important;
+        font-size: 0.8125rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.02em !important;
+        line-height: 1.2 !important;
+        border-style: solid !important;
+        border-width: 1px !important;
+        background-image: none !important;
+        box-shadow: none !important;
+        text-decoration: none !important;
+        transition:
+            border-color 0.2s ease,
+            background 0.2s ease,
+            color 0.18s ease,
+            transform 0.12s ease !important;
+    }
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn i {
+        font-size: 1rem !important;
+        line-height: 1 !important;
+    }
+    /* Certificate download — emerald tonal */
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--cert {
+        border-color: color-mix(in srgb, #059669 52%, var(--dtr-input-border) 48%) !important;
+        background: color-mix(in srgb, #059669 11%, var(--dtr-card-bg) 89%) !important;
+        color: #047857 !important;
+    }
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--cert i {
+        color: color-mix(in srgb, #059669 85%, var(--dtr-heading) 15%) !important;
+    }
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--cert:hover,
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--cert:focus {
+        border-color: color-mix(in srgb, #059669 72%, var(--dtr-input-border) 28%) !important;
+        background: color-mix(in srgb, #059669 20%, var(--dtr-card-bg) 80%) !important;
+        color: var(--dtr-heading) !important;
+    }
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--cert:hover i,
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--cert:focus i {
+        color: #059669 !important;
+    }
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--cert:focus-visible {
+        outline: none !important;
+        box-shadow:
+            0 0 0 2px var(--dtr-card-bg),
+            0 0 0 4px color-mix(in srgb, #059669 34%, transparent) !important;
+    }
+    html[data-theme="dark"] .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--cert {
+        border-color: color-mix(in srgb, #34d399 42%, var(--dtr-input-border) 58%) !important;
+        background: color-mix(in srgb, #059669 18%, var(--dtr-card-bg) 82%) !important;
+        color: color-mix(in srgb, #6ee7b7 82%, var(--dtr-heading) 18%) !important;
+    }
+    html[data-theme="dark"] .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--cert:hover,
+    html[data-theme="dark"] .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--cert:focus {
+        background: color-mix(in srgb, #059669 28%, var(--dtr-card-bg) 72%) !important;
+        color: var(--dtr-heading) !important;
+    }
+    html[data-theme="dark"] .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--cert:focus-visible {
+        box-shadow:
+            0 0 0 2px var(--dtr-card-bg),
+            0 0 0 4px color-mix(in srgb, #34d399 30%, transparent) !important;
+    }
+    /* Confirm — primary tonal (matches other coordinator outline CTAs) */
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--confirm {
+        border-color: color-mix(in srgb, var(--dtr-primary) 52%, var(--dtr-input-border) 48%) !important;
+        background: color-mix(in srgb, var(--dtr-primary) 11%, var(--dtr-card-bg) 89%) !important;
+        color: var(--dtr-primary-dark, var(--dtr-primary)) !important;
+    }
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--confirm i {
+        color: color-mix(in srgb, var(--dtr-primary) 88%, var(--dtr-heading) 12%) !important;
+    }
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--confirm:hover,
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--confirm:focus {
+        border-color: color-mix(in srgb, var(--dtr-primary) 70%, var(--dtr-input-border) 30%) !important;
+        background: color-mix(in srgb, var(--dtr-primary) 20%, var(--dtr-card-bg) 80%) !important;
+        color: var(--dtr-heading) !important;
+    }
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--confirm:hover i,
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--confirm:focus i {
+        color: var(--dtr-primary) !important;
+    }
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--confirm:focus-visible {
+        outline: none !important;
+        box-shadow:
+            0 0 0 2px var(--dtr-card-bg),
+            0 0 0 4px color-mix(in srgb, var(--dtr-primary) 32%, transparent) !important;
+    }
+    html[data-theme="dark"] .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--confirm {
+        border-color: color-mix(in srgb, var(--dtr-primary) 48%, var(--dtr-input-border) 52%) !important;
+        background: color-mix(in srgb, var(--dtr-primary) 17%, var(--dtr-card-bg) 83%) !important;
+        color: color-mix(in srgb, var(--dtr-primary) 68%, #e8ecff 32%) !important;
+    }
+    html[data-theme="dark"] .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--confirm:hover,
+    html[data-theme="dark"] .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--confirm:focus {
+        background: color-mix(in srgb, var(--dtr-primary) 26%, var(--dtr-card-bg) 74%) !important;
+        color: #f8fafc !important;
+    }
+    html[data-theme="dark"] .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn--confirm:focus-visible {
+        box-shadow:
+            0 0 0 2px var(--dtr-card-bg),
+            0 0 0 4px color-mix(in srgb, var(--dtr-primary) 42%, transparent) !important;
+    }
+    .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn:active {
+        transform: scale(0.985);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn {
+            transition: border-color 0.2s ease, background 0.2s ease, color 0.18s ease !important;
+        }
+        .layout-wrap .main-content .ojt-page .ojt-completion-table .btn.ojt-action-btn:active {
+            transform: none;
+        }
+    }
+
     .ojt-page .search-wrap { margin-bottom: 1rem; }
     .ojt-page .search-form { position: relative; max-width: 280px; }
     .ojt-page .search-input {
@@ -141,16 +330,16 @@
             </div>
             @if($students->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0 ojt-completion-table">
                         <thead>
                             <tr>
                                 <th>Student No</th>
                                 <th>Name</th>
                                 <th>Total Rendered</th>
                                 <th>Required</th>
-                                <th>Progress</th>
-                                <th>Status</th>
-                                <th>Action</th>
+                                <th style="min-width: 160px;">Progress</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -161,7 +350,7 @@
                                     $required = $student->requiredHoursForAssignment($activeAssignment);
                                     $pct = $required > 0 ? min(100, round(($total / $required) * 100)) : 0;
                                     $reached = $total >= $required;
-                                    $progressClass = $pct >= 100 ? 'bg-success' : ($pct >= 50 ? 'bg-warning' : 'bg-secondary');
+                                    $progressFill = $pct >= 100 ? 'complete' : ($pct > 0 ? 'in-progress' : 'empty');
                                     $confirmed = $student->isOjtCompletionConfirmed($activeAssignment);
                                     $confirmedBy = $activeAssignment?->confirmedBy;
                                 @endphp
@@ -170,37 +359,37 @@
                                     <td>{{ $student->name }}</td>
                                     <td><strong>{{ number_format($total, 1) }}</strong> hrs</td>
                                     <td>{{ number_format($required, 1) }} hrs</td>
-                                    <td style="min-width: 150px;">
+                                    <td>
                                         <div class="progress-wrap">
-                                            <div class="progress">
-                                                <div class="progress-bar {{ $progressClass }}" role="progressbar" data-pct="{{ $pct }}" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ $pct }} percent progress"></div>
+                                            <div class="progress ojt-progress-track">
+                                                <div class="progress-bar ojt-progress-fill ojt-progress-fill--{{ $progressFill }}" role="progressbar" data-pct="{{ $pct }}" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ $pct }} percent progress"></div>
                                             </div>
                                             <span class="progress-value">{{ $pct }}%</span>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         @if($confirmed)
-                                            <span class="badge badge-confirmed"><i class="bi bi-check-circle me-1"></i>Confirmed</span>
+                                            <span class="badge badge-confirmed ojt-status-pill"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>Confirmed</span>
                                         @elseif($reached)
-                                            <span class="badge badge-reached"><i class="bi bi-clock me-1"></i>Reached</span>
+                                            <span class="badge badge-reached ojt-status-pill"><i class="bi bi-clock me-1" aria-hidden="true"></i>Reached</span>
                                         @else
-                                            <span class="badge badge-not-reached">Not reached</span>
+                                            <span class="badge badge-not-reached ojt-status-pill">Not reached</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <div class="d-flex flex-wrap gap-1 align-items-center">
+                                    <td class="text-center">
+                                        <div class="ojt-action-stack">
                                             @if($confirmed)
-                                                <a href="{{ route('coordinator.ojt.completion.certificate', $student) }}" class="btn btn-sm btn-success text-white" target="_blank" rel="noopener">
-                                                    <i class="bi bi-download me-1"></i>Certificate
+                                                <a href="{{ route('coordinator.ojt.completion.certificate', $student) }}" class="btn ojt-action-btn ojt-action-btn--cert" target="_blank" rel="noopener noreferrer">
+                                                    <i class="bi bi-download" aria-hidden="true"></i>Certificate
                                                 </a>
-                                                <small class="text-muted">
+                                                <small class="ojt-action-meta">
                                                     By {{ $confirmedBy->name ?? 'Coordinator' }} · {{ $activeAssignment?->confirmed_at?->format('M d, Y') }}
                                                 </small>
                                             @elseif($reached)
-                                                <form action="{{ route('coordinator.ojt.completion.confirm', $student) }}" method="POST" class="d-inline">
+                                                <form action="{{ route('coordinator.ojt.completion.confirm', $student) }}" method="POST" class="d-inline-flex m-0">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-confirm" data-norsu-confirm="Confirm that {{ e($student->name) }} has completed the required {{ number_format($required, 0) }} hours?" data-norsu-variant="warning">
-                                                        <i class="bi bi-patch-check me-1"></i>Confirm
+                                                    <button type="submit" class="btn ojt-action-btn ojt-action-btn--confirm" data-norsu-confirm="Confirm that {{ e($student->name) }} has completed the required {{ number_format($required, 0) }} hours?" data-norsu-variant="warning">
+                                                        <i class="bi bi-patch-check" aria-hidden="true"></i>Confirm
                                                     </button>
                                                 </form>
                                             @else

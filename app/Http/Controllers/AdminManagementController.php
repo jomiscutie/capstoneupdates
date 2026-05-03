@@ -16,7 +16,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
@@ -272,18 +271,75 @@ class AdminManagementController extends Controller
 
     public function reviewOfficeAssignmentRequest(Request $request, OfficeAssignmentRequest $officeRequest)
     {
-        if ($officeRequest->status !== OfficeAssignmentRequest::STATUS_PENDING) {
-            return back()->with('info', 'This office request has already been reviewed.');
-        }
-
         $validated = $request->validate([
             'decision' => ['required', 'in:approve,reject'],
             'admin_remarks' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $admin = Auth::guard('admin')->user();
+        $remarks = trim((string) ($validated['admin_remarks'] ?? ''));
+
+        if (! $this->processOfficeAssignmentReview($officeRequest, (string) $validated['decision'], $remarks)) {
+            return back()->with('info', 'This office request has already been reviewed.');
+        }
+
+        return back()->with(
+            'success',
+            $validated['decision'] === 'approve'
+                ? 'Office reassignment approved and updated.'
+                : 'Office reassignment request rejected.'
+        );
+    }
+
+    public function bulkReviewOfficeAssignmentRequests(Request $request)
+    {
+        $validated = $request->validate([
+            'request_ids' => ['required', 'array', 'min:1', 'max:50'],
+            'request_ids.*' => ['integer', 'distinct'],
+            'decision' => ['required', 'in:approve,reject'],
+            'admin_remarks' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $ids = collect($validated['request_ids'])->map(fn ($id) => (int) $id)->unique()->values()->all();
         $decision = (string) $validated['decision'];
         $remarks = trim((string) ($validated['admin_remarks'] ?? ''));
+
+        $rows = OfficeAssignmentRequest::query()
+            ->whereIn('id', $ids)
+            ->with(['student'])
+            ->get();
+
+        $processed = 0;
+        DB::transaction(function () use ($rows, $decision, $remarks, &$processed) {
+            foreach ($rows as $officeRequest) {
+                if ($this->processOfficeAssignmentReview($officeRequest, $decision, $remarks)) {
+                    $processed++;
+                }
+            }
+        });
+
+        if ($processed === 0) {
+            return back()->with('info', 'No pending office requests were updated. Select pending rows only.');
+        }
+
+        return back()->with(
+            $decision === 'approve' ? 'success' : 'warning',
+            'Bulk office '.($decision === 'approve' ? 'approve' : 'reject').': '.$processed.' request'.($processed === 1 ? '' : 's').' processed.'
+        );
+    }
+
+    /**
+     * @return bool False if already reviewed (not pending)
+     */
+    private function processOfficeAssignmentReview(
+        OfficeAssignmentRequest $officeRequest,
+        string $decision,
+        string $remarks
+    ): bool {
+        if ($officeRequest->status !== OfficeAssignmentRequest::STATUS_PENDING) {
+            return false;
+        }
+
+        $admin = Auth::guard('admin')->user();
 
         $officeRequest->update([
             'status' => $decision === 'approve'
@@ -316,12 +372,7 @@ class AdminManagementController extends Controller
             ],
         ]);
 
-        return back()->with(
-            'success',
-            $decision === 'approve'
-                ? 'Office reassignment approved and updated.'
-                : 'Office reassignment request rejected.'
-        );
+        return true;
     }
 
     /**
@@ -462,6 +513,104 @@ class AdminManagementController extends Controller
 
         return redirect()->route('admin.students.archived', $request->only(['q']))
             ->with('success', 'Student "'.$name.'" was permanently removed from archive.');
+    }
+
+    /**
+     * Restore multiple archived students in one submission.
+     */
+    public function bulkRestoreArchivedStudents(Request $request)
+    {
+        $validated = $request->validate([
+            'student_ids' => ['required', 'array', 'min:1', 'max:50'],
+            'student_ids.*' => ['integer', 'distinct'],
+        ]);
+
+        $admin = Auth::guard('admin')->user();
+        $ids = collect($validated['student_ids'])->map(fn ($id) => (int) $id)->unique()->values()->all();
+        $students = Student::onlyTrashed()->whereIn('id', $ids)->get();
+
+        if ($students->isEmpty()) {
+            return redirect()->route('admin.students.archived', $request->only(['q']))
+                ->with('info', 'No archived students matched the selection.');
+        }
+
+        $restoredCount = 0;
+        DB::transaction(function () use ($students, $admin, &$restoredCount) {
+            foreach ($students as $student) {
+                $name = $student->name;
+                $studentNo = $student->student_no;
+                $studentId = $student->id;
+                $student->restore();
+
+                AuditLog::create([
+                    'actor_type' => 'admin',
+                    'actor_id' => (int) $admin->id,
+                    'action' => 'student_restored',
+                    'target_type' => 'student',
+                    'target_id' => $studentId,
+                    'details' => 'Student restored from archive (bulk): '.$studentNo.' — '.$name.'.',
+                    'context' => [
+                        'student_no' => $studentNo,
+                        'name' => $name,
+                    ],
+                ]);
+                $restoredCount++;
+            }
+        });
+
+        return redirect()->route('admin.students.archived', $request->only(['q']))
+            ->with('success', $restoredCount.' student'.($restoredCount === 1 ? '' : 's').' restored to the active list.');
+    }
+
+    /**
+     * Permanently remove multiple archived students (bulk). Same audit pattern as forceRemoveArchivedStudent.
+     */
+    public function bulkForceRemoveArchivedStudents(Request $request)
+    {
+        $validated = $request->validate([
+            'student_ids' => ['required', 'array', 'min:1', 'max:25'],
+            'student_ids.*' => ['integer', 'distinct'],
+            'remarks' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $admin = Auth::guard('admin')->user();
+        $remarks = trim((string) ($validated['remarks'] ?? ''));
+
+        $ids = collect($validated['student_ids'])->map(fn ($id) => (int) $id)->unique()->values()->all();
+        $students = Student::onlyTrashed()->whereIn('id', $ids)->get();
+
+        if ($students->isEmpty()) {
+            return redirect()->route('admin.students.archived', $request->only(['q']))
+                ->with('info', 'No archived students matched the selection.');
+        }
+
+        $removedCount = 0;
+        DB::transaction(function () use ($students, $admin, $remarks, &$removedCount) {
+            foreach ($students as $student) {
+                $name = $student->name;
+                $studentNo = $student->student_no;
+                $studentId = $student->id;
+                $student->forceDelete();
+
+                AuditLog::create([
+                    'actor_type' => 'admin',
+                    'actor_id' => (int) $admin->id,
+                    'action' => 'student_permanently_removed',
+                    'target_type' => 'student',
+                    'target_id' => $studentId,
+                    'details' => 'Archived student permanently removed (bulk): '.$studentNo.' — '.$name.'.',
+                    'context' => [
+                        'student_no' => $studentNo,
+                        'name' => $name,
+                        'remarks' => $remarks,
+                    ],
+                ]);
+                $removedCount++;
+            }
+        });
+
+        return redirect()->route('admin.students.archived', $request->only(['q']))
+            ->with('success', $removedCount.' student'.($removedCount === 1 ? '' : 's').' permanently removed from archive.');
     }
 
     public function settings()
@@ -685,13 +834,6 @@ class AdminManagementController extends Controller
     {
         $officeOptions = Student::getOfficeOptions();
 
-        // Debug: log incoming request data
-        Log::debug('Bulk assignment request', [
-            'student_ids' => $request->input('student_ids'),
-            'assigned_office' => $request->input('assigned_office'),
-            'all_input' => $request->all(),
-        ]);
-
         $validated = $request->validate([
             'student_ids' => 'required|array|min:1',
             'student_ids.*' => ['integer', Rule::exists('students', 'id')->whereNull('deleted_at')],
@@ -702,35 +844,64 @@ class AdminManagementController extends Controller
             'assigned_office' => ['nullable', 'string', Rule::in($officeOptions)],
         ]);
 
-        // Only treat as "term assignment" when the admin actually filled term-related fields.
-        // The Hours input is always present in the form; when left blank it still appears in
-        // $validated as null — do not use array_key_exists() or empty() on the key alone.
-        $hasTermAssignmentInput =
-            filled($validated['school_year'] ?? null) ||
-            filled($validated['term'] ?? null) ||
-            filled($validated['section'] ?? null) ||
-            filled($validated['required_ojt_hours'] ?? null);
+        /*
+         * Bulk row behaviour (Term / Section can stay on “Skip”, Hours / School year isolated):
+         * • New assignment: Term + Section + Hours together (school year optional for the new row).
+         * • Optional patch: leave Term and Section skipped; set only Hours and/or School year to edit the
+         *   current active assignment instead of rotating in a new term.
+         * • Assigned office: independent of term rows when “Keep current” is not chosen.
+         */
+        $fullTermPackage = filled($validated['term'] ?? null)
+            && filled($validated['section'] ?? null)
+            && filled($validated['required_ojt_hours'] ?? null);
+
+        $patchActiveAssignmentOnly =
+            ! filled($validated['term'] ?? null)
+            && ! filled($validated['section'] ?? null)
+            && (
+                filled($validated['required_ojt_hours'] ?? null)
+                || filled($validated['school_year'] ?? null)
+            );
+
         $hasOfficeInput = filled($validated['assigned_office'] ?? null);
 
-        Log::debug('Bulk assignment validation', [
-            'hasTermAssignmentInput' => $hasTermAssignmentInput,
-            'hasOfficeInput' => $hasOfficeInput,
-            'validated' => $validated,
-        ]);
+        $anyTermScopeFilled =
+            filled($validated['term'] ?? null)
+            || filled($validated['section'] ?? null)
+            || filled($validated['required_ojt_hours'] ?? null)
+            || filled($validated['school_year'] ?? null);
 
-        if (! $hasTermAssignmentInput && ! $hasOfficeInput) {
+        if (! $fullTermPackage && ! $patchActiveAssignmentOnly && ! $hasOfficeInput) {
             return back()
-                ->withErrors(['bulk_assign' => 'Provide at least one field to update (term details or assigned office).'])
+                ->withErrors([
+                    'bulk_assign' => 'Provide at least one update: Term + Section + Hours for a new assignment, Hours and/or School year while Term and Section are skipped (updates the existing active assignment), or an Assigned office.',
+                ])
                 ->withInput();
         }
 
-        if ($hasTermAssignmentInput && (
-            empty($validated['term']) ||
-            empty($validated['section']) ||
-            ! filled($validated['required_ojt_hours'] ?? null)
-        )) {
+        if (
+            $anyTermScopeFilled
+            && ! $fullTermPackage
+            && ! $patchActiveAssignmentOnly
+            && ! $hasOfficeInput
+        ) {
             return back()
-                ->withErrors(['bulk_assign' => 'To assign a term, please provide term, section, and hours.'])
+                ->withErrors([
+                    'bulk_assign' => 'Incomplete term assignment: enter Term, Section, and Hours together to create a new OJT assignment, or leave Term and Section on Skip and supply only Hours and/or School year to edit the existing active assignment.',
+                ])
+                ->withInput();
+        }
+
+        if (
+            $anyTermScopeFilled
+            && ! $fullTermPackage
+            && ! $patchActiveAssignmentOnly
+            && $hasOfficeInput
+        ) {
+            return back()
+                ->withErrors([
+                    'bulk_assign' => 'Incomplete term assignment: either complete Term + Section + Hours together or leave Term and Section skipped for an hours/school year patch only.',
+                ])
                 ->withInput();
         }
 
@@ -743,12 +914,32 @@ class AdminManagementController extends Controller
             ->whereIn('id', $studentIds)
             ->get();
 
-        DB::transaction(function () use ($students, $validated, $hasTermAssignmentInput, $hasOfficeInput) {
+        $patchedActiveCount = 0;
+        $skippedPatchNoAssignment = 0;
+
+        DB::transaction(function () use (
+            $students,
+            $validated,
+            $fullTermPackage,
+            $patchActiveAssignmentOnly,
+            $hasOfficeInput,
+            &$patchedActiveCount,
+            &$skippedPatchNoAssignment
+        ) {
             /** @var \App\Models\Student $student */
             foreach ($students as $student) {
-                if ($hasTermAssignmentInput) {
+                if ($fullTermPackage) {
                     $this->assignTermToStudent($student, $validated);
                 }
+
+                if ($patchActiveAssignmentOnly) {
+                    if ($this->patchActiveTermBulkFields($student, $validated)) {
+                        $patchedActiveCount++;
+                    } else {
+                        $skippedPatchNoAssignment++;
+                    }
+                }
+
                 if ($hasOfficeInput) {
                     $student->assigned_office = $validated['assigned_office'];
                     $student->save();
@@ -758,15 +949,81 @@ class AdminManagementController extends Controller
 
         $count = $students->count();
 
-        if ($hasTermAssignmentInput && $hasOfficeInput) {
+        if ($patchActiveAssignmentOnly && $patchedActiveCount === 0 && ! $fullTermPackage && ! $hasOfficeInput) {
+            return back()->with(
+                'warning',
+                'No selected student had an active OJT term, so Hours and School year were not updated.'
+            );
+        }
+
+        if ($patchActiveAssignmentOnly && $patchedActiveCount === 0 && $hasOfficeInput) {
+            return back()->with(
+                'warning',
+                'Assigned office was updated for '.$count.' student'.($count === 1 ? '' : 's').', but none had an active term to adjust for hours or school year.'
+            );
+        }
+
+        if ($fullTermPackage && $hasOfficeInput) {
             return back()->with('success', 'Updated term details and assigned office for '.$count.' student'.($count === 1 ? '' : 's').'.');
         }
-        if ($hasTermAssignmentInput) {
+
+        if ($fullTermPackage) {
             return back()->with('success', 'Assigned a new OJT term to '.$count.' student'.($count === 1 ? '' : 's').'.');
         }
 
-        return back()->with('success', 'Updated assigned office for '.$count.' student'.($count === 1 ? '' : 's').'.');
+        $successParts = [];
+
+        if ($patchActiveAssignmentOnly && $patchedActiveCount > 0) {
+            $msg = 'Updated hours or school year on the active assignment for '.$patchedActiveCount.' student'
+                .($patchedActiveCount === 1 ? '' : 's');
+            if ($skippedPatchNoAssignment > 0) {
+                $msg .= ' ('.$skippedPatchNoAssignment.' skipped with no active term)';
+            }
+            $successParts[] = $msg;
+        }
+
+        if ($hasOfficeInput && ! $fullTermPackage) {
+            $successParts[] = 'updated assigned office for '.$count.' student'.($count === 1 ? '' : 's');
+        }
+
+        if (! empty($successParts)) {
+            return back()->with('success', ucfirst(implode('; ', $successParts)).'.');
+        }
+
+        return back()->with('success', 'Bulk update finished for '.$count.' student'.($count === 1 ? '' : 's').'.');
     }
+
+    /**
+     * Update only hours and/or school year on the current active assignment (bulk “skip term/section” path).
+     */
+    private function patchActiveTermBulkFields(Student $student, array $validated): bool
+    {
+        /** @var StudentTermAssignment|null $assignment */
+        $assignment = $student->termAssignments()
+            ->where('status', StudentTermAssignment::STATUS_ACTIVE)
+            ->first();
+
+        if (! $assignment) {
+            return false;
+        }
+
+        $changed = false;
+        if (filled($validated['required_ojt_hours'] ?? null)) {
+            $assignment->required_ojt_hours = (float) $validated['required_ojt_hours'];
+            $changed = true;
+        }
+        if (filled($validated['school_year'] ?? null)) {
+            $assignment->school_year = $validated['school_year'];
+            $changed = true;
+        }
+
+        if ($changed) {
+            $assignment->save();
+        }
+
+        return $changed;
+    }
+
 
     public function completeStudentTermAssignment(StudentTermAssignment $assignment)
     {
