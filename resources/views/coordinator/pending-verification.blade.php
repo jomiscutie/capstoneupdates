@@ -7,27 +7,184 @@
     .verify-page .back-link { margin-bottom: 0.5rem; }
     .verify-page .page-title { font-size: 1.5rem; font-weight: 600; color: var(--dtr-text); margin-bottom: 0.25rem; text-align: center; }
     .verify-page .page-sub { font-size: 0.9rem; color: var(--dtr-muted); margin: 0 auto 1.5rem; text-align: center; max-width: 760px; }
-    .verify-page .card-body { padding: 1.5rem; }
-    .verify-page .section-title { font-size: 1rem; font-weight: 600; color: var(--dtr-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-    .verify-page .section-title i { color: var(--dtr-primary); }
-    .verify-page .table { font-size: 0.9rem; }
-    .verify-page .table thead th {
-        background: var(--dtr-surface-soft);
-        color: var(--dtr-muted);
-        font-weight: 600;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid var(--dtr-border-soft);
+    .verify-page .card {
+        border: 1px solid var(--dtr-border-soft);
+        border-radius: 14px;
+        background: var(--dtr-card-bg);
+        box-shadow: 0 1px 3px rgba(2, 6, 23, 0.04);
+        overflow: clip;
     }
-    .verify-page .table tbody td { padding: 0.875rem 1rem; vertical-align: middle; border-bottom: 1px solid var(--dtr-border-soft); overflow-wrap: break-word; word-break: break-word; }
-    .verify-page .table tbody tr:last-child td { border-bottom: none; }
-    .verify-page .table tbody tr:hover { background: var(--dtr-hover-bg); }
+    .verify-page .card-body { padding: 1rem 1.05rem; }
+    @media (min-width: 992px) {
+        .verify-page .card-body { padding: 1.2rem 1.25rem; }
+    }
+    .verify-page .section-title { font-size: 1rem; font-weight: 700; color: var(--dtr-text); margin-bottom: 0.9rem; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.01em; }
+    .verify-page .section-title i { color: var(--dtr-primary); }
+    .verify-page .verify-table-wrap {
+        border: 1px solid var(--dtr-border-soft);
+        border-radius: 12px;
+        overflow: hidden;
+        background: color-mix(in srgb, var(--dtr-card-bg) 97%, transparent);
+    }
+    .verify-page .verify-table {
+        margin: 0;
+        width: 100%;
+        table-layout: auto;
+        font-size: 0.885rem;
+    }
+    .verify-page .verify-table thead th {
+        color: var(--dtr-muted);
+        font-weight: 750;
+        font-size: 0.6425rem;
+        text-transform: uppercase;
+        letter-spacing: 0.065em;
+        background: color-mix(in srgb, var(--dtr-surface-soft) 92%, transparent);
+        padding: 0.72rem 0.56rem;
+        border-bottom: 1px solid var(--dtr-border-soft);
+        vertical-align: middle;
+        text-align: start;
+        white-space: nowrap;
+    }
+    .verify-page .verify-table tbody td {
+        padding: 0.78rem 0.56rem;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--dtr-border-soft);
+        overflow-wrap: break-word;
+        word-break: break-word;
+    }
+    .verify-page .verify-table tbody tr:last-child td { border-bottom: none; }
+    .verify-page .verify-table tbody tr:hover > td { background: var(--dtr-hover-bg); }
+    .verify-page .verify-col-actions,
+    .verify-page .verify-table thead .verify-col-actions { text-align: center; }
+    .verify-page .verify-col-student-no { width: 9.5ch; }
+    .verify-page .verify-col-face { width: 8.9rem; }
+    .verify-page .verify-col-registered { width: 9.6rem; }
+    .verify-page .verify-col-actions { width: 10.1rem; }
+    .verify-page .verify-student-cell .verify-student-name {
+        font-size: 0.91rem;
+        font-weight: 650;
+        letter-spacing: -0.014em;
+        color: var(--dtr-heading);
+        line-height: 1.25;
+    }
+    .verify-page .verify-student-cell .verify-student-sub {
+        margin-top: 0.16rem;
+        font-size: 0.79rem;
+        color: var(--dtr-muted);
+    }
+    .verify-page .verify-course-text {
+        color: var(--dtr-text);
+        line-height: 1.35;
+        font-size: 0.84rem;
+    }
+    .verify-page .verify-registered {
+        color: var(--dtr-muted);
+        font-size: 0.775rem;
+        line-height: 1.35;
+    }
+    .verify-page .verify-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 1.58rem;
+        padding: 0.28rem 0.72rem;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        font-size: 0.66rem;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        line-height: 1;
+    }
+    .verify-page .verify-pill--ok {
+        color: #166534;
+        border-color: color-mix(in srgb, #22c55e 38%, transparent);
+        background: color-mix(in srgb, #22c55e 10%, transparent);
+    }
+    .verify-page .verify-pill--missing {
+        color: #b45309;
+        border-color: color-mix(in srgb, #f59e0b 40%, transparent);
+        background: color-mix(in srgb, #f59e0b 11%, transparent);
+    }
+    html[data-theme="dark"] .verify-page .verify-pill--ok { color: #bbf7d0; }
+    html[data-theme="dark"] .verify-page .verify-pill--missing { color: #fde68a; }
+    .verify-page .verify-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.34rem;
+        flex-wrap: nowrap;
+    }
+    .verify-page .verify-action-btn {
+        min-width: 5.1rem;
+        height: 1.9rem;
+        padding: 0 0.52rem;
+        border-radius: 9px;
+        border: 1px solid transparent;
+        background: transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.34rem;
+        font-size: 0.75rem;
+        font-weight: 650;
+        letter-spacing: 0.01em;
+        line-height: 1;
+        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .verify-page .verify-action-btn i {
+        font-size: 0.9rem;
+        line-height: 1;
+    }
+    .verify-page .verify-action-btn:focus-visible {
+        outline: 2px solid color-mix(in srgb, var(--dtr-primary) 52%, transparent);
+        outline-offset: 2px;
+    }
+    .verify-page .verify-action-btn--approve {
+        color: #059669;
+        border-color: color-mix(in srgb, #059669 52%, var(--dtr-input-border));
+    }
+    .verify-page .verify-action-btn--approve:hover {
+        color: #047857;
+        background: color-mix(in srgb, #059669 10%, transparent);
+    }
+    .verify-page .verify-action-btn--reject {
+        color: #e11d48;
+        border-color: color-mix(in srgb, #f43f5e 46%, var(--dtr-input-border));
+    }
+    .verify-page .verify-action-btn--reject:hover {
+        color: #be123c;
+        background: color-mix(in srgb, #f43f5e 10%, transparent);
+    }
+    html[data-theme="dark"] .verify-page .verify-action-btn--approve {
+        color: #6ee7b7;
+        border-color: rgba(52, 211, 153, 0.55);
+    }
+    html[data-theme="dark"] .verify-page .verify-action-btn--reject {
+        color: #fda4af;
+        border-color: rgba(251, 113, 133, 0.52);
+    }
+    @media (max-width: 1180px) {
+        .verify-page .verify-col-course { width: 10.5rem; }
+        .verify-page .verify-course-text { font-size: 0.79rem; }
+    }
+    @media (max-width: 1080px) {
+        .verify-page .verify-action-btn {
+            min-width: 1.95rem;
+            width: 1.95rem;
+            padding: 0;
+            border-radius: 8px;
+            gap: 0;
+        }
+        .verify-page .verify-action-btn i { font-size: 0.9rem; margin: 0; }
+        .verify-page .verify-action-btn .verify-btn-text { display: none; }
+        .verify-page .verify-col-actions { width: 5.1rem; }
+    }
     .verify-page .empty-state { text-align: center; padding: 2.5rem 1.5rem; color: var(--dtr-muted); }
     .verify-page .empty-state i { font-size: 2.5rem; color: var(--dtr-muted); opacity: 0.45; margin-bottom: 0.75rem; display: block; }
     /* Search bar */
-    .verify-page .search-wrap { margin-bottom: 1rem; width: 100%; max-width: min(560px, 100%); }
+    .verify-page .search-wrap { margin-bottom: 0.95rem; width: 100%; max-width: min(560px, 100%); }
     .verify-page .search-form { position: relative; width: 100%; max-width: 100%; }
     .verify-page .search-input {
         width: 100%;
@@ -87,44 +244,50 @@
                 
             </div>
             @if($pending->count() > 0)
+                <div class="verify-table-wrap">
                 <div class="table-responsive">
-                    <table class="table align-middle mb-0">
+                    <table class="verify-table align-middle mb-0">
                         <thead>
                             <tr>
-                                <th>Student No</th>
+                                <th class="verify-col-student-no">Student No</th>
                                 <th>Name</th>
-                                <th>Course</th>
-                                <th>Face Enrollment</th>
-                                <th>Registered</th>
-                                <th>Actions</th>
+                                <th class="verify-col-course">Course</th>
+                                <th class="verify-col-face">Face Enrollment</th>
+                                <th class="verify-col-registered">Registered</th>
+                                <th class="verify-col-actions">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($pending as $student)
                                 <tr>
-                                    <td><span class="fw-medium">{{ $student->student_no }}</span></td>
-                                    <td>{{ $student->name }}</td>
-                                    <td><span class="text-muted">{{ $student->course }}</span></td>
+                                    <td>
+                                        <div class="fw-semibold">{{ $student->student_no }}</div>
+                                    </td>
+                                    <td class="verify-student-cell">
+                                        <div class="verify-student-name">{{ $student->name }}</div>
+                                        <div class="verify-student-sub">Pending verification</div>
+                                    </td>
+                                    <td><span class="verify-course-text">{{ $student->course }}</span></td>
                                     <td>
                                         @if(!empty($student->face_encoding))
-                                            <span class="badge bg-success">Enrolled</span>
+                                            <span class="verify-pill verify-pill--ok">Enrolled</span>
                                         @else
-                                            <span class="badge bg-warning text-dark">Missing</span>
+                                            <span class="verify-pill verify-pill--missing">Missing</span>
                                         @endif
                                     </td>
-                                    <td><span class="text-muted small">{{ $student->created_at?->format('M d, Y g:i A') }}</span></td>
-                                    <td>
-                                        <div class="d-flex flex-wrap gap-2">
+                                    <td><span class="verify-registered">{{ $student->created_at?->format('M d, Y g:i A') }}</span></td>
+                                    <td class="verify-col-actions">
+                                        <div class="verify-actions">
                                             <form action="{{ route('coordinator.pending.verification.verify', $student) }}" method="POST" class="d-inline">
                                                 @csrf
-                                                <button type="submit" class="btn btn-verify" data-norsu-confirm="Verify that {{ e($student->name) }} belongs to your class? They will then be able to log in and record attendance.">
-                                                    <i class="bi bi-check-circle"></i> Verify
+                                                <button type="submit" class="btn verify-action-btn verify-action-btn--approve" data-norsu-confirm="Verify that {{ e($student->name) }} belongs to your class? They will then be able to log in and record attendance." title="Verify {{ e($student->name) }}" aria-label="Verify {{ e($student->name) }}">
+                                                    <i class="bi bi-check-circle"></i><span class="verify-btn-text">Verify</span>
                                                 </button>
                                             </form>
                                             <form action="{{ route('coordinator.pending.verification.reject', $student) }}" method="POST" class="d-inline">
                                                 @csrf
-                                                <button type="submit" class="btn btn-reject" data-norsu-confirm="Reject {{ e($student->name) }}? They will not be able to log in. You can verify them later if needed." data-norsu-variant="danger">
-                                                    <i class="bi bi-x-circle"></i> Reject
+                                                <button type="submit" class="btn verify-action-btn verify-action-btn--reject" data-norsu-confirm="Reject {{ e($student->name) }}? They will not be able to log in. You can verify them later if needed." data-norsu-variant="danger" title="Reject {{ e($student->name) }}" aria-label="Reject {{ e($student->name) }}">
+                                                    <i class="bi bi-x-circle"></i><span class="verify-btn-text">Reject</span>
                                                 </button>
                                             </form>
                                         </div>
@@ -133,6 +296,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
                 </div>
             @else
                 <div class="empty-state">
